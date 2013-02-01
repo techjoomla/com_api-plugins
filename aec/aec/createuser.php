@@ -16,15 +16,15 @@ jimport('joomla.user.helper');
 jimport( 'joomla.application.component.helper' );
 jimport( 'joomla.application.component.model' );
 jimport( 'joomla.database.table.user' );
-require_once( JPATH_SITE .DS.'components'.DS.'com_community'.DS.'libraries'.DS.'core.php');
+
 require_once( JPATH_SITE .DS.'libraries'.DS.'joomla'.DS.'filesystem'.DS.'folder.php');
-//vishal
-if(JFolder::exists(JPATH_BASE.DS.'components'.DS.'com_xipt'))
+
+/*if(JFolder::exists(JPATH_BASE.DS.'components'.DS.'com_xipt'))
 {
 require_once( JPATH_SITE .DS.'components'.DS.'com_xipt'.DS.'api.xipt.php');
-}
+}*/
 
-class UsersApiResourceUsers extends ApiResource
+class AecApiResourceCreateuser extends ApiResource
 {
 	
 	public function post()
@@ -36,47 +36,36 @@ class UsersApiResourceUsers extends ApiResource
 		$validated              = true;
 		$userid = NULL;
 		$data	= JRequest::get('post');
+	
 		//for rest api only
 		unset($data['format']);
 		unset($data['resource']);
 		unset($data['app']);
-		unset($data['password']);
-		unset($data['username']);
+		unset($data['key']);
 		//
 		//$userid = $data['userid'];
-		$fields = $data['field'];
-		
+		//$fields = $data['field'];
+//print_r($_POST);	die;
 		//chk data
 		if($data['email']=="" ) 
 		{
 			$validated  = false;
-			$error_messages[] = array("id"=>1,"fieldname"=>"email","message"=>"Email cannot be blank");  
+			$error_messages[] = array("success"=>0,"id"=>16,"fieldname"=>"email","message"=>"Email cannot be blank");  
 		} elseif( false == $this->isValidEmail( $data['email'] ) ) {
 			$validated  = false;
-		  $error_messages[] = array("id"=>1,"fieldname"=>"email","message"=>"Please set valid email id eg.(example@gmail.com). Check 'email' field in request");
+		  $error_messages[] = array("success"=>0,"id"=>16,"fieldname"=>"email","message"=>"Please set valid email id eg.(example@gmail.com). Check 'email' field in request");
 	
-		}else
-		{
-			//check mail is registerd
-			$isemail =& CFactory::getModel('register'); 
-			$found = $isemail->isEmailExists(array('email'=>$data['email'] ));
-			if($found)
-			{ 
-					$validated  = false;
-					$error_messages[] = array("id"=>1,"fieldname"=>"email","message"=>"email already exist and user is registered");
-			 }
 		}
-	        
-		if( $data['password1']=="" ) 
+		if( $data['password']=="" ) 
 		{
 			$validated  = false;
-			$error_messages[] = array("id"=>1,"fieldname"=>"password","message"=>"Password cannot be blank");
+			$error_messages[] = array("success"=>0,"id"=>15,"fieldname"=>"password","message"=>"Password cannot be blank");
 		}
 	        
-		if( $data['name']=="" or $data['username1']=="" ) 
+		if( $data['name']=="" or $data['username']=="" ) 
 		{
 			$validated  = false;
-			$error_messages[] = array("id"=>1,"fieldname"=>"name","message"=>"Name cannot be blank");
+			$error_messages[] = array("success"=>0,"id"=>14,"fieldname"=>"name/username","message"=>"Name cannot be blank");
 		}	        
 	
 		if( true == $validated)
@@ -86,8 +75,8 @@ class UsersApiResourceUsers extends ApiResource
 			jimport('joomla.user.helper');
 			$authorize 	= & JFactory::getACL();
 			$user 		= clone(JFactory::getUser());
-			$user->set('username', $data['username1']);
-			$user->set('password', $data['password1'] );
+			$user->set('username', $data['username']);
+			$user->set('password', $data['password'] );
 			$user->set('name', $data['name']);
 			$user->set('email', $data['email']);
  
@@ -125,11 +114,9 @@ class UsersApiResourceUsers extends ApiResource
 			}	
 			//$this->plugin->setResponse($user->id);
 			$userid = $user->id;
-			//create profile
-			$profileModel =& CFactory::getModel('profile');
-			$val = $profileModel->saveProfile($userid, $fields);
+			
 			//result message
-			$result = array('user id '=>$userid,'message'=>$message);
+			$result = array('success'=>1,'user id '=>$userid,'username'=>$user->username,'message'=>$message);
 			$result =($userid) ? $result : $message; 
 		
 			$this->plugin->setResponse($result);
@@ -139,43 +126,18 @@ class UsersApiResourceUsers extends ApiResource
 		else
 		{
 			
-			$this->plugin->setResponse($error_messages);
+			$this->plugin->setResponse($error_messages);//print_r($error_messages);	die("validate mail2222"); 
 		}
 		
 		
 			    
 	}
 		 
-	public function put()
-	{ 
-		$data	= JRequest::get('post');
-		
-		//for rest api only
-		unset($data['format']);
-		unset($data['resource']);
-		unset($data['app']);
-		unset($data['password']);
-		unset($data['username']);
-		//
-		$userid = $data['userid'];
-		$fields = $data['field'];
-		
-		print_r($data);die;
-		
-		
-		$this->plugin->setResponse( "in the put method" ); 
-	}
-	
-	 public function delete()
-	{    	
-   	   $this->plugin->setResponse( "in the delete method" ); 
-	}
-	
 	function isValidEmail( $email )
 	{
-		$pattern = "^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$";
+		$pattern = "/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$/i";
 
-    	if ( eregi( $pattern, $email ) )
+    	if ( preg_match( $pattern, $email ) )
     	 {
 			return true;
 		  } else {

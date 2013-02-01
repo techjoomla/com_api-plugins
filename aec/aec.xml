@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<install version="1.7" type="plugin" group="api" method="upgrade">
+    <name>Api - aec</name>
+    <version>1.0</version>
+    <creationDate>Jan 2013</creationDate>
+    <author>Tekdi</author>
+    <authorEmail>support@tekdi.com</authorEmail>
+    <authorUrl>http://www.tekdi.com</authorUrl>
+    <copyright>2012 users</copyright>
+    <license>GNU General Public License v2</license>
+    <description>API plugins of AEC components of the Joomla! </description>
+    
+    <files>
+        <filename plugin="aec">aec.php</filename>
+        <filename >aec/userlist.php</filename>
+		<filename >aec/createuser.php</filename>
+        <folder>aec</folder> 
+    </files>
+</install>

@@ -9,9 +9,11 @@
     <copyright>Techjoomla</copyright>
     <license>GNU General Public License v2</license>
     <description>Easyblog APIs</description>
-    
+    <scriptfile>script.php</scriptfile>
     <files>
         <filename plugin="easyblog">easyblog.php</filename>
-        <folder>easyblog</folder> 
+        <folder>easyblog</folder>
+        <folder>components</folder>
+        <folder>libraries</folder>
     </files>
 </extension>

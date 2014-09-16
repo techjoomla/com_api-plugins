@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="2.5.0" type="plugin" group="api" method="upgrade">
+    <name>Api - Easyblog</name>
+    <version>1.0</version>
+    <creationDate>July 2014</creationDate>
+    <author>techjoomla</author>
+    <authorEmail>contact@techjoomla.com</authorEmail>
+    <authorUrl>http://techjoomla.com</authorUrl>
+    <copyright>Techjoomla</copyright>
+    <license>GNU General Public License v2</license>
+    <description>Easyblog APIs</description>
+    
+    <files>
+        <filename plugin="easyblog">easyblog.php</filename>
+        <folder>easyblog</folder> 
+    </files>
+</extension>

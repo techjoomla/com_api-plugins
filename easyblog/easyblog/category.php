@@ -27,15 +27,6 @@ class EasyblogApiResourceCategory extends ApiResource
 		}
 		require_once( JPATH_ROOT . '/components/com_easyblog/helpers/helper.php' );
 	}
-	public function delete()
-	{    	
-   	   $this->plugin->setResponse( 'in delete' ); 
-	}
-
-	public function post()
-	{    	
-   	   $this->plugin->setResponse( 'in post' ); 
-	}
 	
 	public function get() {
 		$input = JFactory::getApplication()->input;

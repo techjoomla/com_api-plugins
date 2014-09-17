@@ -27,10 +27,6 @@ class EasyblogApiResourceBlog extends ApiResource
 		}
 		require_once( JPATH_ROOT . '/components/com_easyblog/helpers/helper.php' );
 	}
-	public function delete()
-	{    	
-   	   $this->plugin->setResponse( 'in delete' ); 
-	}
 
 	public function post()
 	{    	
@@ -72,7 +68,7 @@ class EasyblogApiResourceBlog extends ApiResource
 		}
 
 		$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($blog, '<p><br><pre><a><blockquote><strong><h2><h3><em><ul><ol><li>');
-		$this->plugin->setResponse( $config->get('comment_disqus_code') );
+		$this->plugin->setResponse( $item );
 	}
 	
 }

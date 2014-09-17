@@ -19,5 +19,8 @@ class plgAPIEasyblog extends ApiPlugin
 		parent::__construct($subject, $config = array());
 
 		ApiResource::addIncludePath(dirname(__FILE__).'/easyblog');
+		$this->setResourceAccess('latest', 'public', 'get');
+		$this->setResourceAccess('category', 'public', 'get');
+		$this->setResourceAccess('blog', 'public', 'get');
 	}
 }

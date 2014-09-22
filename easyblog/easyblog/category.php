@@ -36,12 +36,20 @@ class EasyblogApiResourceCategory extends ApiResource
 		$search = $input->get('search', null, 'STRING');
 		$posts = array();
 		
+		
+		if (!isset($id)) {
+			$categoriesmodel = EasyBlogHelper::getModel( 'Categories' );
+			$categories = $categoriesmodel->getCategoryTree('ordering');
+			$this->plugin->setResponse( $categories );
+			return;
+		}
+		
 		$category->load($id);
 
 		// private category shouldn't allow to access.
 		$privacy	= $category->checkPrivacy();
 		
-		if(! $privacy->allowed )
+		if(!$category->id || ! $privacy->allowed )
 		{
 			$this->plugin->setResponse( $this->getErrorResponse(404, 'Category not found') );
 			return;

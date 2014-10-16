@@ -1,10 +1,10 @@
 <?php
 /**
  * @package	API
- * @version 1.5
- * @author 	Brian Edgerton
- * @link 	http://www.edgewebworks.com
- * @copyright Copyright (C) 2011 Edge Web Works, LLC. All rights reserved.
+ * @version 1.5.1
+ * @author 	Techjoomla
+ * @link 	http://techjoomla.com
+ * @copyright Copyright (C) 2014 Techjoomla. All rights reserved.
  * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
  */
 
@@ -18,9 +18,22 @@ class plgAPIEasyblog extends ApiPlugin
 	{
 		parent::__construct($subject, $config = array());
 
+		$easyblog 	= JPATH_ROOT . '/administrator/components/com_easyblog/easyblog.php';
+		if (!JFile::exists($easyblog)) {
+			ApiError::raiseError(404, 'Easyblog not installed');
+			return;
+		}
+
+		// Set resources & access
 		ApiResource::addIncludePath(dirname(__FILE__).'/easyblog');
 		$this->setResourceAccess('latest', 'public', 'get');
 		$this->setResourceAccess('category', 'public', 'get');
 		$this->setResourceAccess('blog', 'public', 'get');
+		
+		// Load Easyblog language & bootstrap files
+		$language = JFactory::getLanguage();
+		$language->load('com_easyblog');
+		require_once( JPATH_ROOT . '/components/com_easyblog/constants.php' );
+		require_once( EBLOG_HELPERS . '/helper.php' );
 	}
 }

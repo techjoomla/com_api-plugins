@@ -8,24 +8,15 @@ jimport( 'simpleschema.category' );
 jimport( 'simpleschema.person' );
 jimport( 'simpleschema.blog.post' );
 
-require_once( JPATH_ROOT . '/components/com_easyblog/constants.php' );
-require_once( EBLOG_HELPERS . DIRECTORY_SEPARATOR . 'date.php' );
-require_once( EBLOG_HELPERS . DIRECTORY_SEPARATOR . 'helper.php' );
-require_once( EBLOG_HELPERS . DIRECTORY_SEPARATOR . 'string.php' );
-require_once( EBLOG_CLASSES . DIRECTORY_SEPARATOR . 'adsense.php' );
+require_once( EBLOG_HELPERS . '/date.php' );
+require_once( EBLOG_HELPERS . '/string.php' );
+require_once( EBLOG_CLASSES . '/adsense.php' );
 
 class EasyblogApiResourceBlog extends ApiResource
 {
 
 	public function __construct( &$ubject, $config = array()) {
-		
 		parent::__construct( $ubject, $config = array() );
-		$easyblog 	= JPATH_ROOT . '/administrator/components/com_easyblog/easyblog.php';
-		if (!JFile::exists($easyblog)) {
-			$this->plugin->setResponse( $this->getErrorResponse(404, 'Easyblog not installed') );
-			return;
-		}
-		require_once( JPATH_ROOT . '/components/com_easyblog/helpers/helper.php' );
 	}
 
 	public function post()

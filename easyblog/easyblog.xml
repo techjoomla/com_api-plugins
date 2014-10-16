@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension version="2.5.0" type="plugin" group="api" method="upgrade">
     <name>Api - Easyblog</name>
-    <version>1.0</version>
+    <version>1.1</version>
     <creationDate>July 2014</creationDate>
     <author>techjoomla</author>
     <authorEmail>contact@techjoomla.com</authorEmail>

@@ -4,6 +4,7 @@ defined('_JEXEC') or die( 'Restricted access' );
 //ini_set('display_errors', 1);
 
 jimport('joomla.user.user');
+require_once( EBLOG_CONTROLLERS . '/media.php' );
 
 class EasyblogApiResourceImage extends ApiResource
 {

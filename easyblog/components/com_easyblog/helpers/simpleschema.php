@@ -1,15 +1,4 @@
 <?php
-/**
- * @package		EasyBlog
- * @copyright	Copyright (C) 2011 Stack Ideas Private Limited. All rights reserved.
- * @license		GNU/GPL, see LICENSE.php
- *
- * EasyBlog is free software. This version may have been modified pursuant
- * to the GNU General Public License, and as distributed it includes or
- * is derivative of works licensed under the GNU General Public License or
- * other free or open source software licenses.
- * See COPYRIGHT.php for copyright notices and details.
- */
 
 defined('_JEXEC') or die('Restricted access');
 jimport( 'simpleschema.blog.post' );
@@ -34,17 +23,11 @@ class EasyBlogSimpleSchemaHelper
 				$formatDate = false;
 		}
 		$blog->created = $created->toMySQL();
-		
-		if( $config->get( 'main_rss_content' ) == 'introtext' )
-		{
-			$blog->text = ( !empty( $row->intro ) ) ? $row->intro : $row->content;
-		}
-		else
-		{
-			$blog->text	= $row->intro . $row->content;
+		$blog->text	= $row->intro . $row->content;
 		   
-		}
-		$blog->text = EasyBlogHelper::getHelper( 'Videos' )->strip( $blog->text );
+		$config->set('max_video_width', 320);
+		$config->set('max_video_width', 180);
+		$blog->text = EasyBlogHelper::getHelper( 'Videos' )->processVideos( $blog->text );
 		$blog->text = EasyBlogGoogleAdsense::stripAdsenseCode( $blog->text );
 		
 		$category = EasyBlogHelper::getTable( 'Category', 'Table' );

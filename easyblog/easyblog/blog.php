@@ -58,7 +58,7 @@ class EasyblogApiResourceBlog extends ApiResource
 			return;
 		}
 
-		$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($blog, '<p><br><pre><a><blockquote><strong><h2><h3><em><ul><ol><li>');
+		$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($blog, '<p><br><pre><a><blockquote><strong><h2><h3><em><ul><ol><li><iframe>');
 		$this->plugin->setResponse( $item );
 	}
 	

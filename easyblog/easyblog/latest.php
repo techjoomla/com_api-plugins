@@ -41,8 +41,7 @@ class EasyblogApiResourceLatest extends ApiResource
 		} else {
 			
 			$sorting	= $this->plugin->params->get( 'sorting' , 'latest' );
-			$total 		= (int) $this->plugin->params->get( 'total' , 20 );
-			$rows 		= $model->getBlogsBy( $sorting , '' , $sorting , $total, EBLOG_FILTER_PUBLISHED, $search );
+			$rows 		= $model->getBlogsBy( $sorting , '' , $sorting , 0, EBLOG_FILTER_PUBLISHED, $search );
 			
 			foreach ($rows as $k => $v) {
 				$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($v, '', 100, array('text'));

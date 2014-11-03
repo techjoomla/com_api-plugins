@@ -66,6 +66,10 @@ class EasyBlogSimpleSchemaHelper
 		$item->category->title = $category->title;
 		
 		$item->url = JURI::root() . trim(EasyBlogRouter::_('index.php?option=com_easyblog&view=entry&id=' . $blog->id ), '/');
+		
+		// Tags
+		$modelPT	= EasyBlogHelper::getModel( 'PostTag' );
+		$item->tags		= $modelPT->getBlogTags($blog->id);
 
 		foreach ($skip as $v) {
 			unset($item->$v);

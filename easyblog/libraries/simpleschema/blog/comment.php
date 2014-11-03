@@ -1,6 +1,6 @@
 <?php
 
-class CommentSchema {
+class CommentSimpleSchema {
 
 	public $commentid;
 	
@@ -16,6 +16,6 @@ class CommentSchema {
 	
 	public $updated_date;
 	
-	public $author
+	public $author;
 
 }

@@ -24,16 +24,23 @@ class plgAPIEasyblog extends ApiPlugin
 			return;
 		}
 
-		// Set resources & access
-		ApiResource::addIncludePath(dirname(__FILE__).'/easyblog');
-		$this->setResourceAccess('latest', 'public', 'get');
-		$this->setResourceAccess('category', 'public', 'get');
-		$this->setResourceAccess('blog', 'public', 'get');
-		
 		// Load Easyblog language & bootstrap files
 		$language = JFactory::getLanguage();
 		$language->load('com_easyblog');
 		require_once( JPATH_ROOT . '/components/com_easyblog/constants.php' );
 		require_once( EBLOG_HELPERS . '/helper.php' );
+
+		// Set resources & access
+		ApiResource::addIncludePath(dirname(__FILE__).'/easyblog');
+		$this->setResourceAccess('latest', 'public', 'get');
+		$this->setResourceAccess('category', 'public', 'get');
+		$this->setResourceAccess('blog', 'public', 'get');
+		$this->setResourceAccess('comments', 'public', 'get');
+		
+		$config 	= EasyBlogHelper::getConfig();
+		if ($config->get('main_allowguestcomment')) {
+			$this->setResourceAccess('comments', 'public', 'post');
+		}
+
 	}
 }

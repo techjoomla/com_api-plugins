@@ -78,7 +78,6 @@ class EasyblogApiResourceComments extends ApiResource
 
 		if (!$blogId) {
 			$this->plugin->setResponse( $this->getErrorResponse(404, 'Invalid Blog') );
-			return;
 		}
 		
 		// @task: Cleanup posted values.
@@ -94,7 +93,6 @@ class EasyblogApiResourceComments extends ApiResource
 		if(! $this->_validateFields($post))
 		{
 			$this->plugin->setResponse( $this->getErrorResponse(500, $this->err[0]) );
-			return;
 		}
 
 		// @task: Akismet detection service.
@@ -111,7 +109,6 @@ class EasyblogApiResourceComments extends ApiResource
 			if( EasyBlogHelper::getHelper( 'Akismet' )->isSpam( $data ) )
 			{
 				$this->plugin->setResponse( $this->getErrorResponse(500, JText::_('COM_EASYBLOG_SPAM_DETECTED_IN_COMMENT')) );
-				return false;
 			}
 		}
 
@@ -131,11 +128,6 @@ class EasyblogApiResourceComments extends ApiResource
 		// @task: Bind posted values into the table.
 		$comment->bindPost( $post );
 
-		if( !EasyBlogHelper::getHelper( 'Captcha' )->verify( $post ) )
-		{
-			return EasyBlogHelper::getHelper( 'Captcha' )->getError( $ajax , $post );
-		}
-
 		// @task: Process registrations
 		$registerUser	= isset( $post[ 'esregister' ] ) ? true : false;
 		$fullname 		= isset( $post[ 'name' ] ) ? $post['name'] : '';
@@ -151,11 +143,7 @@ class EasyblogApiResourceComments extends ApiResource
 
 			if( !is_numeric( $state ) )
 			{
-				$ajax->script( "eblog.loader.doneLoading();" );
-				$ajax->script( 'eblog.comment.displayInlineMsg( "error" , "' . $state . '");' );
-				EasyBlogHelper::getHelper( 'Captcha' )->reload( $ajax , $post );
-
-				return $ajax->send();
+				$this->plugin->setResponse( $this->getErrorResponse(500, $state) );
 			}
 
 			$newUserId	= $state;
@@ -199,13 +187,6 @@ class EasyblogApiResourceComments extends ApiResource
 		if( !$comment->store() )
 		{
 			$this->plugin->setResponse( $this->getErrorResponse(500, 'There was a problem saving the comment') );
-		}
-
-		$message		= JText::_('COM_EASYBLOG_COMMENTS_SUCCESS');
-
-		if( $newUserId != 0 && $registerUser )
-		{
-			$message 	= JText::_('COM_EASYBLOG_COMMENTS_SUCCESS_AND_REGISTERED');
 		}
 
 		// @rule: Process subscription for blog automatically when the user submits a new comment and wants to subscribe to the blog.
@@ -329,16 +310,6 @@ class EasyblogApiResourceComments extends ApiResource
 			{
 				$this->err[0]	= JText::_('COM_EASYBLOG_COMMENT_EMAIL_INVALID');
 				$this->err[1]	= 'esemail';
-				return false;
-			}
-		}
-
-		if($config->get('comment_tnc') == true && ( ( $config->get('comment_tnc_users') == 0 && $my->id <=0) || ( $config->get('comment_tnc_users') == 1 && $my->id >= 0) || ( $config->get('comment_tnc_users') == 2) ) )
-		{
-			if(empty($post['tnc']))
-			{
-				$this->err[0]	= JText::_( 'COM_EASYBLOG_YOU_MUST_ACCEPT_TNC' );
-				$this->err[1]	= 'tnc';
 				return false;
 			}
 		}

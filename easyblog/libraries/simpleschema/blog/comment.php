@@ -16,6 +16,12 @@ class CommentSimpleSchema {
 	
 	public $updated_date;
 	
+	public $created_date_elapsed;
+	
 	public $author;
+	
+	public function __construct() {
+		$this->author 		= new PersonSimpleSchema;
+	}
 
 }

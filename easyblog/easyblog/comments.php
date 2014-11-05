@@ -58,11 +58,10 @@ class EasyblogApiResourceComments extends ApiResource
 	}
 	
 	public function post() {
-	{
-		$app 		= JFactory::getApplication();
-		$my 		= JFactory::getUser();
-		$config 	= EasyBlogHelper::getConfig();
-		$acl 		= EasyBlogACLHelper::getRuleSet();
+		$app = JFactory::getApplication();
+		$my = $this->plugin->getUser();
+		$config = EasyBlogHelper::getConfig();
+		$acl = EasyBlogACLHelper::getRuleSet();
 		$post = $app->input->post->getArray();
 
 		if( empty($acl->rules->allow_comment) && (empty($my->id) && !$config->get('main_allowguestcomment')) )
@@ -235,10 +234,28 @@ class EasyblogApiResourceComments extends ApiResource
 
 		//update the sent flag to sent
 		$comment->updateSent();
-		
-		$this->plugin->setResponse( $comment );
 
-	}}
+		// @TODO - Move this to a map comment function
+		$item = new CommentSimpleSchema;
+		$item->commentid = $comment->id;
+		$item->postid = $comment->post_id;
+		$item->title = $comment->title;
+		$item->text = EasyBlogCommentHelper::parseBBCode($comment->comment);
+		$item->textplain = strip_tags(EasyBlogCommentHelper::parseBBCode($comment->comment));
+		$item->created_date = $comment->created;
+		$item->created_date_elapsed = EasyBlogDateHelper::getLapsedTime( $comment->created );
+		$item->updated_date = $comment->modified;
+		
+		// Author
+		$item->author->name = isset($comment->poster->nickname) ? $comment->poster->nickname : $comment->name;
+		$item->author->photo = isset($comment->poster->avatar) ? $comment->poster->avatar : 'default_blogger.png';
+		$item->author->photo = JURI::root() . 'components/com_easyblog/assets/images/' . $item->author->photo;
+		$item->author->email = $comment->email;
+		$item->author->website = isset($comment->poster->url) ? $comment->poster->url : $comment->url;
+		
+		$this->plugin->setResponse( $item );
+
+	}
 	
 	public static function getName() {
 		

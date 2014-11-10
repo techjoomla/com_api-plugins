@@ -17,7 +17,7 @@ class plgAPIEasyblog extends ApiPlugin
 		parent::__construct($subject, $config = array());
 
 		$easyblog = JPATH_ROOT . '/administrator/components/com_easyblog/easyblog.php';
-		if (!JFile::exists($easyblog) || JComponentHelper::isEnabled('com_easysocial', true)) {
+		if (!JFile::exists($easyblog) || !JComponentHelper::isEnabled('com_easysocial', true)) {
 			ApiError::raiseError(404, 'Easyblog not installed');
 			return;
 		}

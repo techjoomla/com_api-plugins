@@ -75,6 +75,7 @@ class UsersApiResourceLogin extends ApiResource
 
 			$result = $kmodel->save($data);
 			$key = $result->hash;
+			
 			//add new key in easysocial table
 			$easyblog = JPATH_ROOT . '/administrator/components/com_easyblog/easyblog.php';
 			if (JFile::exists($easyblog) && JComponentHelper::isEnabled('com_easysocial', true)) {

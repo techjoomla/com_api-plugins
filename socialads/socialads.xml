@@ -3,11 +3,11 @@
     <name>Api - Socialads</name>
     <version>1.0</version>
     <creationDate>November 2011</creationDate>
-    <author>Reportoise</author>
-    <authorEmail>support@reportoise.com</authorEmail>
-    <authorUrl>http://www.reportoise.com</authorUrl>
-    <copyright>2011 Reportoise</copyright>
-    <license>GNU General Public License v2</license>
+	<author>Techjoomla</author> 
+    <authorEmail>extensions@techjoomla.com</authorEmail> 
+    <authorUrl>www.techjoomla.com</authorUrl> 
+    <copyright>Techjoomla. All rights reserved.</copyright> 
+    <license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
     <description>This plugin exposes com_socialads to the Joomla! API</description>
     
     <files>

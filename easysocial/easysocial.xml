@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension version="2.5.0" type="plugin" group="api" method="upgrade">
-    <name>Api - Easyblog</name>
+<extension version="3.1" type="plugin" group="api" method="upgrade">
+    <name>Api - easysocial</name>
     <version>1.2</version>
     <creationDate>10/11/2014</creationDate>
     <author>Techjoomla</author> 
@@ -8,12 +8,11 @@
     <authorUrl>www.techjoomla.com</authorUrl> 
     <copyright>Techjoomla. All rights reserved.</copyright> 
     <license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
-    <description>Easyblog APIs</description>
-    <scriptfile>script.php</scriptfile>
+    <description>This plugin use for get data from easysocial.</description>
+
     <files>
-        <filename plugin="easyblog">easyblog.php</filename>
-        <folder>easyblog</folder>
-        <folder>components</folder>
-        <folder>libraries</folder>
+        <filename plugin="easysocial">easysocial.php</filename>
+        <filename >easysocial/friends.php</filename>
+        <folder>easysocial</folder>
     </files>
 </extension>

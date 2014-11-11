@@ -75,8 +75,10 @@ class UsersApiResourceLogin extends ApiResource
 
 			$result = $kmodel->save($data);
 			$key = $result->hash;
+			
 			//add new key in easysocial table
-			if(JComponentHelper::isEnabled('com_easysocial', true))
+			$easyblog = JPATH_ROOT . '/administrator/components/com_easyblog/easyblog.php';
+			if (JFile::exists($easyblog) && JComponentHelper::isEnabled('com_easysocial', true)) {
 			{
 				$this->updateEauth( $user , $key );
 			}
@@ -95,9 +97,10 @@ class UsersApiResourceLogin extends ApiResource
 		}
 		return( $obj );
 	}
+	
 	/*
-	 * function for update easyblog keys
-	 * /
+	 * function to update Easyblog auth keys
+	 */
 	public function updateEauth($user=null,$key=null)
 	{
 		require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/foundry.php';

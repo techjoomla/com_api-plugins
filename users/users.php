@@ -10,13 +10,13 @@ defined('_JEXEC') or die( 'Restricted access' );
 
 jimport('joomla.plugin.plugin');
 
-class plgAPIPlg_api_users extends ApiPlugin
+class plgAPIUsers extends ApiPlugin
 {
 	public function __construct(&$subject, $config = array())
 	{
 		parent::__construct($subject, $config = array());
 
-		ApiResource::addIncludePath(dirname(__FILE__).'/plg_api_users');
+		ApiResource::addIncludePath(dirname(__FILE__).'/users');
 		
 		// Set the login resource to be public
 		$this->setResourceAccess('login', 'public');

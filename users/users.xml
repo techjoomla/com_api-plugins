@@ -11,7 +11,7 @@
     <description>This plugin exposes users to the Joomla! API. Supports creation, listing and login for users.</description>
     
     <files>
-        <filename plugin="plg_api_users">plg_api_users.php</filename>
-        <folder>plg_api_users</folder> 
+        <filename plugin="users">users.php</filename>
+        <folder>users</folder> 
     </files>
 </extension>

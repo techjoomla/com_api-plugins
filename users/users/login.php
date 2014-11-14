@@ -78,7 +78,7 @@ class UsersApiResourceLogin extends ApiResource
 			
 			//add new key in easysocial table
 			$easyblog = JPATH_ROOT . '/administrator/components/com_easyblog/easyblog.php';
-			if (JFile::exists($easyblog) && JComponentHelper::isEnabled('com_easysocial', true)) {
+			if (JFile::exists($easyblog) && JComponentHelper::isEnabled('com_easysocial', true))
 			{
 				$this->updateEauth( $user , $key );
 			}

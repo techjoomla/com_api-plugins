@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="2.5.0" type="plugin" group="api" method="upgrade">
+    <name>Api - Jticketing</name>
+    <version>1.6</version>
+    <creationDate>10/11/2014</creationDate>
+    <author>Techjoomla</author> 
+    <authorEmail>extensions@techjoomla.com</authorEmail> 
+    <authorUrl>www.techjoomla.com</authorUrl> 
+    <copyright>Techjoomla. All rights reserved.</copyright> 
+    <license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
+    <description>API plugins of Jticketing components of the Joomla! </description>
+
+    <files>
+        <filename plugin="jticket">jticket.php</filename>
+        <filename >jticket/checkin.php</filename>
+        <folder>jticket</folder>
+    </files>
+    <languages>
+		<language tag="en-GB">en-GB/en-GB.plg_api_jticket.ini</language>
+	</languages>
+</extension>

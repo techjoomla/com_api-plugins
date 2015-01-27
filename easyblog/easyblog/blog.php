@@ -20,6 +20,9 @@ require_once( EBLOG_CLASSES . '/adsense.php' );
 class EasyblogApiResourceBlog extends ApiResource
 {
 
+	public $default_retain_tags = '<p><br><pre><a><blockquote><strong><h2><h3><em><ul><ol><li><iframe><img>';
+	public $disallowed_tags = array('script','style');
+	
 	public function __construct( &$ubject, $config = array()) {
 		parent::__construct( $ubject, $config = array() );
 	}
@@ -38,7 +41,7 @@ class EasyblogApiResourceBlog extends ApiResource
 				return;
 			}
 			
-			$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($blog, '<p><br><pre><a><blockquote><strong><h2><h3><em><ul><ol><li>');
+			$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($blog, $this->getRetainedTags());
 			$this->plugin->setResponse( $item );
    	   
 	}
@@ -63,8 +66,24 @@ class EasyblogApiResourceBlog extends ApiResource
 			return;
 		}
 
-		$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($blog, '<p><br><pre><a><blockquote><strong><h2><h3><em><ul><ol><li><iframe>');
+		$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($blog, $this->getRetainedTags());
 		$this->plugin->setResponse( $item );
+	}
+	
+	public function getRetainedTags() {
+		$plugin = JPluginHelper::getPlugin('api', 'easyblog');
+		$params = new JRegistry($plugin->params);
+		
+		$tags = explode(',', $params->get('retain_tags'));
+		$trimmed_array = array_map('trim', $tags);
+		$retain_tags = array_diff($trimmed_array, $this->disallowed_tags);
+		
+		if (!count($retain_tags))
+		{
+			return $default_retain_tags;
+		}
+		
+		return '<' . implode('><', $retain_tags) . '>';
 	}
 	
 }

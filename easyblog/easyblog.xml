@@ -16,4 +16,18 @@
         <folder>components</folder>
         <folder>libraries</folder>
     </files>
+	<config>
+	<fields name="params">
+		<fieldset name="advanced">
+		<field
+			name="retain_tags"
+			type="text"
+			default=""
+			label="HTML Tags to retain"
+			description="Comma separated list of tags (p,br,h1,h2,h3,img......) to allow in the API, so that the mobile app will be able to show the relevant content. Note that not all tags will work, and some tags may not have the desired effects since tags are handled differently between browsers and apps. Eg: Retaining the iframe tag might not ensure that the iframe is always displayed correctly, but allowing the iframe tag is necessary if you have embedded videos in your blogs"
+			filter="string"
+			size="50" />
+		</fieldset>
+	</fields>
+	</config>
 </extension>

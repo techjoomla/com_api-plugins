@@ -10,8 +10,11 @@
     <license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
     <description><![CDATA[
 			<p>This plugin exposes Akeeba subs as an API. Supports creating and listing subscriptions.</p>
-			<p>By default only the users who have permissions for creating subscriptions can use this API. However this can be overriden via the parameters</p>
+			<p>The methods in this API use Akeeba's ACL. So create subscriptions, list subscriptions etc. honour the user levels allowed to perform those actions.</p>
 			<hr />
+			<h2>Create Subscription</h2>
+			<span class="label label-info">POST</span> /index.php?option=com_api&app=akeebasubs&format=raw&resource=subscription&key=[key]
+			<p>By default only the users who have permissions for creating subscriptions can use this API. However this can be overriden via the parameters.</p>
 			<h3>Input Variables</h3>
 			name (mandatory) : name of the user for whom subscription will be created<br />
 			email (mandatory) : email of the user for whom subscription will be created. Will be used to check for an existing user<br />
@@ -21,6 +24,20 @@
 			Success : Returns a 200 code and the id of the subscription that got created
 			<br />
 			Failure : Returns an error code (404/403) upon failure and a message containing the reason for failure
+			<hr />
+			<h2>List Subscriptions</h2>
+			<span class="label">GET</span> /index.php?option=com_api&app=akeebasubs&format=raw&resource=subscriptions&key=[key]
+			<h3>Input Variables</h3>
+			limit (optional) : Defaults to 10<br />
+			limitstart (optional) : Defaults to 0<br />
+			enabled (optional) : Setting this to 1/0 will filter the list by enabled<br />
+			status (optional) : Setting this to C/P/X/N will filter the list by status<br />
+			<h3>Output</h3>
+			Success : Returns an array of subscription objects
+			<br />
+			Failure : Returns an error code (404/403) upon failure and a message containing the reason for failure
+			<hr />
+			
 			]]></description>
     
     <files>

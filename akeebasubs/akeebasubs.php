@@ -17,8 +17,8 @@ class plgAPIAkeebasubs extends ApiPlugin
 		parent::__construct($subject, $config = array());
 
 		ApiResource::addIncludePath(dirname(__FILE__).'/akeebasubs');
-		
-		// Set the login resource to be public
-		$this->setResourceAccess('subscriptions', 'public');
+
+		// Set public resources if needed
+		// $this->setResourceAccess('resourcename', 'public');
 	}
 }

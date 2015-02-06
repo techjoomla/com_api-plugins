@@ -211,10 +211,12 @@ class AkeebasubsApiResourceSubscription extends ApiResource
 			return $uid;
 		} else {
 			$uid = 0;
+			JLoader::import('joomla.application.component.helper');
 			$password_clear = JUserHelper::genRandomPassword();
 			$salt  = JUserHelper::genRandomPassword(32);
 			$crypt = JUserHelper::getCryptedPassword($password_clear, $salt);
-			$defaultUserGroup = 2;
+			$usersConfig = JComponentHelper::getParams( 'com_users' );
+			$defaultUserGroup = $usersConfig->get( 'new_usertype', 2 );
 
 			$password = "$crypt:$salt";
 			$instance = JUser::getInstance();

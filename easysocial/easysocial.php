@@ -11,10 +11,10 @@ jimport('joomla.plugin.plugin');
 
 class plgAPIEasysocial extends ApiPlugin
 {
-	public function __construct()
+	public function __construct(&$subject, $config = array())
 	{
 
-		parent::__construct();
+		parent::__construct($subject = 'api' , $config = array());
 
 		ApiResource::addIncludePath(dirname(__FILE__).'/easysocial');
 	}

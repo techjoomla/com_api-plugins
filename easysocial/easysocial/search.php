@@ -36,8 +36,17 @@ class EasysocialApiResourceSearch extends ApiResource
 	
 		$nxt_lim = 20;
 	
-		$search = $app->input->post->get('search','','STRING');
+		$search = $app->input->get('search','','STRING');
 		$nxt_lim = $app->input->get('next_limit',0,'INT');
+		
+		$res = new stdClass;
+		
+		if(empty($search))
+		{
+			$res->status = 0;
+			$res->message = 'Empty searchtext';
+			return $res;
+		}
 		
 		$userid = $log_user->id;
 	
@@ -51,7 +60,7 @@ class EasysocialApiResourceSearch extends ApiResource
 		$query->from($db->quoteName('#__social_users','su'));
 		$query->join('LEFT', $db->quoteName('#__users', 'u') . ' ON (' . $db->quoteName('su.user_id') . ' = ' . $db->quoteName('u.id') . ')');
 		//->where(($db->quoteName('u.username') . ' LIKE '. $db->quote('\'% '.$search.'%\'') ).'OR' .( $db->quoteName('u.name') . ' LIKE '. $db->quote('\'%'.$search.'%\'') ).'OR'.( $db->quoteName('u.email') . ' LIKE '. $db->quote('\'%'.$search.'%\'')))
-		
+
 		if(!empty($search))
 		{
 			$query->where("(u.username LIKE '%".$search."%' ) OR ( u.name LIKE '%".$search."%') OR ( u.email LIKE '%".$search."%')");
@@ -85,23 +94,27 @@ class EasysocialApiResourceSearch extends ApiResource
 		$list = array();
 		foreach($data as $k=>$node)
 		{
-			$obj = new stdclass;
-			$obj->id = $node->id;
-			$obj->name = $node->name;
-			$obj->username = $node->username;
-			$obj->email = $node->email;
-			
-			//$obj->avatar = EasySocialModelAvatars::getPhoto($node->id);
-			foreach($node->avatars As $ky=>$avt)
+			if($node->id != $user->id)
 			{
-				$avt_key = 'avtar_'.$ky;
-				$obj->$avt_key = JURI::root().'media/com_easysocial/avatars/users/'.$node->id.'/'.$avt;
+				$obj = new stdclass;
+				$obj->id = $node->id;
+				$obj->name = $node->name;
+				$obj->username = $node->username;
+				$obj->email = $node->email;
+				
+				//$obj->avatar = EasySocialModelAvatars::getPhoto($node->id);
+				foreach($node->avatars As $ky=>$avt)
+				{
+					$avt_key = 'avtar_'.$ky;
+					$obj->$avt_key = JURI::root().'media/com_easysocial/avatars/users/'.$node->id.'/'.$avt;
+				}
+				
+				$obj->mutual = $frnd_mod->getMutualFriendCount($user->id,$node->id);
+				$obj->isFriend = $frnd_mod->isFriends($user->id,$node->id);
+				$obj->approval_pending = $frnd_mod->isPendingFriends($user->id,$node->id);
+				
+				$list[] = $obj;
 			}
-			
-			$obj->mutual = $frnd_mod->getMutualFriendCount($user->id,$node->id);
-			$obj->isFriend = $frnd_mod->isFriends($user->id,$node->id);
-			
-			$list[] = $obj;
 		}
 		
 		return $list;

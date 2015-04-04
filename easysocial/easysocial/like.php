@@ -37,66 +37,7 @@ class EasysocialApiResourceLike extends ApiResource
 	
 	public function delete()
 	{
-		$app = JFactory::getApplication();
-		
-		$group_id = $app->input->get('group_id',0,'INT');
-		$target_user = $app->input->get('target_user',0,'INT');
-		$operation = $app->input->get('operation',0,'STRING');
-		
-		$valid = 1;
-		$result = new stdClass;
-		
-		$group	= FD::group( $group_id );
-
-		if( !$group->id || !$group_id )
-		{
-			$result->status = 0;
-			$result->message = 'Invalid Group';
-			$valid = 0;
-		}
-		
-		if( !$target_user )
-		{
-			$result->status = 0;
-			$result->message = 'Target user not valid';
-			$valid = 0;
-		}
-
-		// Only allow super admins to delete groups
-		$my 	= FD::user($this->plugin->get('user')->id);
-
-		if($target_user == $my->id && $operation == 'leave')
-		{
-			$result->status = 0;
-			$result->message = 'Group owner not leave group';
-			$valid = 0;
-		}
-		
-		//target user obj
-		$user 		= FD::user( $target_user );
-
-		if($valid)
-		{
-			switch($operation)
-			{
-				case 'leave':	// Remove the user from the group.
-								$group->leave( $user->id );
-								// Notify group members
-								$group->notifyMembers( 'leave' , array( 'userId' => $my->id ) );
-								$result->message = 'leave group successfully';
-								break;
-				case 'remove':	// Remove the user from the group.
-								$group->deleteMember( $user->id );
-								// Notify group member
-								$group->notifyMembers('user.remove', array('userId' => $user->id));
-								$result->message = 'Remove user successfully';
-								break;
-			}
-			
-			$result->status = 1;
-		}
-		
-		$this->plugin->setResponse($result);
+		$this->plugin->setResponse("not supported to this api");
 	}
 	//function use for get friends data
 	function toggleLike()
@@ -112,7 +53,7 @@ class EasysocialApiResourceLike extends ApiResource
 		$type = $app->input->get('type',null,'STRING'); 
 		$group = $app->input->get('group','user','STRING'); 
 		$itemVerb = $app->input->get('verb',null,'STRING'); 
-		$streamId = $app->input->get('stream_id',0,'INT'); 
+		$streamid = $app->input->get('stream_id',0,'INT'); 
 
 		$my = FD::user($log_user->id);
 	
@@ -131,7 +72,8 @@ class EasysocialApiResourceLike extends ApiResource
 		// If user had already liked this item, we need to unlike it.
 		if ($hasLiked) {
 			$useStreamId = ($type == 'albums') ? '' : $streamid;
-			$state 	= $model->unlike( $id , $key , $my->id, $streamId );
+
+			$state 	= $model->unlike( $id , $key , $my->id, $useStreamId );
 
 		} else {
 			$useStreamId = ($type == 'albums') ? '' : $streamid;
@@ -157,11 +99,11 @@ class EasysocialApiResourceLike extends ApiResource
 		}
 
 		// The current action
-		$verb 	= $hasLiked ? 'unlike' : 'like';
+		$verb 	= $hasLiked ? 'Unlike' : 'Like';
 		
 		$result->status = $state;
 		$result->data = ($state && $verb == 'like')?$model->getLikesCount($id,$type):0;
-		$result->message = ($state)? $verb." successfull": $verb." unsuccessfull";
+		$result->message = ($state)? $verb." successful": $verb." unsuccessful";
 			
 		return( $result );
 	}

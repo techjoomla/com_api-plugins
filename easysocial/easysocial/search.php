@@ -16,6 +16,8 @@ require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/avatars.php'
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/friends.php';
 require_once JPATH_ROOT . '/components/com_finder/models/search.php';
 
+require_once JPATH_SITE.'/plugins/api/easysocial/libraries/mappingHelper.php';
+
 class EasysocialApiResourceSearch extends ApiResource
 {
 	public function get()
@@ -77,9 +79,34 @@ class EasysocialApiResourceSearch extends ApiResource
 			$susers[]   = FD::user($val->user_id);
 		}
 		
-		$frnd_list = $this->basefrndObj($susers);
+		$list['user'] = $this->basefrndObj($susers);
+		
+		//for group
+		$query1 = $db->getQuery(true);
+		$query1->select($db->quoteName(array('cl.id')));
+		$query1->from($db->quoteName('#__social_clusters','cl'));
+		
+		if(!empty($search))
+		{
+			$query1->where("(cl.title LIKE '%".$search."%' )");
+		}
+		
+		$query1->order($db->quoteName('cl.id') .'ASC');
 
-		return( $frnd_list );
+		$db->setQuery($query1);
+		$gdata = $db->loadObjectList();
+		
+		$mapp = new EasySocialApiMappingHelper();
+		$grp_model = FD::model('Groups');
+		$group = array();
+		foreach($gdata as $grp)
+		{
+			$group[] = FD::group($grp->id);
+		}
+		
+		$list['group'] = $mapp->mapItem($group,'group',$log_user->id);
+
+		return( $list );
 		
 	}
 	

@@ -123,14 +123,32 @@ class EasysocialApiResourceGroup extends ApiResource
 		$type  = $app->input->get('type',0,'INT');
 		$categoryId  = $app->input->get('category_id',0,'INT');
 		
-		/*
-		//ckecking upload cover
-		$upload_obj = new EasySocialApiUploadHelper();
+		$phtomod	= FD::model( 'Photos' );
+		$metdata = $phtomod->getMeta(108,'path'); 
 		
-		$udata = $upload_obj->uploadCover($log_user->id,$type='group');
-		print_r($upload_obj);die("in create grp");
+		$upload_obj = new EasySocialApiUploadHelper();
+/*
+		//ckecking upload cover
+		$cover_obj = $upload_obj->uploadCover($log_user->id,$type='group');
 		//
-		*/
+*/		
+
+		$avtar_pth = '';
+		$avtar_scr = '';
+		$avtar_typ = '';
+		$phto_obj = null;
+/*
+		if($_FILES['file']['name'])
+		{
+			//ckecking upload cover
+			$phto_obj = $upload_obj->uploadPhoto($log_user->id,'group');
+			$avtar_pth = $phto_obj->getPath();
+			$avtar_scr = $phto_obj->getSource();
+			$avtar_typ = 'upload';
+		}
+		print_r($avtar_pth);die("in grp api");
+*/
+		//
 
 		//check title
 		if(empty($title) || $title == null)
@@ -172,7 +190,7 @@ class EasysocialApiResourceGroup extends ApiResource
 		else
 		{
 				// create steps
-				$db     	= FD::db();
+				$db    = FD::db();
 				
 				$group = FD::table('Group');
 				FD::import('admin:/includes/group/group');
@@ -243,10 +261,10 @@ class EasysocialApiResourceGroup extends ApiResource
 						
 						case 'AVATAR':	$grp_data['es-fields-'.$field['id']] = Array
 												(
-													'source' =>'', 
-													'path' => '',
+													'source' =>$avtar_scr, 
+													'path' =>$avtar_pth,
 													'data' => '',
-													'type' => '',
+													'type' => $avtar_typ,
 													'name' => ''
 												);
 										break;
@@ -297,7 +315,7 @@ class EasysocialApiResourceGroup extends ApiResource
 				$token      = FD::token();
 				
 				$disallow = array($token, 'option', 'cid', 'controller', 'task', 'option', 'currentStep');
-				
+	
 				foreach( $grp_data as $key => $value )
 				{
 					if (!in_array($key, $disallow))
@@ -343,8 +361,6 @@ class EasysocialApiResourceGroup extends ApiResource
 					$result->id = 0;
 					$result->message = 'unable to create group';
 				}
-				
-			//print_r($group);die("in group post api");
 				
 				return $result;
 		}

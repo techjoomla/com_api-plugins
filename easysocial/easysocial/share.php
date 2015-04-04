@@ -15,6 +15,7 @@ jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/foundry.php';
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/story/story.php';
+require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/photo/photo.php';
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/groups.php';
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/covers.php';
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/albums.php';
@@ -106,7 +107,9 @@ class EasysocialApiResourceShare extends ApiResource
 			
 			if($type == 'photos')
 			{
-				$photo_ids[] = $this->uploadPhoto($log_usr,$type);
+				$photo_obj = $this->uploadPhoto($log_usr,$type);
+				
+				$photo_ids[] = $photo_obj->id;
 				$args['contextIds'] = (count($photo_ids))?$photo_ids:null;
 			}
 
@@ -232,8 +235,10 @@ class EasysocialApiResourceShare extends ApiResource
 
 		// After storing the photo, trigger rules that should occur after a photo is stored
 		//$photo->afterStore( $file , $image );
+		
+		//$sphoto = new SocialPhotos($photo_obj->id);
 
-		return $photo->id; 
+		return $photo; 
 	}
 	
 	//function for upload file

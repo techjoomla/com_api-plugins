@@ -7,10 +7,15 @@ require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/foundry.ph
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/groups.php';
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/covers.php';
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/albums.php';
+require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/fields.php';
 
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/group.php';
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/message.php';
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/discussion.php';
+
+require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/stream.php';
+require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/user.php';
+require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/profile.php';
 
 class EasySocialApiMappingHelper
 {
@@ -29,7 +34,10 @@ class EasySocialApiMappingHelper
 						return $this->groupSchema($rows,$userid);
 						break;
 			case 'profile':
-						return $this->profileSchema($rows);
+						return $this->profileSchema($rows,$userid);
+						break;
+			case 'fields':
+						return $this->fieldsSchema($rows,$userid);
 						break;
 			case 'user':
 						return $this->userSchema($rows);
@@ -46,9 +54,198 @@ class EasySocialApiMappingHelper
 			case 'discussion':
 						return $this->discussionSchema($rows);
 						break;
+			case 'stream':
+						return $this->streamSchema($rows);
+						break;
 		}
 		
 		return $item;
+	}
+	
+	//map profile fields 
+	public function fieldsSchema($rows,$userid)
+	{
+		
+		$lang = JFactory::getLanguage();
+		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, 'en-GB', true);
+		//$str = JText::_('COM_EASYSOCIAL_FIELDS_PROFILE_DEFAULT_DESIRED_USERNAME');
+		
+		if(count($rows)>0)
+		{
+			$data = array();
+			$fmod_obj = new EasySocialModelFields();
+			foreach($rows as $row)
+			{
+				$fobj = new fildsSimpleSchema();
+				
+				//$fobj->id = $row->id;
+				$fobj->field_id = $row->id;
+				//$fobj->title = JText($row->title);
+				$fobj->title = JText::_($row->title);
+				$fobj->field_name = JText::_($row->title);
+				$fobj->step = $row->step_id;
+				$fobj->field_value = $fmod_obj->getCustomFieldsValue($row->id,$userid , 'user');
+				$data[] = $fobj; 
+			}
+			
+			return $data;
+		}
+	}
+	//function for stream main obj
+	public function streamSchema($rows=array()) 
+	{
+		//$conv_model = FD::model('Conversations');
+		$result = array();
+
+		foreach($rows as $ky=>$row)
+		{
+
+			if(isset($row->uid))
+			{
+				$item = new streamSimpleSchema();
+		
+				//new code
+				// Set the stream title
+				$item->id = $row->uid;
+				$item->title = strip_tags($row->title);
+				$item->preview = $row->preview;
+
+				// Set the stream content
+				//$item->raw_content = $row->content_raw;
+				$item->content = $row->content;
+
+				// Set the publish date
+				$item->published = $row->created->toMySQL();
+				
+				/*
+				// Set the generator
+				$item->generator = new stdClass();
+				$item->generator->url = JURI::root();
+
+				// Set the generator
+				$item->provider = new stdClass();
+				$item->provider->url = JURI::root();
+				*/
+				// Set the verb
+				$item->verb = $row->verb;
+
+				//create users object
+				$actors = array();
+				foreach($row->actors as $actor)
+				{
+					$actors[] = $this->createUserObj($actor->id); 
+				}
+
+				$item->actor = $actors;
+
+				$item->likes = (!empty($row->likes))?$this->createlikeObj($row):null;
+				
+				if(!empty($row->comments->element))
+				{
+					$item->comment_element = $row->comments->element.".".$row->comments->group.".".$row->comments->verb;
+				}
+				else
+				{
+					$item->comment_element = null;
+				}
+				$item->comments = (!empty($row->comments))?$this->createCommentsObj($row->comments):null;
+
+				// These properties onwards are not activity stream specs
+				$item->icon = $row->fonticon;
+
+				// Set the lapsed time
+				$item->lapsed = $row->lapsed;
+
+				// set the if this stream is mini mode or not.
+				// mini mode should not have any actions such as - likes, comments, share and etc.
+				$item->mini = $row->display == SOCIAL_STREAM_DISPLAY_MINI ? true : false;
+
+				$result[]	= $item;
+				//end new
+			
+			}
+		}
+
+		return $result;
+	}
+	
+	//create like object
+	public function createLikeObj($row)
+	{
+		
+		$likesModel = FD::model('Likes');
+		if (!is_bool($row->uid)) {
+	
+			// Like id should contain the exact item id
+			$item = new likesSimpleSchema();
+			
+			$key = $row->likes->element.'.'.$row->likes->group.'.'.$row->likes->verb;
+
+			$item->uid = $row->likes->uid;
+			$item->element = $row->likes->element;
+			$item->group = $row->likes->group;
+			$item->verb = $row->likes->verb;
+			
+			//$item->hasLiked = $row->likes->hasLiked($row->likes->uid,$key,$row->created_by,$row->likes->stream_id);
+			$item->stream_id = $row->likes->stream_id;
+
+			// Get the total likes
+			$item->total = $likesModel->getLikesCount($row->uid, $row->type);
+			$item->like_obj = $likesModel->getLikes($row->uid, $row->type);
+			
+			return $item;
+		}
+		return null;
+	}
+	
+	//create comments object
+	public function createCommentsObj($row,$limitstart=0,$limit=10)
+	{
+		if (!is_bool($row->uid))
+		{
+			$options = array('uid' => $row->uid, 'element' => $row->element, 'stream_id' => $row->stream_id, 'start' => $limitstart, 'limit' => $limit);
+
+			$model  = FD::model('Comments');
+
+			$result = $model->getComments($options);
+
+			$data = array();
+			$likesModel = FD::model('Likes');
+			
+			foreach($result As $cdt)
+			{
+
+				$item = new commentsSimpleSchema();
+				
+				$row->group = (isset($row->group))?$row->group:null;
+				$row->verb = (isset($row->group))?$row->verb:null;
+				
+				$item->uid = $cdt->uid;
+				$item->element = $cdt->element;
+				$item->stream_id = $cdt->stream_id;
+				$item->comment = $cdt->comment;
+				$item->type = $row->element;
+				$item->verb = $row->verb;
+				$item->group = $row->group;
+				$item->created_by = $this->createUserObj($cdt->created_by);
+				$item->created = $cdt->created;
+
+				$item->likes   = new likesSimpleSchema();
+				$item->likes->uid     = $cdt->uid;
+				$item->likes->element = 'comments';
+				$item->likes->group   = $row->group;
+				$item->likes->verb    = 'likes';
+				$item->likes->stream_id = $cdt->stream_id;
+				$item->likes->total   = $likesModel->getLikesCount($item->likes->uid, 'comments.' . $row->group . '.like');
+				$item->likes->hasLiked = $likesModel->hasLiked($item->likes->uid,'comments.' . $row->group . '.like',$cdt->created_by,$cdt->stream_id);
+				$data[] = $item;
+			}
+			
+
+			return $data;
+		}
+		
+		return null;
 	}
 	
 	//function for discussion main obj
@@ -59,25 +256,27 @@ class EasySocialApiMappingHelper
 
 		foreach($rows as $ky=>$row)
 		{
+			if(isset($row->id))
+			{
+				$item = new discussionSimpleSchema();
 
-			$item = new discussionSimpleSchema();
-
-			$item->id = $row->id;
-			$item->title = $row->title;
-			$item->description = null;
-			//$item->attachment = $conv_model->getAttachments($row->id);
-			$item->created_by = $this->createUserObj($row->created_by);
-			$item->created_date = $this->dateCreate($row->created);
-			$item->lapsed = $this->calLaps($row->created);
-			$item->hits = $row->hits;
-			$item->replies_count = $row->total_replies;
-			$item->last_replied = $this->calLaps($row->last_replied);
-			//$item->replies = 0;
-			$last_repl = array(0=>$row->lastreply);
-			
-			$item->replies = $this->discussionReply($last_repl);
-			
-			$result[] = $item;
+				$item->id = $row->id;
+				$item->title = $row->title;
+				$item->description = null;
+				//$item->attachment = $conv_model->getAttachments($row->id);
+				$item->created_by = $this->createUserObj($row->created_by);
+				$item->created_date = $this->dateCreate($row->created);
+				$item->lapsed = $this->calLaps($row->created);
+				$item->hits = $row->hits;
+				$item->replies_count = $row->total_replies;
+				$item->last_replied = $this->calLaps($row->last_replied);
+				//$item->replies = 0;
+				$last_repl = array(0=>$row->lastreply);
+				
+				$item->replies = $this->discussionReply($last_repl);
+				
+				$result[] = $item;
+			}
 		}
 
 		return $result;
@@ -91,15 +290,18 @@ class EasySocialApiMappingHelper
 		
 		foreach($rows as $ky=>$row)
 		{
-			$item = new discussionReplySimpleSchema();
+			if(isset($row->id))
+			{
+				$item = new discussionReplySimpleSchema();
 
-			$item->id = $row->id;
-			$item->reply = $row->content;
-			$item->created_by = $this->createUserObj($row->created_by);
-			$item->created_date = $this->dateCreate($row->created);
-			$item->lapsed = $this->calLaps($row->created);
-			
-			$result[] = $item;
+				$item->id = $row->id;
+				$item->reply = $row->content;
+				$item->created_by = $this->createUserObj($row->created_by);
+				$item->created_date = $this->dateCreate($row->created);
+				$item->lapsed = $this->calLaps($row->created);
+				
+				$result[] = $item;
+			}
 		}
 
 		return $result;
@@ -119,79 +321,95 @@ class EasySocialApiMappingHelper
 			return false;
 		}
 
-		$result = array();		
-	
+		$result = array();
 		$user = JFactory::getUser($userid);
 
 		foreach($rows as $ky=>$row)
 		{
-			$item = new GroupSimpleSchema();
-			
-			$item->id = $row->id;
-			$item->title = $row->title;
-			$item->alias = $row->alias;
-			$item->description = $row->description;
-			$item->hits = $row->hits;
-			$item->state = $row->state;
-			$item->created_date = $this->dateCreate($row->created);
-			
-			//get category name
-			$category 	= FD::table('GroupCategory');
-			$category->load($row->category_id);
-			$item->category_id = $row->category_id;
-			$item->category_name = $category->get('title');
-			//$item->cover = $row->cover->('title');
-
-			$item->created_by = $row->creator_uid;
-			$item->creator_name = JFactory::getUser($row->creator_uid)->username;
-			$item->type = ($row->type == 1 )?'Private':'Public';
-		
-			foreach($row->avatars As $ky=>$avt)
+			if(isset($row->id))
 			{
-				$avt_key = 'avatar_'.$ky;
-				$item->$avt_key = JURI::root().'media/com_easysocial/avatars/group/'.$row->id.'/'.$avt;
+				$item = new GroupSimpleSchema();
+				
+				$item->id = $row->id;
+				$item->title = $row->title;
+				$item->alias = $row->alias;
+				$item->description = $row->description;
+				$item->hits = $row->hits;
+				$item->state = $row->state;
+				$item->created_date = $this->dateCreate($row->created);
+				
+				//get category name
+				$category 	= FD::table('GroupCategory');
+				$category->load($row->category_id);
+				$item->category_id = $row->category_id;
+				$item->category_name = $category->get('title');
+				//$item->cover = $row->cover->('title');
+
+				$item->created_by = $row->creator_uid;
+				$item->creator_name = JFactory::getUser($row->creator_uid)->username;
+				//$item->type = ($row->type == 1 )?'Public':'Public';
+				$item->type = $row->type;
+			
+				foreach($row->avatars As $ky=>$avt)
+				{
+					$avt_key = 'avatar_'.$ky;
+					$item->$avt_key = JURI::root().'media/com_easysocial/avatars/group/'.$row->id.'/'.$avt;
+				}
+				
+				//$obj->members = $row->members;
+				$grp_obj = FD::model('Groups');
+				$item->member_count = $grp_obj->getTotalMembers($row->id);
+				//$obj->cover = $grp_obj->getMeta($row->id);
+				
+				$alb_model = FD::model('Albums');
+				
+				$uid = $row->id.':'.$row->title;
+
+				$filters = array('uid'=>$uid,'type'=>'group');
+				//get total album count
+				$item->album_count = $alb_model->getTotalAlbums($filters);
+
+				//get group album list
+				//$albums = $alb_model->getAlbums($uid,'group');
+				
+				$item->isowner = ( $row->creator_uid == $userid )?true:false;
+				$item->ismember = in_array( $userid,$row->members );
+				$item->approval_pending = in_array( $userid,$row->pending );
+
+				$result[] = $item;
 			}
-			
-			//$obj->members = $row->members;
-			$grp_obj = FD::model('Groups');
-			$item->member_count = $grp_obj->getTotalMembers($row->id);
-			//$obj->cover = $grp_obj->getMeta($row->id);
-			
-			$alb_model = FD::model('Albums');
-			
-			$uid = $row->id.':'.$row->title;
-
-			$filters = array('uid'=>$uid,'type'=>'group');
-			//get total album count
-			$item->album_count = $alb_model->getTotalAlbums($filters);
-
-			//get group album list
-			//$albums = $alb_model->getAlbums($uid,'group');
-			
-			$item->isowner = ( $row->creator_uid == $userid )?true:false;
-			$item->ismember = in_array( $userid,$row->members );
-			$item->approval_pending = in_array( $userid,$row->pending );
-
-			$result[] = $item;
 		}
 		return $result;
 		
 	}
 	
 	//function for create profile schema
-	public function profileSchema($rows) 
+	public function profileSchema($other_user_id,$userid) 
 	{
-		return false;
+		$log_user_obj = FD::user($userid);
+		$other_user_obj = FD::user($other_user_id);
+		
+		$user_obj = $this->createUserObj($other_user_id);
+		$user_obj->isself = ($userid == $other_user_id )?true:false;
+		$user_obj->cover = $other_user_obj->getCover();
+
+		if( $userid != $other_user_id )
+		{
+			$log_user_obj = FD::user( $userid );
+			$user_obj->isfriend = $log_user_obj->isFriends( $other_user_id );
+			$user_obj->isfollower = $log_user_obj->isFollowed( $other_user_id );
+			//$user_obj->approval_pending = $user->isPending($other_user_id);
+		}
+		$user_obj->friend_count = $other_user_obj->getTotalFriends();
+		$user_obj->follower_count = $other_user_obj->getTotalFollowers();
+		$user_obj->badges = $other_user_obj->getBadges();
+		$user_obj->points = $other_user_obj->getPoints();
+		
+		return $user_obj;
 	}
 	
 	//function for create user schema
 	public function userSchema($rows) 
-	{
-		return false;
-	}
-	
-	//function for create comment schema
-	public function commentSchema($rows) 
 	{
 		return false;
 	}
@@ -204,18 +422,21 @@ class EasySocialApiMappingHelper
 		
 		foreach($rows as $ky=>$row)
 		{
-			$item = new MessageSimpleSchema();
+			if(isset($row->id))
+			{
+				$item = new MessageSimpleSchema();
 
-			$item->id = $row->id;
-			$item->message = $row->message;
-			$item->attachment = null;
-			//$item->attachment = $conv_model->getAttachments($row->id);
-			$item->created_by = $this->createUserObj($row->created_by);
-			$item->created_date = $this->dateCreate($row->created);
-			$item->lapsed = $this->calLaps($row->created);
-			$item->isself = ($this->log_user == $row->created_by)?1:0;
-						
-			$result[] = $item;
+				$item->id = $row->id;
+				$item->message = $row->message;
+				$item->attachment = null;
+				//$item->attachment = $conv_model->getAttachments($row->id);
+				$item->created_by = $this->createUserObj($row->created_by);
+				$item->created_date = $this->dateCreate($row->created);
+				$item->lapsed = $this->calLaps($row->created);
+				$item->isself = ($this->log_user == $row->created_by)?1:0;
+							
+				$result[] = $item;
+			}
 		}
 
 		return $result;
@@ -229,15 +450,17 @@ class EasySocialApiMappingHelper
 		
 		foreach($rows as $ky=>$row)
 		{
+			if(isset($row->id))
+			{
+				$item = new ReplySimpleSchema();
 
-			$item = new ReplySimpleSchema();
-
-			$item->id = $row->id;
-			$item->reply = $row->content;
-			$item->created_by = $this->createUserObj($row->created_by);
-			$item->created_date = $this->dateCreate($row->created);
-			$item->lapsed = $this->calLaps($row->created);
-			$result[] = $item;
+				$item->id = $row->id;
+				$item->reply = $row->content;
+				$item->created_by = $this->createUserObj($row->created_by);
+				$item->created_date = $this->dateCreate($row->created);
+				$item->lapsed = $this->calLaps($row->created);
+				$result[] = $item;
+			}
 		}
 
 		return $result;
@@ -248,10 +471,10 @@ class EasySocialApiMappingHelper
 	{
 		$start_date = new DateTime($date);
 		$since_start = $start_date->diff(new DateTime(date('Y-m-d h:i:s a')));
+	
 		$time_str = array();
 		foreach($since_start as $ky=>$val)
 		{
-			
 			switch($ky)
 			{
 				case 'y': $time_str[] = ($val)?$val.' Years':null;
@@ -260,12 +483,13 @@ class EasySocialApiMappingHelper
 							break;
 				case 'd': $time_str[] = ($val)?$val.' day':null;
 							break;
+				case 'h': $time_str[] = ($val)?$val.' hours':null;
+							break;
 				case 'i': $time_str[] = ($val)?$val.' minute':null;
 							break;
 				case 's': $time_str[] = ($val)?$val.' seconds':null;
 							break;
 			}
-			
 		}
 		
 		return $str_time = implode(" ",array_filter($time_str));
@@ -275,7 +499,7 @@ class EasySocialApiMappingHelper
 	public function createUserObj($id){
 		
 		$user = FD::user($id);
-		
+		/*
 		$actor = new stdClass;
 		
 		$image = new stdClass;
@@ -292,7 +516,24 @@ class EasySocialApiMappingHelper
 		$actor->image = $image;
 		
 		return $actor;
+		*/
 		
+		$actor = new userSimpleSchema();
+		$image = new stdClass;
+		
+		$actor->id = $id;
+		$actor->username = $user->username;
+		
+		$image->image_small = $user->getAvatar('small');
+		$image->image_medium = $user->getAvatar();
+		$image->image_large = $user->getAvatar('large');
+		
+		$image->cover_image = $user->getCover();
+		
+		$actor->image = $image;
+		
+		return $actor;
+				
 		}
 	
 	public function dateCreate($dt) {

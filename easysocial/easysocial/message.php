@@ -139,8 +139,6 @@ class EasysocialApiResourceMessage extends ApiResource
 			// Get the conversation table.
 			$conversation = FD::table('Conversation');
 			
-//	print_r($conversation);die("in create conversion");
-			
 			$type = (count($recipients)>1)?2:1;
 			if($type==1)
 			{
@@ -216,6 +214,7 @@ class EasysocialApiResourceMessage extends ApiResource
 		{
 			$data['participant'] = $this->getParticipantUsers( $conversation_id );
 			$msg_data = $conv_model->getMessages($conversation_id,$log_user->id);
+		
 			$data['data'] = $mapp->mapItem($msg_data,'message',$log_user->id);
 			return $data;
 		}
@@ -230,21 +229,24 @@ class EasysocialApiResourceMessage extends ApiResource
 			}
 			
 			$conversion = $conv_model->getConversations( $log_user->id , $options );
-			
+	
 			if(count($conversion)>0)
 			{
 				foreach($conversion as $key=>$node)
 				{
+
 					$cobj = new stdClass;
 					$cobj->conversion_id = $node->id;
 					$cobj->created_date = $node->created;
 					$cobj->lastreplied_date = $node->lastreplied;
 					$cobj->isread = $node->isread;
-					
+					$cobj->messages = $node->message;
 					$cobj->participant = $this->getParticipantUsers( $node->id );
-					$raw_msg = $conv_model->getMessages($node->id , $log_user->id );
 					
-					$cobj->messages = $mapp->mapItem($raw_msg,'message',$log_user->id);
+					/*$raw_msg = $conv_model->getMessages($node->id , $log_user->id );
+					
+					$cobj->messages = $mapp->mapItem($raw_msg,'message',$log_user->id);*/
+					
 					$data['data'][] = $cobj;
 				}
 				//$data['data'] = $mapp->mapItem($data['data'],'message',$log_user->id);

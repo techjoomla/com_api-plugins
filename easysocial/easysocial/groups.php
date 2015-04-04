@@ -104,60 +104,7 @@ class EasysocialApiResourceGroups extends ApiResource
 
 		return( $groups );
 	}
-	
-	/*
-	//format friends object into required object
-	function baseGrpObj($data=null)
-	{
-		if($data==null)
-		return 0;
 
-		$user = JFactory::getUser($this->plugin->get('user')->id);
-
-		$list = array();
-		
-		$grp_obj = FD::model('Groups');
-	
-		foreach($data as $k=>$node)
-		{
-
-			$obj = new stdclass;
-			$obj->id = $node->id;
-			$obj->title = $node->title;
-			$obj->description = $node->description;
-			$obj->hits = $node->hits;
-			$obj->state = $node->state;
-			$obj->created_date = $node->created;
-			
-			//get category name
-			$category 	= FD::table('GroupCategory');
-			$category->load($node->category_id);
-			$obj->category_id = $node->category_id;
-			$obj->category_name = $category->get('title');
-			
-			$obj->created_by = $this->getActor($node->creator_uid);
-			$obj->creator_name = JFactory::getUser($node->creator_uid)->username;
-			$obj->type = ($node->type == 1 )?'Private':'Public';
-			
-			foreach($node->avatars As $ky=>$avt)
-			{
-				$avt_key = 'avtar_'.$ky;
-				$obj->$avt_key = JURI::root().'media/com_easysocial/avatars/group/'.$node->id.'/'.$avt;
-			}
-			
-			//$obj->members = $node->members;
-			$obj->members = $grp_obj->getTotalMembers($node->id);
-			//$obj->cover = $grp_obj->getMeta($node->id);
-
-			$news_obj = new EasySocialModelGroups();
-			$news = $news_obj->getNews($node->id); 
-			
-			$list[] = $obj;
-		}
-		return $list;
-	}
-	*/
-	
 	//to get actor object
 	function getActor($id=0)
 	{

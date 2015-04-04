@@ -64,6 +64,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 		
 		$group_id = $mainframe->input->get('id',0,'INT');
 		$appId = $mainframe->input->get('discussion_id',0,'INT');
+		//$filter = $mainframe->input->get('filter','all','STRING');
 		$wres = new stdClass;
 		$valid = 0;
 
@@ -97,6 +98,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 				$options[ 'resolved' ]	= true;
 			}
 			
+			$options[ 'limitstart' ]	= $mainframe->input->get('limitstart',0,'INT');
 			$options[ 'limit' ]	= $mainframe->input->get('limit',10,'INT');
 			
 			$mapp = new EasySocialApiMappingHelper();

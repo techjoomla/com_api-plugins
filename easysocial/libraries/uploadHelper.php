@@ -46,7 +46,6 @@ class EasySocialApiUploadHelper
 
 		// Get uploaded file
 		$file = FD::uploader( $options )->getFile();
-
 		// Load the image
 		$image 	= FD::image();
 		$image->load( $file[ 'tmp_name' ] , $file[ 'name' ] );
@@ -81,7 +80,7 @@ class EasySocialApiUploadHelper
 		}
 
 		// Trigger rules that should occur after a photo is stored
-		$photo->afterStore( $file , $image );
+		//$photo->afterStore( $file , $image );
 
 		// If album doesn't have a cover, set the current photo as the cover.
 		if( !$album->hasCover() )
@@ -108,6 +107,18 @@ class EasySocialApiUploadHelper
 
 			$meta->store();
 		}
+		
+		// Load the cover
+		$cover = FD::table('Cover');
+		$state = $cover->load(array('uid' => $uid, 'type' => $type));
+		
+		// Set the cover to pull from photo
+		$cover->setPhotoAsCover($photo->id, 0.5 , 0.5);
+		
+		// Save the cover.
+		$cover->store();
+		
+		//return meta data for cover photo object
 		return $photo;
 	}
 	//upload image
@@ -146,7 +157,7 @@ class EasySocialApiUploadHelper
 
 		// Bind photo data
 		$photo              = FD::table( 'Photo' );
-		$photo->uid         = $uid;
+		$photo->uid         = '';
 		$photo->type        = $type;
 		$photo->user_id     = $my->id;
 		$photo->album_id    = $album->id;
@@ -209,6 +220,6 @@ class EasySocialApiUploadHelper
 		// After storing the photo, trigger rules that should occur after a photo is stored
 		//$photo->afterStore( $file , $image );
 
-		return $photo->id; 
+		return $photo; 
 	}
 }

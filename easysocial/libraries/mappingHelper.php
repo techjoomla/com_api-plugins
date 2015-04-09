@@ -16,6 +16,7 @@ require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/discussion.php
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/stream.php';
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/user.php';
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/profile.php';
+require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/category.php';
 
 class EasySocialApiMappingHelper
 {
@@ -55,7 +56,7 @@ class EasySocialApiMappingHelper
 						return $this->discussionSchema($rows);
 						break;
 			case 'stream':
-						return $this->streamSchema($rows);
+						return $this->streamSchema($rows,$userid);
 						break;
 		}
 		
@@ -92,7 +93,7 @@ class EasySocialApiMappingHelper
 		}
 	}
 	//function for stream main obj
-	public function streamSchema($rows=array()) 
+	public function streamSchema($rows=array(),$userid) 
 	{
 		//$conv_model = FD::model('Conversations');
 		$result = array();
@@ -108,12 +109,21 @@ class EasySocialApiMappingHelper
 				// Set the stream title
 				$item->id = $row->uid;
 				$item->title = strip_tags($row->title);
-				$item->preview = $row->preview;
-
-				// Set the stream content
-				//$item->raw_content = $row->content_raw;
+				
 				$item->content = $row->content;
-
+				
+				$item->preview = $row->preview;
+				// Set the stream content
+				if(!empty($item->preview))
+				{
+					$item->raw_content_url = $row->preview;
+				}
+				elseif(!empty($item->content))
+				{
+					$item->raw_content_url = $row->content;
+				}
+				$item->raw_content_url = str_replace('href="/j/','href="'.JURI::root(),$item->raw_content_url);
+				
 				// Set the publish date
 				$item->published = $row->created->toMySQL();
 				
@@ -138,7 +148,7 @@ class EasySocialApiMappingHelper
 
 				$item->actor = $actors;
 
-				$item->likes = (!empty($row->likes))?$this->createlikeObj($row):null;
+				$item->likes = (!empty($row->likes))?$this->createlikeObj($row->likes,$userid):null;
 				
 				if(!empty($row->comments->element))
 				{
@@ -170,28 +180,27 @@ class EasySocialApiMappingHelper
 	}
 	
 	//create like object
-	public function createLikeObj($row)
+	public function createLikeObj($row,$userid)
 	{
-		
 		$likesModel = FD::model('Likes');
 		if (!is_bool($row->uid)) {
 	
 			// Like id should contain the exact item id
 			$item = new likesSimpleSchema();
 			
-			$key = $row->likes->element.'.'.$row->likes->group.'.'.$row->likes->verb;
+			$key = $row->element.'.'.$row->group.'.'.$row->verb;
 
-			$item->uid = $row->likes->uid;
-			$item->element = $row->likes->element;
-			$item->group = $row->likes->group;
-			$item->verb = $row->likes->verb;
+			$item->uid = $row->uid;
+			$item->element = $row->element;
+			$item->group = $row->group;
+			$item->verb = $row->verb;
 			
-			//$item->hasLiked = $row->likes->hasLiked($row->likes->uid,$key,$row->created_by,$row->likes->stream_id);
-			$item->stream_id = $row->likes->stream_id;
+			$item->hasLiked = $likesModel->hasLiked($row->uid,$key,$userid,$row->stream_id);
+			$item->stream_id = $row->stream_id;
 
 			// Get the total likes
-			$item->total = $likesModel->getLikesCount($row->uid, $row->type);
-			$item->like_obj = $likesModel->getLikes($row->uid, $row->type);
+			$item->total = $likesModel->getLikesCount($row->uid, $key);
+			$item->like_obj = $likesModel->getLikes($row->uid,$key);
 			
 			return $item;
 		}
@@ -310,7 +319,27 @@ class EasySocialApiMappingHelper
 	//function for create category schema
 	public function categorySchema($rows) 
 	{
-		return false;
+		$result = array();
+		
+		foreach($rows as $ky=>$row)
+		{
+			if(isset($row->id))
+			{
+				$item = new CategorySimpleSchema();
+
+				$item->categoryid = $row->id;
+				$item->title = $row->title;
+				$item->description = $row->description;
+				$item->state = $row->state;
+				//$item->attachment = $conv_model->getAttachments($row->id);
+				$item->created_by = $this->createUserObj($row->uid);
+				$item->created_date = $this->dateCreate($row->created);
+
+				$result[] = $item;
+			}
+		}
+		
+		return $result;
 	}
 	
 	//function for create group schema
@@ -411,7 +440,13 @@ class EasySocialApiMappingHelper
 	//function for create user schema
 	public function userSchema($rows) 
 	{
-		return false;
+		$data = array();
+		foreach($rows as $row)
+		{
+			$data[] = $this->createUserObj($row->id);
+		}
+		
+		return $data;
 	}
 	
 	//function for create message schema
@@ -523,6 +558,7 @@ class EasySocialApiMappingHelper
 		
 		$actor->id = $id;
 		$actor->username = $user->username;
+		$actor->name = $user->name;
 		
 		$image->image_small = $user->getAvatar('small');
 		$image->image_medium = $user->getAvatar();

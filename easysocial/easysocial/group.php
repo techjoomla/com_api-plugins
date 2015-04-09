@@ -123,31 +123,34 @@ class EasysocialApiResourceGroup extends ApiResource
 		$type  = $app->input->get('type',0,'INT');
 		$categoryId  = $app->input->get('category_id',0,'INT');
 		
-		$phtomod	= FD::model( 'Photos' );
-		$metdata = $phtomod->getMeta(108,'path'); 
+		$phtomod	= FD::model( 'Photos' );		
 		
 		$upload_obj = new EasySocialApiUploadHelper();
-/*
-		//ckecking upload cover
-		$cover_obj = $upload_obj->uploadCover($log_user->id,$type='group');
-		//
-*/		
 
 		$avtar_pth = '';
 		$avtar_scr = '';
 		$avtar_typ = '';
 		$phto_obj = null;
-/*
+
 		if($_FILES['file']['name'])
 		{
 			//ckecking upload cover
 			$phto_obj = $upload_obj->uploadPhoto($log_user->id,'group');
-			$avtar_pth = $phto_obj->getPath();
+			//$avtar_pth = $phto_obj->getImageObject($phto_obj->type);
 			$avtar_scr = $phto_obj->getSource();
 			$avtar_typ = 'upload';
 		}
-		print_r($avtar_pth);die("in grp api");
-*/
+		
+		$cover_data = null;
+		
+		if($_FILES['cover_file']['name'])
+		{
+			//ckecking upload cover
+			$cover_obj = $upload_obj->uploadCover($log_user->id,'group');
+			$cover_data = $phtomod->getMeta($cover_obj->id, SOCIAL_PHOTOS_META_PATH);
+			//
+		}
+		
 		//
 
 		//check title
@@ -270,7 +273,7 @@ class EasysocialApiResourceGroup extends ApiResource
 										break;
 						case 'COVER':	$grp_data['es-fields-'.$field['id']] = Array
 												(
-													'data' =>'',
+													'data' =>$cover_data,
 													'position' =>'' 
 												);
 										break;

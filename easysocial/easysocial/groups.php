@@ -48,7 +48,14 @@ class EasysocialApiResourceGroups extends ApiResource
 		
 		$filters = array();
 		$filters['category'] = $app->input->get('category',0,'INT');
-		$filters['uid'] = $app->input->get('user_id',0,'INT');
+		$filters['uid'] = $app->input->get('target_user',0,'INT');
+		
+		//change target user
+		if( $filters['uid'] !=0 )
+		{
+			$userid = $filters['uid'];
+		}
+
 		$filters['types'] = $app->input->get('type',0,'INT');
 		$filters['state'] = $app->input->get('state',0,'INT');
 		
@@ -57,7 +64,7 @@ class EasysocialApiResourceGroups extends ApiResource
 		$filters['invited'] = $app->input->get('invited',false,'BOOLEAN');
 		
 		$filters['limit'] = $app->input->get('limit',0,'INT');
-		
+
 		$model = FD::model('Groups');
 		$options = array('state' => SOCIAL_STATE_PUBLISHED,'ordering' => 'latest');
 		$groups = array();
@@ -81,13 +88,13 @@ class EasysocialApiResourceGroups extends ApiResource
 		{
 			if($filters['mygroups'])
 			{
-				$options['uid'] = $log_user->id;
+				$options['uid'] = $userid;
 				$options['types'] = 'all';
 			}
 			
 			if($filters['invited'])
 			{
-				$options['invited'] = $log_user->id;
+				$options['invited'] = $userid;
 				$options['types'] = 'all';
 			}
 			
@@ -95,8 +102,15 @@ class EasysocialApiResourceGroups extends ApiResource
 			{
 				$options['category'] = $categoryId;
 			}
-	
-			$groups = $model->getGroups($options);
+			
+			if($filters['uid'] == 0)
+			{
+				$groups = $model->getGroups($options);
+			}
+			else
+			{
+				$groups = $model->getUserGroups($filters['uid']);
+			}
 
 			//$groups = $this->baseGrpObj($groups);
 			$groups = $mapp->mapItem($groups,'group',$log_user->id);

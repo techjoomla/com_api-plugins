@@ -6,11 +6,10 @@
  * @link http://www.techjoomla.com
 */
 
-class userSimpleSchema {
+class GroupMembersSimpleSchema {
 
 	public $id;
 	public $username;
-	public $name;
 	public $image;
 	public $isself;
 	public $cover;
@@ -19,6 +18,5 @@ class userSimpleSchema {
 	public $badges;
 	public $points;
 	public $more_info;
-	public $isOwner;
-	
+
 }

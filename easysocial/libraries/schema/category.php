@@ -11,13 +11,14 @@ class CategorySimpleSchema {
 	public $categoryid;
 	
 	public $title;
-	
+		
 	public $description;
 	
+	public $state;
+	
+	public $created_by;
+	
 	public $created_date;
-	
-	public $updated_date;
-	
-	public $scope;
+
 
 }

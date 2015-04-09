@@ -13,6 +13,7 @@ jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/friends.php';
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/avatars.php';
+require_once JPATH_SITE.'/plugins/api/easysocial/libraries/mappingHelper.php';
 
 class EasysocialApiResourceFriend extends ApiResource
 {
@@ -61,10 +62,12 @@ class EasysocialApiResourceFriend extends ApiResource
 		//init variable
 		$app = JFactory::getApplication();
 		$user = JFactory::getUser($this->plugin->get('user')->id);
-		$userid = $app->input->get('target_userid',$this->plugin->get('user')->id,'INT');
+		$userid = $app->input->get('target_user',$this->plugin->get('user')->id,'INT');
 		
 		$search = $app->input->get('search','','STRING');
-
+		
+		$mapp = new EasySocialApiMappingHelper();
+		
 		if($userid == 0)
 		$userid = $user->id;
 		
@@ -80,7 +83,8 @@ class EasysocialApiResourceFriend extends ApiResource
 			$ttl_list = $frnd_mod->search($userid,$search,'username');
 		}
 
-	    $frnd_list = $this->basefrndObj($ttl_list);
+	    //$frnd_list = $this->basefrndObj($ttl_list);
+	    $frnd_list = $mapp->mapItem( $ttl_list,'user',$log_user->id );
 
 	    //get other data
 	    foreach($frnd_list as $ky=>$lval)

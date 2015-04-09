@@ -60,7 +60,7 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 		// Get the stream library
 		$stream 	= FD::stream();
 
-		$options = array('userId' => $userId, 'startlimit' => $startlimit, 'limi' => $limit);
+		$options = array('userId' => $userId, 'startlimit' => $startlimit, 'limit' => $limit);
 		
 		if($group_id)
 		{
@@ -91,8 +91,6 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 				$options['context'] = $filter;
 				break;
 		}
-
-		// $stream->get(array('userId' => $userId, 'startlimit' => $startlimit, 'limit' => $limit, 'type' => $filter));
 		$stream->get($options);
 
 		$result 	= $stream->toArray();

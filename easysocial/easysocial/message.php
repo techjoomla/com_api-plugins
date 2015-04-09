@@ -198,6 +198,7 @@ class EasysocialApiResourceMessage extends ApiResource
 		$conversation_id = $app->input->get('conversation_id',0,'INT');
 		$limitstart = $app->input->get('limitstart',0,'INT');
 		$limit = $app->input->get('limit',10,'INT'); 
+		$maxlimit = $app->input->get('maxlimit',100,'INT'); 
 		$filter = $app->input->get('filter',null,'STRING');
 		
 		$mapp = new EasySocialApiMappingHelper();
@@ -221,7 +222,7 @@ class EasysocialApiResourceMessage extends ApiResource
 		else
 		{
 			//sort items by latest first
-			$options 		= array( 'sorting' => 'lastreplied', 'maxlimit' => $limit );
+			$options 		= array( 'sorting' => 'lastreplied', 'maxlimit' => $maxlimit );
 			
 			if( $filter )
 			{
@@ -251,6 +252,10 @@ class EasysocialApiResourceMessage extends ApiResource
 				}
 				//$data['data'] = $mapp->mapItem($data['data'],'message',$log_user->id);
 			}
+			
+			//manual pagination code
+			$data['data'] = array_slice( $data['data'], $limitstart, $limit );
+			
 			return( $data );
 		}
 	}

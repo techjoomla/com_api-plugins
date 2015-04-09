@@ -160,7 +160,7 @@ class EasysocialApiResourceReply extends ApiResource
 	{
 				// Create a new stream item for this discussion
 		$stream = FD::stream();
-
+		$my		= FD::user($log_user);
 		// Get the stream template
 		$tpl		= $stream->getTemplate();
 

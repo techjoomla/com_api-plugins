@@ -21,7 +21,6 @@ class EasySocialApiUploadHelper
 
 		if( !$uid && !$type )
 		{
-
 			$result->status  = 0;
 			$result->message = 'Empty uid / type not allowed for upload';
 			return $result; 
@@ -110,14 +109,13 @@ class EasySocialApiUploadHelper
 		
 		// Load the cover
 		$cover = FD::table('Cover');
-		$state = $cover->load(array('uid' => $uid, 'type' => $type));
+		$state = $cover->load(array('uid' => 0, 'type' => $type));
 		
 		// Set the cover to pull from photo
 		$cover->setPhotoAsCover($photo->id, 0.5 , 0.5);
 		
 		// Save the cover.
 		$cover->store();
-		
 		//return meta data for cover photo object
 		return $photo;
 	}
@@ -183,7 +181,7 @@ class EasySocialApiUploadHelper
 		// Get the photos library
 		$photoLib   = FD::get( 'Photos' , $image );
 		$paths      = $photoLib->create($storage);
-		
+
 		// Create metadata about the photos
 		if( $paths )
 		{

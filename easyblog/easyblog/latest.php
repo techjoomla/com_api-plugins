@@ -6,7 +6,6 @@
  * @link http://www.techjoomla.com
 */
 defined('_JEXEC') or die( 'Restricted access' );
-
 jimport('joomla.user.user');
 jimport( 'simpleschema.category' );
 jimport( 'simpleschema.person' );
@@ -26,34 +25,40 @@ class EasyblogApiResourceLatest extends ApiResource
 	
 	public function get() {
 		$input = JFactory::getApplication()->input;
-		$model 		= EasyBlogHelper::getModel( 'Blog' );
-		$id = $input->get('id', null, 'INT');
+		$model = EasyBlogHelper::getModel( 'Blog' );
+		//$id = $input->get('id', null, 'INT');
 		$search = $input->get('search', null, 'STRING');
+		$tags = $input->get('tags',0,'INT');
 		$posts = array();
-
 		// If we have an id try to fetch the user
 		$blog 		= EasyBlogHelper::getTable( 'Blog' );
 		$blog->load( $id );
+		$modelPT	= EasyBlogHelper::getModel( 'PostTag' );
 		
-		if ($id) {
-			if(!$blog->id) {
-				$this->plugin->setResponse( $this->getErrorResponse(404, 'Blog not found') );
-				return;
-			}
-
-			$this->plugin->setResponse( $blog );
-		} else {
-			
+		//~ if ($id && !$tags) {
+			//~ if(!$blog->id) 
+			//~ {
+				//~ $this->plugin->setResponse( $this->getErrorResponse(404, 'Blog not found') );
+				//~ return;
+			//~ }
+			//~ $this->plugin->setResponse( $blog );
+		//~ }
+		if($tags)
+		{		
+			$rows = $model->getTaggedBlogs( $tags );			
+		}
+		else
+		{
 			$sorting	= $this->plugin->params->get( 'sorting' , 'latest' );
 			$rows 		= $model->getBlogsBy( $sorting , '' , $sorting , 0, EBLOG_FILTER_PUBLISHED, $search );
-			
-			foreach ($rows as $k => $v) {
-				$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($v, '', 100, array('text'));
+		}
+		foreach ($rows as $k => $v) 
+			{
+				$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($v,'', 100, array('text'));							
+				$item->tags = $modelPT->getBlogTags($item->postid);
 				$posts[] = $item;
 			}
-			
 			$this->plugin->setResponse( $posts );
-		}
 	}
 	
 	public static function getName() {

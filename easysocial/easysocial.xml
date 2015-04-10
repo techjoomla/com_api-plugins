@@ -12,7 +12,8 @@
 
     <files>
         <filename plugin="easysocial">easysocial.php</filename>
-        <filename >easysocial/friends.php</filename>
+        <filename >easysocial/friend.php</filename>
+        <folder>libraries</folder>
         <folder>easysocial</folder>
     </files>
 </extension>

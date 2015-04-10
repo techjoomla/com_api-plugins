@@ -108,8 +108,11 @@ class EasySocialApiMappingHelper
 				//new code
 				// Set the stream title
 				$item->id = $row->uid;
-				$item->title = strip_tags($row->title);
-				
+				//$item->title = strip_tags($row->title);
+				//code changed as request not right way
+				$item->title = $row->title;
+				$item->title = str_replace('href="','href="'.JURI::root(),$item->title);
+				//
 				$item->content = $row->content;
 				
 				$item->preview = $row->preview;
@@ -122,7 +125,8 @@ class EasySocialApiMappingHelper
 				{
 					$item->raw_content_url = $row->content;
 				}
-				$item->raw_content_url = str_replace('href="/j/','href="'.JURI::root(),$item->raw_content_url);
+								
+				$item->raw_content_url = str_replace('href="','href="'.JURI::root(),$item->raw_content_url);
 				
 				// Set the publish date
 				$item->published = $row->created->toMySQL();
@@ -357,6 +361,7 @@ class EasySocialApiMappingHelper
 		{
 			if(isset($row->id))
 			{
+				$grpobj = FD::group( $row->id );
 				$item = new GroupSimpleSchema();
 				
 				$item->id = $row->id;
@@ -372,7 +377,7 @@ class EasySocialApiMappingHelper
 				$category->load($row->category_id);
 				$item->category_id = $row->category_id;
 				$item->category_name = $category->get('title');
-				//$item->cover = $row->cover->('title');
+				$item->cover = $grpobj->getCover();
 
 				$item->created_by = $row->creator_uid;
 				$item->creator_name = JFactory::getUser($row->creator_uid)->username;
@@ -415,6 +420,7 @@ class EasySocialApiMappingHelper
 	//function for create profile schema
 	public function profileSchema($other_user_id,$userid) 
 	{
+
 		$log_user_obj = FD::user($userid);
 		$other_user_obj = FD::user($other_user_id);
 		

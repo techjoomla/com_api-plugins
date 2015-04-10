@@ -12,7 +12,6 @@ class streamSimpleSchema {
 	public $title;
 	public $preview;
 	public $raw_content_url;
-	public $raw_content;
 	public $content;
 	public $actor;
 	public $published;

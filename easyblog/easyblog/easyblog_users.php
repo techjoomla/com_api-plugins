@@ -24,6 +24,7 @@ jimport( 'simpleschema.person' );
 JModelLegacy::addIncludePath(JPATH_SITE.'components/com_api/models');
 require_once JPATH_SITE.'/components/com_easyblog/models/users.php';
 require_once JPATH_SITE.'/components/com_easyblog/models/blogger.php';
+require_once JPATH_SITE.'/components/com_easyblog/helpers/helper.php';
 //~ require_once JPATH_SITE.'/plugins/api/easyblog/libraries/simpleschema/bloggers.php';
 
 class EasyblogApiResourceEasyblog_users extends ApiResource
@@ -38,8 +39,23 @@ class EasyblogApiResourceEasyblog_users extends ApiResource
 	}
 	public function getEasyBlog_user()
 	{
+		$app = JFactory::getApplication();
+		$limitstart = $app->input->get('limitstart',0,'INT');
+		$limit =  $app->input->get('limit',0,'INT');		
+		$search =  $app->input->get('search','','STRING');		
 		$ob1  = new EasyBlogModelBlogger();
-		$var1 = $ob1->getAllBloggers();
-		return $var1;
+		$ob1->setState('limitstart',$limitstart);
+		$bloggers = $ob1->getAllBloggers('latest',$limit, $filter='showallblogger' , $search );
+		
+		$blogger = EasyBlogHelper::getTable( 'Profile', 'Table' );
+		
+		foreach($bloggers as $usr )
+		{
+			$blogger->load($usr->id);
+			//$avatar = $blogger->getAvatar();
+			$usr->avatar = $blogger->getAvatar();
+		}
+		
+		return $bloggers;
 	}	
 }

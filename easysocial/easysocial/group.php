@@ -123,34 +123,36 @@ class EasysocialApiResourceGroup extends ApiResource
 		$type  = $app->input->get('type',0,'INT');
 		$categoryId  = $app->input->get('category_id',0,'INT');
 		
-		$phtomod	= FD::model( 'Photos' );		
-		
-		$upload_obj = new EasySocialApiUploadHelper();
-
 		$avtar_pth = '';
 		$avtar_scr = '';
 		$avtar_typ = '';
 		$phto_obj = null;
 
-		if($_FILES['file']['name'])
+		if(!empty($_FILES['file']['name']))
 		{
+			$upload_obj = new EasySocialApiUploadHelper();
 			//ckecking upload cover
-			$phto_obj = $upload_obj->uploadPhoto($log_user->id,'group');
-			//$avtar_pth = $phto_obj->getImageObject($phto_obj->type);
-			$avtar_scr = $phto_obj->getSource();
+			//$phto_obj = $upload_obj->uploadPhoto($log_user->id,'group');
+			$phto_obj = $upload_obj->ajax_avatar($_FILES['file']);
+			$avtar_pth = $phto_obj['temp_path'];
+			$avtar_scr = $phto_obj['temp_uri'];
 			$avtar_typ = 'upload';
+			$avatar_file_name = $_FILES['file']['name']; 
 		}
-		
+
 		$cover_data = null;
 		
-		if($_FILES['cover_file']['name'])
+		if(!empty($_FILES['cover_file']['name']))
 		{
+			$upload_obj = new EasySocialApiUploadHelper();
 			//ckecking upload cover
-			$cover_obj = $upload_obj->uploadCover($log_user->id,'group');
-			$cover_data = $phtomod->getMeta($cover_obj->id, SOCIAL_PHOTOS_META_PATH);
+			$cover_data = $upload_obj->ajax_cover($_FILES['cover_file'],'cover_file');
+			//$phtomod	= FD::model( 'Photos' );
+			//$cover_obj = $upload_obj->uploadCover($log_user->id,'group');
+			//$cover_data = $phtomod->getMeta($cover_obj->id, SOCIAL_PHOTOS_META_PATH);
 			//
 		}
-		
+	
 		//
 
 		//check title
@@ -268,13 +270,13 @@ class EasysocialApiResourceGroup extends ApiResource
 													'path' =>$avtar_pth,
 													'data' => '',
 													'type' => $avtar_typ,
-													'name' => ''
+													'name' => $avatar_file_name
 												);
 										break;
 						case 'COVER':	$grp_data['es-fields-'.$field['id']] = Array
 												(
 													'data' =>$cover_data,
-													'position' =>'' 
+													'position' =>'{"x":0.5,"y":0.5}' 
 												);
 										break;
 					}
@@ -357,6 +359,7 @@ class EasysocialApiResourceGroup extends ApiResource
 				{
 					$result->status = 1;
 					$result->id = $group->id;
+					$this->addTostream($user,$group);
 				}
 				else
 				{
@@ -367,6 +370,35 @@ class EasysocialApiResourceGroup extends ApiResource
 				
 				return $result;
 		}
+	}
+	
+	public function addTostream($my,$group,$registry)
+	{
+			$stream				= FD::stream();
+			$streamTemplate		= $stream->getTemplate();
+
+			// Set the actor
+			$streamTemplate->setActor( $my->id , SOCIAL_TYPE_USER );
+
+			// Set the context
+			$streamTemplate->setContext( $group->id , SOCIAL_TYPE_GROUPS );
+
+			$streamTemplate->setVerb( 'create' );
+			$streamTemplate->setSiteWide();
+			$streamTemplate->setAccess( 'core.view' );
+			$streamTemplate->setCluster($group->id, SOCIAL_TYPE_GROUP, $group->type );
+
+			// Set the params to cache the group data
+			$registry	= FD::registry();
+			$registry->set( 'group' , $group );
+
+			// Set the params to cache the group data
+			$streamTemplate->setParams( $registry );
+
+			// Add stream template.
+			$stream->add( $streamTemplate );
+			
+			return true;
 	}
 	
 }

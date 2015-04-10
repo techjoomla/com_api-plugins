@@ -10,7 +10,10 @@ require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/albums.php';
 
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/group.php';
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/message.php';
-require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/discussion.php';
+
+require_once JPATH_SITE.'/media/com_easysocial/apps/fields/user/avatar/helper.php';
+require_once JPATH_SITE.'/media/com_easysocial/apps/fields/user/cover/helper.php';
+//require_once JPATH_SITE.'/media/com_easysocial/apps/fields/user/cover/ajax.php';
 
 class EasySocialApiUploadHelper
 {
@@ -220,4 +223,89 @@ class EasySocialApiUploadHelper
 
 		return $photo; 
 	}
+	
+	//to create temp group avtar data
+	public function ajax_avatar($file)
+	{
+		// Get the ajax library
+		$ajax 		= FD::ajax();
+		
+		// Load up the image library so we can get the appropriate extension
+		$image 	= FD::image();
+		$image->load($file['tmp_name']);
+
+		// Copy this to temporary location first
+		$tmpPath	= SocialFieldsUserAvatarHelper::getStoragePath( 'file' );
+		$tmpName	= md5( $file[ 'name' ] . 'file' . FD::date()->toMySQL()) . $image->getExtension();
+
+		$source 	= $file['tmp_name'];
+		$target 	= $tmpPath . '/' . $tmpName;
+		$state 		= JFile::copy($source, $target);
+
+		$tmpUri		= SocialFieldsUserAvatarHelper::getStorageURI('file');
+		$uri 		= $tmpUri . '/' . $tmpName;
+
+		$ajax->resolve($file, $uri, $target);
+		
+		$data = array();
+		$data['temp_path'] = $target; 
+		$data['temp_uri'] = $uri; 
+		
+		return $data;
+	}
+	
+	// to create temp group cover data
+	public function ajax_cover($file,$uname='cover_file')
+	{
+		/*
+		$cls_obj = new SocialFieldsUserCover();
+		$cover_obj = $cls_obj->createCover($file,$uname);
+		
+		return $cover_obj;
+		*/
+
+		// Load our own image library
+		$image = FD::image();
+
+		// Generates a unique name for this image.
+		$name = $file['name'];
+
+		// Load up the file.
+		$image->load($file['tmp_name'], $name);
+
+		// Ensure that the image is valid.
+		if (!$image->isValid()) {
+			return false;
+			//need error code here
+		}
+
+		// Get the storage path
+		$storage = SocialFieldsUserCoverHelper::getStoragePath($uname);
+
+		// Create a new avatar object.
+		$photos = FD::get('Photos', $image);
+
+		// Create avatars
+		$sizes = $photos->create($storage);
+
+		// We want to format the output to get the full absolute url.
+		$base = basename($storage);
+
+		$result = array();
+
+		foreach ($sizes as $size => $value) {
+			$row = new stdClass();
+
+			$row->title	= $file['name'];
+			$row->file = $value;
+			$row->path = JPATH_ROOT . '/media/com_easysocial/tmp/' . $base . '/' . $value;
+			$row->uri = rtrim(JURI::root(), '/') . '/media/com_easysocial/tmp/' . $base . '/' . $value;
+
+			$result[$size] = $row;
+		}
+
+		return $result;
+
+	}
+	
 }

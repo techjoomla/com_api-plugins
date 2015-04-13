@@ -40,6 +40,7 @@ class EasysocialApiResourceSearch extends ApiResource
 	
 		$search = $app->input->get('search','','STRING');
 		$nxt_lim = $app->input->get('next_limit',0,'INT');
+		$mapp = new EasySocialApiMappingHelper();
 		
 		$res = new stdClass;
 		
@@ -72,14 +73,16 @@ class EasysocialApiResourceSearch extends ApiResource
 
 		$db->setQuery($query);
 		$tdata = $db->loadObjectList();
-		
+
 		$susers = array();
 		foreach($tdata as $ky=>$val)
 		{		
 			$susers[]   = FD::user($val->user_id);
 		}
 		
-		$list['user'] = $this->basefrndObj($susers);
+		$base_obj = $mapp->mapItem($susers,'user',$log_user->id);
+		$list['user'] = $this->createSearchObj( $base_obj );
+		//$list['user'] = $this->basefrndObj($susers);
 		
 		//for group
 		$query1 = $db->getQuery(true);
@@ -96,7 +99,7 @@ class EasysocialApiResourceSearch extends ApiResource
 		$db->setQuery($query1);
 		$gdata = $db->loadObjectList();
 		
-		$mapp = new EasySocialApiMappingHelper();
+		
 		$grp_model = FD::model('Groups');
 		$group = array();
 		foreach($gdata as $grp)
@@ -111,36 +114,24 @@ class EasysocialApiResourceSearch extends ApiResource
 	}
 	
 	//format friends object into required object
-	function basefrndObj($data=null)
+	function createSearchObj($data=null)
 	{
 		if($data==null)
 		return 0;
 		
-		$user = JFactory::getUser($this->plugin->get('user')->id);		
+		$user = JFactory::getUser($this->plugin->get('user')->id);
 		$frnd_mod = new EasySocialModelFriends();
 		$list = array();
 		foreach($data as $k=>$node)
 		{
 			if($node->id != $user->id)
 			{
-				$obj = new stdclass;
-				$obj->id = $node->id;
-				$obj->name = $node->name;
-				$obj->username = $node->username;
-				$obj->email = $node->email;
 				
-				//$obj->avatar = EasySocialModelAvatars::getPhoto($node->id);
-				foreach($node->avatars As $ky=>$avt)
-				{
-					$avt_key = 'avtar_'.$ky;
-					$obj->$avt_key = JURI::root().'media/com_easysocial/avatars/users/'.$node->id.'/'.$avt;
-				}
+				$node->mutual = $frnd_mod->getMutualFriendCount($user->id,$node->id);
+				$node->isFriend = $frnd_mod->isFriends($user->id,$node->id);
+				$node->approval_pending = $frnd_mod->isPendingFriends($user->id,$node->id);
 				
-				$obj->mutual = $frnd_mod->getMutualFriendCount($user->id,$node->id);
-				$obj->isFriend = $frnd_mod->isFriends($user->id,$node->id);
-				$obj->approval_pending = $frnd_mod->isPendingFriends($user->id,$node->id);
-				
-				$list[] = $obj;
+				$list[] = $node;
 			}
 		}
 		

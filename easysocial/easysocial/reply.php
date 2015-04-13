@@ -108,8 +108,19 @@ class EasysocialApiResourceReply extends ApiResource
 			
 			$model 			= FD::model( 'Discussions' );
 			$reply_rows	= $model->getReplies( $discussId,$options);
-
+			
+			if($discussId)
+			{
+				$disc_dt = new stdClass();
+				//create discussion details as per request
+				$discussion = FD::table( 'Discussion' );
+				$discussion->load( $discussId );
+				$data_node[] = $discussion; 
+				$data['discussion'] = $mapp->mapItem($data_node,'discussion',$this->plugin->get('user')->id);
+			}
+			
 			$data['data'] = $mapp->mapItem($reply_rows,'reply',$this->plugin->get('user')->id);
+			
 			//
 			return( $data );
 		}

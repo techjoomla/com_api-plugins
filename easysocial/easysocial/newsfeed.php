@@ -42,7 +42,7 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 
         $id = $this->plugin->get('user')->id;
         
-        $userId = $app->input->get('target_user', 0, 'INT');
+        $target_user = $app->input->get('target_user', 0, 'INT');
         
         $limit = $app->input->get('limit', 10, 'INT');
         $startlimit = $app->input->get('limitstart', 0, 'INT');
@@ -53,44 +53,48 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 		$mapp = new EasySocialApiMappingHelper();
 
         // If user id is not passed in, return logged in user
-        if (!$userId) {
-            $userId = $id;
+        if (!$target_user) {
+            $target_user = $id;
         }
 
 		// Get the stream library
 		$stream 	= FD::stream();
 
-		$options = array('userId' => $userId, 'startlimit' => $startlimit, 'limit' => $limit);
-		
+		$options = array('userId' => $target_user, 'startlimit' => $startlimit, 'limit' => $limit);
+
 		if($group_id)
 		{
 			$options = array('clusterId' 	=> $group_id, 'clusterType' => SOCIAL_TYPE_GROUP, 'startlimit' => $startlimit, 'limit' => $limit);
 		}
 		
-		switch($filter) {
-			case 'everyone':
-				$options['guest'] = true;
-				$options['ignoreUser'] = true;
-				break;
+		if(!$target_user)
+		{
+			switch($filter) {
+				case 'everyone':
+					$options['guest'] = true;
+					$options['ignoreUser'] = true;
+					break;
 
-			case 'following':
-			case 'follow':
-				$options['type'] = 'follow';
-				break;
-			case 'bookmarks':
-				$options['guest'] = true;
-				$options['type'] = 'bookmarks';
-			case 'me':
-				// nohting to set
-				break;
-			case 'hashtag':
-				$tag = '';
-				$options['tag'] = $tag;
-				break;
-			default:
-				$options['context'] = $filter;
-				break;
+				case 'following':
+				case 'follow':
+					$options['type'] = 'follow';
+					break;
+				case 'bookmarks':
+					$options['guest'] = true;
+					$options['type'] = 'bookmarks';
+				case 'me':
+					// nohting to set
+					break;
+				case 'hashtag':
+					$tag = '';
+					$options['tag'] = $tag;
+					break;
+				default:
+					$options['context'] = $filter;
+					break;
+			}
 		}
+
 		$stream->get($options);
 
 		$result 	= $stream->toArray();

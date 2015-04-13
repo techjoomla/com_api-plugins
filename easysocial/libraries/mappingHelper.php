@@ -275,7 +275,7 @@ class EasySocialApiMappingHelper
 
 				$item->id = $row->id;
 				$item->title = $row->title;
-				$item->description = null;
+				$item->description = $row->content;
 				//$item->attachment = $conv_model->getAttachments($row->id);
 				$item->created_by = $this->createUserObj($row->created_by);
 				$item->created_date = $this->dateCreate($row->created);
@@ -510,7 +510,7 @@ class EasySocialApiMappingHelper
 	//calculate laps time
 	function calLaps($date)
 	{
-		$start_date = new DateTime($date);
+		/*$start_date = new DateTime($date);
 		$since_start = $start_date->diff(new DateTime(date('Y-m-d h:i:s a')));
 	
 		$time_str = array();
@@ -533,7 +533,8 @@ class EasySocialApiMappingHelper
 			}
 		}
 		
-		return $str_time = implode(" ",array_filter($time_str));
+		return $str_time = implode(" ",array_filter($time_str));*/
+		return $lap_date = FD::date($date)->toLapsed();
 	}
 	
 	//create user object

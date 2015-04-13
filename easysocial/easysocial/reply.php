@@ -102,10 +102,12 @@ class EasysocialApiResourceReply extends ApiResource
 			
 			$options[ 'limit' ]	= $mainframe->input->get('limit',10,'INT');
 			
+			$options[ 'ordering' ] = 'created';
+			
 			$mapp = new EasySocialApiMappingHelper();
 			
 			$model 			= FD::model( 'Discussions' );
-			$reply_rows	= $model->getReplies( $discussId);
+			$reply_rows	= $model->getReplies( $discussId,$options);
 
 			$data['data'] = $mapp->mapItem($reply_rows,'reply',$this->plugin->get('user')->id);
 			//

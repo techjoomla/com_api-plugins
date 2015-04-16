@@ -119,7 +119,7 @@ class EasysocialApiResourceSearch extends ApiResource
 		if($data==null)
 		return 0;
 		
-		$user = JFactory::getUser($this->plugin->get('user')->id);
+		$user = JFactory::getUser($this->plugin->get('user')->id);		
 		$frnd_mod = new EasySocialModelFriends();
 		$list = array();
 		foreach($data as $k=>$node)

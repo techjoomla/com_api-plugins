@@ -105,7 +105,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 			
 			$model 			= FD::model( 'Discussions' );
 			$discussions_row	= $model->getDiscussions( $group->id , SOCIAL_TYPE_GROUP , $options );
-			
+						
 			$data['data'] = $mapp->mapItem($discussions_row,'discussion',$this->plugin->get('user')->id);
 			//
 			return( $data );

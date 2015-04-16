@@ -104,10 +104,15 @@ class EasysocialApiResourceComments extends ApiResource
 		$row->uid = $app->input->get('uid',0,'INT');
 		$row->element = $app->input->get('element','','STRING');//discussions.group.reply
 		$row->stream_id = $app->input->get('stream_id',0,'INT');
+		$row->group = $app->input->get('group','','STRING');
+		$row->verb = $app->input->get('verb','','STRING');
 		
 		$row->limitstart = $app->input->get('limitstart',0,'INT');
 		$row->limit = $app->input->get('limit',10,'INT');
 		
+		//$row->deleteable = 1;
+		//$row->parentid = 0;
+
 		$data = array();
 		$mapp = new EasySocialApiMappingHelper();
 		$data['data'] = $mapp->createCommentsObj( $row ,$row->limitstart,$row->limit );

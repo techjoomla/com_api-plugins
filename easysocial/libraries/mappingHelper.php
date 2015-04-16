@@ -99,7 +99,7 @@ class EasySocialApiMappingHelper
 		}
 	}
 	//function for stream main obj
-	public function streamSchema($rows=array(),$userid) 
+	public function streamSchema($rows,$userid) 
 	{
 		//$conv_model = FD::model('Conversations');
 		$result = array();
@@ -110,7 +110,7 @@ class EasySocialApiMappingHelper
 			if(isset($row->uid))
 			{
 				$item = new streamSimpleSchema();
-		
+
 				//new code
 				// Set the stream title
 				$item->id = $row->uid;
@@ -118,6 +118,9 @@ class EasySocialApiMappingHelper
 				//code changed as request not right way
 				$item->title = $row->title;
 				$item->title = str_replace('href="','href="'.JURI::root(),$item->title);
+				$item->type = $row->type;
+				$item->group = $row->cluster_type;
+				$item->element_id = $row->contextId;
 				//
 				$item->content = $row->content;
 				
@@ -168,8 +171,9 @@ class EasySocialApiMappingHelper
 				{
 					$item->comment_element = null;
 				}
-				$item->comments = (!empty($row->comments))?$this->createCommentsObj($row->comments):null;
-
+				
+				$item->comments = (!empty($row->comments->uid))?$this->createCommentsObj($row->comments):null;
+				
 				// These properties onwards are not activity stream specs
 				$item->icon = $row->fonticon;
 
@@ -181,6 +185,7 @@ class EasySocialApiMappingHelper
 				$item->mini = $row->display == SOCIAL_STREAM_DISPLAY_MINI ? true : false;
 
 				$result[]	= $item;
+				//$result[]	= $row;
 				//end new
 			
 			}
@@ -220,6 +225,7 @@ class EasySocialApiMappingHelper
 	//create comments object
 	public function createCommentsObj($row,$limitstart=0,$limit=10)
 	{
+
 		if (!is_bool($row->uid))
 		{
 			$options = array('uid' => $row->uid, 'element' => $row->element, 'stream_id' => $row->stream_id, 'start' => $limitstart, 'limit' => $limit);
@@ -229,11 +235,13 @@ class EasySocialApiMappingHelper
 			$result = $model->getComments($options);
 
 			$data = array();
+			
+			$data['base_obj'] = $row;
+			
 			$likesModel = FD::model('Likes');
 			
 			foreach($result As $cdt)
 			{
-
 				$item = new commentsSimpleSchema();
 				
 				$row->group = (isset($row->group))?$row->group:null;
@@ -241,6 +249,7 @@ class EasySocialApiMappingHelper
 				
 				$item->uid = $cdt->id;
 				$item->element = $cdt->element;
+				$item->element_id = $row->uid;
 				$item->stream_id = $cdt->stream_id;
 				$item->comment = $cdt->comment;
 				$item->type = $row->element;
@@ -252,15 +261,14 @@ class EasySocialApiMappingHelper
 				$item->likes   = new likesSimpleSchema();
 				$item->likes->uid     = $cdt->id;
 				$item->likes->element = 'comments';
-				$item->likes->group   = $row->group;
-				$item->likes->verb    = 'likes';
+				$item->likes->group   = 'user';
+				$item->likes->verb    = 'like';
 				$item->likes->stream_id = $cdt->stream_id;
-				$item->likes->total   = $likesModel->getLikesCount($item->likes->uid, 'comments.' . $row->group . '.like');
-				$item->likes->hasLiked = $likesModel->hasLiked($item->likes->uid,'comments.' . $row->group . '.like',$cdt->created_by,$cdt->stream_id);
-				$data[] = $item;
+				$item->likes->total   = $likesModel->getLikesCount($item->uid, 'comments.' . 'user' . '.like');
+				$item->likes->hasLiked = $likesModel->hasLiked($item->uid,'comments.' . 'user' . '.like',$cdt->created_by);
+				$data['data'][] = $item;
 			}
 			
-
 			return $data;
 		}
 		
@@ -277,6 +285,7 @@ class EasySocialApiMappingHelper
 		{
 			if(isset($row->id))
 			{
+//print_r($row->last_replied);die("in map");
 				$item = new discussionSimpleSchema();
 
 				$item->id = $row->id;
@@ -290,7 +299,7 @@ class EasySocialApiMappingHelper
 				$item->replies_count = $row->total_replies;
 				$item->last_replied = $this->calLaps($row->last_replied);
 				//$item->replies = 0;
-				$last_repl = array(0=>$row->lastreply);
+				$last_repl = (isset($row->lastreply))?array(0=>$row->lastreply):array();
 				
 				$item->replies = $this->discussionReply($last_repl);
 				
@@ -304,6 +313,8 @@ class EasySocialApiMappingHelper
 	//function for discussion reply obj
 	public function discussionReply($rows) 
 	{
+		if(empty($rows))
+		return 0;
 		//$conv_model = FD::model('Conversations');
 		$result = array();
 		
@@ -516,7 +527,8 @@ class EasySocialApiMappingHelper
 	//calculate laps time
 	function calLaps($date)
 	{
-		/*$start_date = new DateTime($date);
+		/*
+		$start_date = new DateTime($date);
 		$since_start = $start_date->diff(new DateTime(date('Y-m-d h:i:s a')));
 	
 		$time_str = array();
@@ -539,8 +551,15 @@ class EasySocialApiMappingHelper
 			}
 		}
 		
-		return $str_time = implode(" ",array_filter($time_str));*/
+		return $str_time = implode(" ",array_filter($time_str));
+		*/
+		if(strtotime($date) == 0)
+		{
+			return 0;
+		}
+		
 		return $lap_date = FD::date($date)->toLapsed();
+		
 	}
 	
 	//create user object

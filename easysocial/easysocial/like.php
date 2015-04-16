@@ -68,15 +68,14 @@ class EasysocialApiResourceLike extends ApiResource
 
 		// Determine if user has liked this item previously.
 		$hasLiked	= $model->hasLiked( $id , $key, $my->id );
+		$useStreamId = ($type == 'albums') ? '' : $streamid;
 
 		// If user had already liked this item, we need to unlike it.
 		if ($hasLiked) {
-			$useStreamId = ($type == 'albums') ? '' : $streamid;
 
 			$state 	= $model->unlike( $id , $key , $my->id, $useStreamId );
 
 		} else {
-			$useStreamId = ($type == 'albums') ? '' : $streamid;
 			$state 	= $model->like( $id , $key , $my->id, $useStreamId );
 
 			//now we need to update the associated stream id from the liked object

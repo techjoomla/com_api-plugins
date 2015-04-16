@@ -84,23 +84,26 @@ class EasysocialApiResourceFriend extends ApiResource
 		}
 
 	    //$frnd_list = $this->basefrndObj($ttl_list);
-	    $frnd_list = $mapp->mapItem( $ttl_list,'user',$log_user->id );
+	    $frnd_list = $mapp->mapItem( $ttl_list,'user',$userid);
 
 	    //get other data
 	    foreach($frnd_list as $ky=>$lval)
 	    {	
 			//get mutual friends of given user
-			if($userid != $user->id)
+			/*if($userid != $user->id)
 			{
-				$lval->mutual = $frnd_mod->getMutualFriendCount($userid,$lval->id);
-				$lval->isFriend = $frnd_mod->isFriends($userid,$lval->id);
+				$lval->mutual = $frnd_mod->getMutualFriendCount($user->id,$lval->id);
+				$lval->isFriend = $frnd_mod->isFriends($user->id,$lval->id);
 				//$lval->mutual_frnds = $frnd_mod->getMutualFriends($userid,$lval->id);
 			}
 			else
 			{
 				$lval->mutual = $frnd_mod->getMutualFriendCount($userid,$lval->id);
-				$lval->isFriend = true;
-			} 
+				$lval->isFriend = $frnd_mod->isFriends($user->id,$lval->id);
+			}*/
+
+			$lval->mutual = $frnd_mod->getMutualFriendCount($user->id,$lval->id);
+			$lval->isFriend = $frnd_mod->isFriends($user->id,$lval->id);
 		}
 
 		return( $frnd_list );

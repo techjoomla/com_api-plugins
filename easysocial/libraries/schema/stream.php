@@ -10,6 +10,9 @@ class streamSimpleSchema {
 
 	public $id;
 	public $title;
+	public $type;
+	public $group;
+	public $element_id;
 	public $preview;
 	public $raw_content_url;
 	public $content;
@@ -30,7 +33,7 @@ class likesSimpleSchema {
 	public $verb;
 	public $created_by;
 	public $total;
-	public $hasliked;
+	//public $hasliked;
 
 }
 
@@ -38,6 +41,7 @@ class commentsSimpleSchema {
 
 	public $uid;
 	public $element;
+	public $element_id;
 	public $comment;
 	public $verb;
 	public $group;

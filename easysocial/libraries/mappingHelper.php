@@ -86,6 +86,12 @@ class EasySocialApiMappingHelper
 				$fobj->field_name = JText::_($row->title);
 				$fobj->step = $row->step_id;
 				$fobj->field_value = $fmod_obj->getCustomFieldsValue($row->id,$userid , 'user');
+				
+				if($fobj->field_name == 'Gender')
+				{
+					$fobj->field_value = ( $fobj->field_value == 1 )?'male':'female';
+				}
+				
 				$data[] = $fobj; 
 			}
 			
@@ -233,7 +239,7 @@ class EasySocialApiMappingHelper
 				$row->group = (isset($row->group))?$row->group:null;
 				$row->verb = (isset($row->group))?$row->verb:null;
 				
-				$item->uid = $cdt->uid;
+				$item->uid = $cdt->id;
 				$item->element = $cdt->element;
 				$item->stream_id = $cdt->stream_id;
 				$item->comment = $cdt->comment;
@@ -244,7 +250,7 @@ class EasySocialApiMappingHelper
 				$item->created = $cdt->created;
 
 				$item->likes   = new likesSimpleSchema();
-				$item->likes->uid     = $cdt->uid;
+				$item->likes->uid     = $cdt->id;
 				$item->likes->element = 'comments';
 				$item->likes->group   = $row->group;
 				$item->likes->verb    = 'likes';

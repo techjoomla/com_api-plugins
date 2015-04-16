@@ -94,7 +94,7 @@ class EasysocialApiResourceProfile extends ApiResource
 				$fields = null;
 				if(count($step->fields))
 				{
-					$fields = $mapp->mapItem($step->fields,'fields',$log_user);
+					$fields = $mapp->mapItem($step->fields,'fields',$userid);
 					//die("in fields loop");
 					if(empty($field_arr))
 					{

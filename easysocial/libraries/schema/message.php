@@ -6,6 +6,18 @@
  * @link http://www.techjoomla.com
 */
 
+class converastionSimpleSchema {
+
+	public $conversion_id;
+	public $created_date;
+	public $lastreplied_date;
+	public $isread;
+	public $messages;
+	public $lapsed;
+	public $participant;
+
+}
+
 class MessageSimpleSchema {
 
 	public $id;

@@ -49,6 +49,9 @@ class EasySocialApiMappingHelper
 			case 'message':
 						return $this->messageSchema($rows);
 						break;
+			case 'conversion':
+						return $this->conversionSchema($rows,$userid);
+						break;
 			case 'reply':
 						return $this->replySchema($rows);
 						break;
@@ -285,7 +288,7 @@ class EasySocialApiMappingHelper
 		{
 			if(isset($row->id))
 			{
-//print_r($row->last_replied);die("in map");
+
 				$item = new discussionSimpleSchema();
 
 				$item->id = $row->id;
@@ -470,6 +473,41 @@ class EasySocialApiMappingHelper
 		}
 		
 		return $data;
+	}
+	
+	//function for create message schema
+	public function conversionSchema($rows,$log_user) 
+	{
+		$conv_model = FD::model('Conversations');
+		$result = array();
+		
+		foreach($rows as $ky=>$row)
+		{
+			if(isset($row->id))
+			{
+				$item = new converastionSimpleSchema();
+				$participant_usrs = $conv_model->getParticipants( $row->id );
+				$con_usrs = array();
+
+				foreach($participant_usrs as $ky=>$usrs)
+				{
+					if($usrs->id && ($log_user != $usrs->id) )
+					$con_usrs[] =  $this->createUserObj($usrs->id);
+				}
+					
+				$item->conversion_id = $row->id;
+				$item->created_date = $row->created;
+				$item->lastreplied_date = $row->lastreplied;
+				$item->isread = $row->isread;
+				$item->messages = $row->message;
+				$item->lapsed = $this->calLaps($row->created);
+				$item->participant = $con_usrs;
+
+				$result[] = $item;
+			}
+		}
+
+		return $result;
 	}
 	
 	//function for create message schema

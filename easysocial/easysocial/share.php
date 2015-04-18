@@ -39,7 +39,7 @@ class EasysocialApiResourceShare extends ApiResource
 		
 		$content = $app->input->get('content','','RAW');
 
-		//$targetId = $app->input->get('target_id','All','raw');
+		$targetId = $app->input->get('target_id','All','raw');
 		
 		$cluster = $app->input->get('group_id',null,'INT');
 		

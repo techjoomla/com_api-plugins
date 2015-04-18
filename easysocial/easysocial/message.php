@@ -233,7 +233,7 @@ class EasysocialApiResourceMessage extends ApiResource
 	
 			if(count($conversion)>0)
 			{
-				foreach($conversion as $key=>$node)
+				/*foreach($conversion as $key=>$node)
 				{
 
 					$cobj = new stdClass;
@@ -244,13 +244,13 @@ class EasysocialApiResourceMessage extends ApiResource
 					$cobj->messages = $node->message;
 					$cobj->participant = $this->getParticipantUsers( $node->id );
 					
-					/*$raw_msg = $conv_model->getMessages($node->id , $log_user->id );
+					$raw_msg = $conv_model->getMessages($node->id , $log_user->id );
 					
-					$cobj->messages = $mapp->mapItem($raw_msg,'message',$log_user->id);*/
+					$cobj->messages = $mapp->mapItem($raw_msg,'message',$log_user->id);
 					
 					$data['data'][] = $cobj;
-				}
-				//$data['data'] = $mapp->mapItem($data['data'],'message',$log_user->id);
+				}*/
+				$data['data'] = $mapp->mapItem($conversion,'conversion',$log_user->id);
 			}
 			
 			//manual pagination code

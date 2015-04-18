@@ -43,7 +43,9 @@ class EasysocialApiResourceGroup_category extends ApiResource
 		$log_user = $this->plugin->get('user')->id;
 		
 		$other_user_id = $app->input->get('user_id',0,'INT'); 
-
+		
+		$userid = ($other_user_id)?$other_user_id:$log_user;
+		
 		$data = array();
 		
 		$mapp = new EasySocialApiMappingHelper();

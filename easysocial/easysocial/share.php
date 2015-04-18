@@ -39,19 +39,34 @@ class EasysocialApiResourceShare extends ApiResource
 		
 		$content = $app->input->get('content','','RAW');
 
-		$targetId = $app->input->get('target_id','All','raw');
+		//$targetId = $app->input->get('target_user','All','raw');
+		$targetId = $app->input->get('target_user',0,'INT');
 		
 		$cluster = $app->input->get('group_id',null,'INT');
 		
 		$log_usr = $this->plugin->get('user')->id;
 		//now take login user stream for target
-		$targetId = $log_usr;
+		$targetId = ( $targetId != $log_usr )?$targetId:'';
 		
 		$valid = 1;
 		$result = new stdClass;
 		
 		$story = FD::story(SOCIAL_TYPE_USER);
+		
+		// Check whether the user can really post something on the target
+		if ($targetId) {
+			$tuser = FD::user($targetId);
+			$allowed = $tuser->getPrivacy()->validate('profiles.post.status', $targetId, SOCIAL_TYPE_USER);
 
+			if (!$allowed) {
+
+				$result->id = 0;
+				$result->status  = 0;
+				$result->message = 'User not allowed any post in share';
+				$valid = 0;
+			}
+		}
+		
 		if(empty($type))
 		{
 			$result->id = 0;
@@ -88,6 +103,7 @@ class EasysocialApiResourceShare extends ApiResource
 			// Options that should be sent to the stream lib
 			$args = array(
 							'content' => $content,
+							'actorId'		=> $log_usr,
 							'targetId'		=> $targetId,
 							'location'		=> null,
 							'with'			=> null,
@@ -104,7 +120,7 @@ class EasysocialApiResourceShare extends ApiResource
 			$args['actorId'] = $log_usr;
 			$args['contextIds'] = 0;
 			$args['contextType']	= $type;
-			
+
 			if($type == 'photos')
 			{
 				$photo_obj = $this->uploadPhoto($log_usr,$type);

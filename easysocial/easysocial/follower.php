@@ -12,6 +12,7 @@ jimport('joomla.plugin.plugin');
 jimport('joomla.html.html');
 
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/mappingHelper.php';
+require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/model.php';
 
 class EasysocialApiResourceFollower extends ApiResource
 {
@@ -70,11 +71,17 @@ class EasysocialApiResourceFollower extends ApiResource
 		
 		$options = array();
 		$options['limitstart'] = $app->input->get('limitstart',0,'INT');
-		$options['limit'] = $app->input->get('limit',0,'INT');
+		$options['limit'] = $app->input->get('limit',10,'INT');
 
 		// Load friends model.
 		$foll_model 	= FD::model( 'Followers' );
 		$frnd_mod 	= FD::model( 'Friends' );
+		
+		$main_mod = new EasySocialModel();
+
+		//set limitstart
+		$main_mod->setUserState( 'limitstart' , $options['limitstart'] );
+		$foll_model->setUserState( 'limitstart' , $options['limitstart'] );
 		
 		if(!$target_user)
 		$target_user = $user;

@@ -408,6 +408,12 @@ class EasySocialApiMappingHelper
 				{
 					$avt_key = 'avatar_'.$ky;
 					$item->$avt_key = JURI::root().'media/com_easysocial/avatars/group/'.$row->id.'/'.$avt;
+					
+					//set default image
+					if(!file_exists($item->$avt_key))
+					{
+						$item->$avt_key = JURI::root().'media/com_easysocial/avatars/group/'.$ky.'.png';
+					}
 				}
 				
 				//$obj->members = $row->members;
@@ -633,6 +639,15 @@ class EasySocialApiMappingHelper
 		$image->image_small = $user->getAvatar('small');
 		$image->image_medium = $user->getAvatar();
 		$image->image_large = $user->getAvatar('large');
+		$image->image_square = $user->getAvatar('square');
+		
+		//set default image
+		if(!file_exists($image->image_small))
+		{
+			$item->image_small = JURI::root().'media/com_easysocial/avatars/user/small.png';
+			$item->image_medium = JURI::root().'media/com_easysocial/avatars/user/medium.png';
+			$item->image_large = JURI::root().'media/com_easysocial/avatars/user/large.png';
+		}
 		
 		$image->cover_image = $user->getCover();
 		

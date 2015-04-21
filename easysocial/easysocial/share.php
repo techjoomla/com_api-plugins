@@ -82,7 +82,7 @@ class EasysocialApiResourceShare extends ApiResource
 			$clusterType = ($cluster) ? 'group' : null;
 			$isCluster = $cluster ? true : false;
 
-			if ($isCluster) {
+			/*if ($isCluster) {
 				
 				$group = FD::group($cluster);
 				$permissions = $group->getParams()->get('stream_permissions', null);
@@ -96,7 +96,7 @@ class EasysocialApiResourceShare extends ApiResource
 					$this->plugin->setResponse($result);
 					return true;
 				}
-			}
+			}*/
 
 			$privacyRule = ( $type == 'photos' ) ? 'photos.view' : 'story.view';
 

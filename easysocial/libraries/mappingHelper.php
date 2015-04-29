@@ -2,6 +2,7 @@
 
 defined('_JEXEC') or die('Restricted access');
 jimport( 'libraries.schema.group' );
+jimport( 'joomla.filesystem.file' );
 
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/foundry.php';
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/groups.php';
@@ -109,7 +110,6 @@ class EasySocialApiMappingHelper
 
 		foreach($rows as $ky=>$row)
 		{
-
 			if(isset($row->uid))
 			{
 				$item = new streamSimpleSchema();
@@ -403,14 +403,16 @@ class EasySocialApiMappingHelper
 				$item->creator_name = JFactory::getUser($row->creator_uid)->username;
 				//$item->type = ($row->type == 1 )?'Public':'Public';
 				$item->type = $row->type;
+				$item->params = $row->params;
 			
 				foreach($row->avatars As $ky=>$avt)
 				{
 					$avt_key = 'avatar_'.$ky;
 					$item->$avt_key = JURI::root().'media/com_easysocial/avatars/group/'.$row->id.'/'.$avt;
-					
+										
+					$fst = JFile::exists('media/com_easysocial/avatars/group/'.$row->id.'/'.$avt);
 					//set default image
-					if(!file_exists($item->$avt_key))
+					if(!$fst)
 					{
 						$item->$avt_key = JURI::root().'media/com_easysocial/avatars/group/'.$ky.'.png';
 					}

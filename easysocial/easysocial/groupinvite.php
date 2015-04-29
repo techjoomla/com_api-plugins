@@ -142,5 +142,5 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 		}
 		return( $result );
 	}
-		
+	
 }

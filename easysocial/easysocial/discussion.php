@@ -136,11 +136,12 @@ class EasysocialApiResourceDiscussion extends ApiResource
 
 
 		// Check if the user is allowed to create a discussion
-		/*if( !$group->isMember() )
+		if( !$group->isMember() )
 		{
-			//error code add here
-			return false;
-		}*/
+			$wres->status = 0;
+			$wres->message[] = 'Not allowed to create group discussion';
+			return $wres;
+		}
 
 		// Assign discussion properties
 		$discussion->uid 		= $group->id;

@@ -26,5 +26,6 @@ public $ismember;
 public $approval_pending;
 public $cover;
 public $more_info;
+public $params;
 
 }

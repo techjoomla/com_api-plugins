@@ -67,7 +67,7 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 			$options = array('clusterId' 	=> $group_id, 'clusterType' => SOCIAL_TYPE_GROUP, 'startlimit' => $startlimit, 'limit' => $limit);
 		}
 		
-		if(!$target_user)
+		if($target_user == $id )
 		{
 			switch($filter) {
 				case 'everyone':

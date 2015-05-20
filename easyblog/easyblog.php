@@ -34,6 +34,7 @@ class plgAPIEasyblog extends ApiPlugin
 		$this->setResourceAccess('category', 'public', 'get');
 		$this->setResourceAccess('blog', 'public', 'get');
 		$this->setResourceAccess('comments', 'public', 'get');
+		$this->setResourceAccess('easyblog_users', 'public', 'get');
 		
 		$config 	= EasyBlogHelper::getConfig();
 		if ($config->get('main_allowguestcomment')) {

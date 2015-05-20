@@ -29,6 +29,7 @@ class EasyblogApiResourceLatest extends ApiResource
 		//$id = $input->get('id', null, 'INT');
 		$search = $input->get('search', null, 'STRING');
 		$tags = $input->get('tags',0,'INT');
+		$max_val = $input->get('limitstart',20,'INT');
 		$posts = array();
 		// If we have an id try to fetch the user
 		$blog 		= EasyBlogHelper::getTable( 'Blog' );
@@ -50,7 +51,7 @@ class EasyblogApiResourceLatest extends ApiResource
 		else
 		{
 			$sorting	= $this->plugin->params->get( 'sorting' , 'latest' );
-			$rows 		= $model->getBlogsBy( $sorting , '' , $sorting , 0, EBLOG_FILTER_PUBLISHED, $search );
+			$rows 		= $model->getBlogsBy( $sorting , '' , $sorting , $max_val, EBLOG_FILTER_PUBLISHED, $search );
 		}
 		foreach ($rows as $k => $v) 
 			{

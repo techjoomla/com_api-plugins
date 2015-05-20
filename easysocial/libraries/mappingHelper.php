@@ -103,6 +103,8 @@ class EasySocialApiMappingHelper
 					$fobj->field_value = ( $fobj->field_value == 1 )?'male':'female';
 				}
 				
+				$fobj->params = json_decode($row->params);
+				
 				$data[] = $fobj; 
 			}
 			

@@ -30,6 +30,7 @@ class fildsSimpleSchema {
 	public $field_name;
 	public $field_value;
 	public $step;
+	public $params;
 
 }
 

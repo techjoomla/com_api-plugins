@@ -89,7 +89,7 @@ class EasysocialApiResourceProfile extends ApiResource
 			foreach ($steps as $step)
 			{
 
-				$step->fields = $fieldsModel->getCustomFields(array('step_id' => $step->id, 'data' => true, 'dataId' => $userid, 'dataType' => SOCIAL_TYPE_USER, 'visible' => 'edit'));
+				$step->fields = $fieldsModel->getCustomFields(array('step_id' => $step->id, 'data' => true, 'dataId' => $userid, 'dataType' => SOCIAL_TYPE_USER, 'visible' => 'display'));
 				$fields = null;
 				if(count($step->fields))
 				{

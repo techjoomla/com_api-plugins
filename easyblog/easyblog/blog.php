@@ -68,6 +68,10 @@ class EasyblogApiResourceBlog extends ApiResource
 		// Tags
 		$modelPT	= EasyBlogHelper::getModel( 'PostTag' );
 		$item->tags = $modelPT->getBlogTags($blog->id);
+		
+		//created by vishal - for show extra images
+		$item->text = preg_replace('/"images/i', '"'.JURI::root().'images', $item->text );
+		
 		$this->plugin->setResponse( $item );
 	}
 	

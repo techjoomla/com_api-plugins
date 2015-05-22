@@ -653,12 +653,12 @@ class EasySocialApiMappingHelper
 		$image->image_square = $user->getAvatar('square');
 		
 		//set default image
-		if(!file_exists($image->image_small))
+		/*if(!file_exists($image->image_small))
 		{
 			$image->image_small = JURI::root().'media/com_easysocial/avatars/user/small.png';
 			$image->image_medium = JURI::root().'media/com_easysocial/avatars/user/medium.png';
 			$image->image_large = JURI::root().'media/com_easysocial/avatars/user/large.png';
-		}
+		}*/
 		
 		$image->cover_image = $user->getCover();
 		

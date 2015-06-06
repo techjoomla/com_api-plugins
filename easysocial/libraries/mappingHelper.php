@@ -25,6 +25,9 @@ require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/stream.php';
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/user.php';
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/profile.php';
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/category.php';
+require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/albums.php';
+require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/photos.php';
+
 
 class EasySocialApiMappingHelper
 {
@@ -69,12 +72,81 @@ class EasySocialApiMappingHelper
 			case 'stream':
 						return $this->streamSchema($rows,$userid);
 						break;
+			case 'albums':
+						return $this->albumsSchema($rows);
+						break;			
+			case 'photos':
+						return $this->photosSchema($rows);
+						break;			
 		}
 		
 		return $item;
 	}
 	
 	//map profile fields 
+	
+	public function photosSchema($rows,$userid)
+	{
+		$lang = JFactory::getLanguage();
+		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, 'en-GB', true);
+		$result = array();		
+		foreach($rows as $ky=>$row)
+		{	
+			if(isset($row->id))
+			{					
+				$item = new PhotosSimpleSchema();				
+				$item->id = $row->id;
+				$item->album_id = $row->album_id;
+				$item->cover_id = $row->cover_id;
+				$item->type = $row->type;
+				$item->uid = $row->uid;
+				$item->user_id = $row->user_id;
+				$item->title = JText::_($row->title);
+				$item->caption=JText::_($row->caption);
+				$item->created=$row->created;
+				$item->state=$row->state;
+				$item->assigned_date=$row->assigned_date;
+				$item->image_large=$row->image_large;
+				$item->image_square=$row->image_square;				
+				$item->image_thumbnail=$row->image_thumbnail;				
+				$item->image_featured=$row->image_featured;				
+				$result[] = $item;
+			}
+		}
+		return $result;
+	}
+	
+	public function albumsSchema($rows,$userid)	
+	{
+		$lang = JFactory::getLanguage();
+		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, 'en-GB', true);
+		$result = array();		
+		foreach($rows as $ky=>$row)
+		{	
+			if(isset($row->id))
+			{				
+				
+				$item = new GetalbumsSimpleSchema();
+				
+				$item->id = $row->id;
+				$item->cover_id = $row->cover_id;
+				$item->type = $row->type;
+				$item->uid = $row->uid;
+				$item->title = JText::_($row->title);
+				$item->caption=JText::_($row->caption);
+				$item->created=$row->created;
+				$item->assigned_date=$row->assigned_date;
+				$item->cover_featured=$row->cover_featured;
+				$item->cover_large=$row->cover_large;				
+				$item->cover_square=$row->cover_square;				
+				$item->cover_thumbnail=$row->cover_thumbnail;				
+				$result[] = $item;
+			}
+		}
+		return $result;		
+	}
+	
+	
 	public function fieldsSchema($rows,$userid)
 	{
 		
@@ -96,7 +168,7 @@ class EasySocialApiMappingHelper
 				$fobj->title = JText::_($row->title);
 				$fobj->field_name = JText::_($row->title);
 				$fobj->step = $row->step_id;
-				$fobj->field_value = $fmod_obj->getCustomFieldsValue($row->id,$userid , 'user');
+				$fobj->field_value = $fmod_obj->getCustomFieldsValue($row->id,$userid , SOCIAL_FIELDS_GROUP_USER);
 				
 				if($fobj->field_name == 'Gender')
 				{
@@ -126,6 +198,9 @@ class EasySocialApiMappingHelper
 				//new code
 				// Set the stream title
 				$item->id = $row->uid;
+				
+				//$url = FRoute::stream( array('id' => $row->uid , 'layout' => 'item', 'sef' => false ));
+	//print_r($url);die("in api");
 				//$item->title = strip_tags($row->title);
 				//code changed as request not right way
 				$item->title = $row->title;

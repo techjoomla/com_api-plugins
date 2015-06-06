@@ -26,7 +26,7 @@ class EasysocialApiResourceGroup_members extends ApiResource
 
 	public function post()
 	{
-	   $this->plugin->setResponse($this->getGroup_Members());
+	   $this->plugin->setResponse($this->joineGroup());
 	}
 	
 	public function getGroup_Members()
@@ -58,6 +58,38 @@ class EasysocialApiResourceGroup_members extends ApiResource
 		//manual pagination code
 		$user_list = array_slice( $user_list, $limitstart, $limit );
 		return $user_list;
+	}
+	//join group by user
+	public function joineGroup()
+	{
+		//init variable
+		$app = JFactory::getApplication();
+		$log_user = $this->plugin->get('user')->id;
+		$group_id = $app->input->get('group_id',0,'INT');
+		$obj = new stdClass();
+		
+		$group	= FD::group( $group_id );
+		
+		// Get the user's access as we want to limit the number of groups they can join
+		$user = FD::user($log_user);
+		$access = $user->getAccess();
+		$total = $user->getTotalGroups();
+
+		/*if ($access->exceeded('groups.join', $total)) {
+			$obj->success = 0;
+			$obj->message = 'group joining limit exceeded';
+			return $obj;
+		}*/
+		
+		// Create a member record for the group
+		$members = $group->createMember($log_user);
+		
+		$obj->success = 1;
+		$obj->state = $members->state;
+		$obj->message = 'joining application sent';
+		
+		return $obj;
+		
 	}
 	
 }

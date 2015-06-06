@@ -44,6 +44,8 @@ class EasysocialApiResourceShare extends ApiResource
 		
 		$cluster = $app->input->get('group_id',null,'INT');
 		
+		$friends_tags = $app->input->get('friends_tags',null,'ARRAY');
+		
 		$log_usr = $this->plugin->get('user')->id;
 		//now take login user stream for target
 		$targetId = ( $targetId != $log_usr )?$targetId:'';
@@ -76,7 +78,6 @@ class EasysocialApiResourceShare extends ApiResource
 		}
 		else if($valid)
 		{
-		
 			// Determines if the current posting is for a cluster
 			$cluster = isset($cluster) ? $cluster : 0;
 			$clusterType = ($cluster) ? 'group' : null;
@@ -97,8 +98,67 @@ class EasysocialApiResourceShare extends ApiResource
 					return true;
 				}
 			}*/
+			
+			//validate friends 
+			
+		$friends = array();
 
-			$privacyRule = ( $type == 'photos' ) ? 'photos.view' : 'story.view';
+		if (!empty($friends_tags) && $type == 'story' ) {
+
+			// Get the friends model
+			$model = FD::model('Friends');
+
+			// Check if the user is really a friend of him / her.
+			foreach ($friends_tags as $id) {
+
+				if (!$model->isFriends($log_usr, $id)) {
+					continue;
+				}
+
+				$friends[]	= $id;
+			}
+		}
+		else
+		{
+			$friends = null;
+		}
+
+		$privacyRule = ( $type == 'photos' ) ? 'photos.view' : 'story.view';
+			
+			//for hashtag mentions
+			$mentions = null;
+
+			if($type == 'hashtag')
+			{
+				$type = 'story';
+				$start = 0;
+				$posn = array();
+				
+				while($pos = strpos(($content),'#',$start))
+				{
+					//echo 'Found # at position '.$pos."\n";
+					$posn[] = $pos;
+					$start = $pos+1;
+				}
+				//$pos = strpos(($content),'#',$start);
+				
+				$cont_arr = explode(' ',$content);
+				$indx= 0;
+				foreach($cont_arr as $val)
+				{
+					if(preg_match('/[\'^#,|=_+¬-]/', $val))
+					{
+						$mention = new stdClass();
+						$mention->start = $posn[$indx++];
+						$mention->length = strlen($val) - 1;
+						$mention->value = str_replace('#','',$val);
+						$mention->type = 'hashtag';
+						
+						$mentions[] = $mention; 
+					}
+				}
+
+			}
 
 			// Options that should be sent to the stream lib
 			$args = array(
@@ -106,8 +166,8 @@ class EasysocialApiResourceShare extends ApiResource
 							'actorId'		=> $log_usr,
 							'targetId'		=> $targetId,
 							'location'		=> null,
-							'with'			=> null,
-							'mentions'		=> null,
+							'with'			=> $friends,
+							'mentions'		=> $mentions,
 							'cluster'		=> $cluster,
 							'clusterType'	=> $clusterType,
 							'mood'			=> null,

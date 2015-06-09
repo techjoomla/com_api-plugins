@@ -32,7 +32,7 @@ class EasysocialApiResourceProfile extends ApiResource
 	public function post()
 	{
 		//print_r($FILES);die("in post grp api");
-	   $this->plugin->setResponse("use get method");
+	   $this->plugin->setResponse("please use get method");
 	}
 	
 	//function use for get friends data
@@ -79,18 +79,20 @@ class EasysocialApiResourceProfile extends ApiResource
 			//code for custom fields
 			// Get the steps model
 			$stepsModel = FD::model('Steps');
-			$steps = $stepsModel->getSteps($profile->id, SOCIAL_TYPE_PROFILES, SOCIAL_PROFILES_VIEW_EDIT);
+			$steps = $stepsModel->getSteps($profile->id, SOCIAL_TYPE_PROFILES, SOCIAL_PROFILES_VIEW_DISPLAY);
 
 			// Get custom fields model.
 			$fieldsModel = FD::model('Fields');
 			// Get custom fields library.
 			$fields = FD::fields();
 			$field_arr = array();
+
 			foreach ($steps as $step)
 			{
 
-				$step->fields = $fieldsModel->getCustomFields(array('step_id' => $step->id, 'data' => true, 'dataId' => $userid, 'dataType' => SOCIAL_TYPE_USER, 'visible' => 'display'));
+				$step->fields = $fieldsModel->getCustomFields(array('step_id' => $step->id, 'data' => true, 'dataId' => $userid, 'dataType' => SOCIAL_TYPE_USER, 'visible' => SOCIAL_PROFILES_VIEW_DISPLAY));
 				$fields = null;
+
 				if(count($step->fields))
 				{
 					$fields = $mapp->mapItem($step->fields,'fields',$other_user_id);
@@ -111,6 +113,17 @@ class EasysocialApiResourceProfile extends ApiResource
 			
 			}
 			
+			//for kieth requierment code
+			
+			foreach($field_arr as $ky=>$fld)
+			{
+				if($fld->field_name == 'Password'|| $fld->field_name == 'Birthdate' || $fld->field_name == 'Timezone' || $fld->field_name == 'Home Church')
+				{
+					unset($field_arr[$ky]);
+				}
+				
+			}
+
 			$user_obj->more_info = $field_arr; 
 
 		}

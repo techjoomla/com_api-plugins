@@ -48,6 +48,8 @@ class EasysocialApiResourceNewsfeed extends ApiResource
         $startlimit = $app->input->get('limitstart', 0, 'INT');
         
         $filter = $app->input->get('filter', 'everyone', 'STRING');
+        //get tag
+        $tag = $app->input->get('tag', '', 'STRING');
 		
 		//map object
 		$mapp = new EasySocialApiMappingHelper();
@@ -86,7 +88,7 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 					// nohting to set
 					break;
 				case 'hashtag':
-					$tag = '';
+					//$tag = '';
 					$options['tag'] = $tag;
 					break;
 				default:
@@ -94,6 +96,9 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 					break;
 			}
 		}
+
+//print_r($options);
+//die("in api");
 
 		$stream->get($options);
 

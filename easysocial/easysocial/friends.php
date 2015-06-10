@@ -29,7 +29,7 @@ class EasysocialApiResourceFriends extends ApiResource
 	{
 		$avt_model = FD::model( 'Avatars' );
 		$default = $avt_model->getDefaultAvatars(0,$type = SOCIAL_TYPE_PROFILES); 
-print_r($default);die("in api");
+		print_r($default);die("in api");
 		//init variable
 		$app = JFactory::getApplication();
 		$user = JFactory::getUser($this->plugin->get('user')->id);

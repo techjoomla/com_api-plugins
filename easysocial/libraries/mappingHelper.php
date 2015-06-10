@@ -27,6 +27,7 @@ require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/profile.php';
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/category.php';
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/albums.php';
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/photos.php';
+require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/createalbum.php';
 
 
 class EasySocialApiMappingHelper
@@ -77,13 +78,11 @@ class EasySocialApiMappingHelper
 						break;			
 			case 'photos':
 						return $this->photosSchema($rows);
-						break;			
+						break;
 		}
 		
 		return $item;
 	}
-	
-	//map profile fields 
 	
 	public function photosSchema($rows,$userid)
 	{
@@ -124,10 +123,8 @@ class EasySocialApiMappingHelper
 		foreach($rows as $ky=>$row)
 		{	
 			if(isset($row->id))
-			{				
-				
-				$item = new GetalbumsSimpleSchema();
-				
+			{					
+				$item = new GetalbumsSimpleSchema();				
 				$item->id = $row->id;
 				$item->cover_id = $row->cover_id;
 				$item->type = $row->type;
@@ -145,6 +142,8 @@ class EasySocialApiMappingHelper
 		}
 		return $result;		
 	}
+	
+	
 	
 	
 	public function fieldsSchema($rows,$userid)
@@ -173,6 +172,12 @@ class EasySocialApiMappingHelper
 				if($fobj->field_name == 'Gender')
 				{
 					$fobj->field_value = ( $fobj->field_value == 1 )?'male':'female';
+				}
+				//to manage address as per site
+				if( $fobj->unique_key == 'ADDRESS' )
+				{
+					//$fobj->field_value = $row->data['address'];
+					$fobj->field_value = $row->data['state'].','.$row->data['country'];
 				}
 				
 				$fobj->params = json_decode($row->params);
@@ -755,5 +760,4 @@ class EasySocialApiMappingHelper
 		
 		return $text;
 	}
-		
 }

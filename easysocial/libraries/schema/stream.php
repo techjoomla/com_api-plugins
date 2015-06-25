@@ -23,6 +23,8 @@ class streamSimpleSchema {
 	public $likes;
 	public $comment_element;
 	public $comments;
+	public $share_url;
+	public $stream_url;
 	
 }
 

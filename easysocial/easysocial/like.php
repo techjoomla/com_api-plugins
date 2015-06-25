@@ -33,8 +33,7 @@ class EasysocialApiResourceLike extends ApiResource
 	{
 		//print_r($FILES);die("in post grp api");
 	   $this->plugin->setResponse($this->toggleLike());
-	}
-	
+	}	
 	public function delete()
 	{
 		$this->plugin->setResponse("not supported to this api");

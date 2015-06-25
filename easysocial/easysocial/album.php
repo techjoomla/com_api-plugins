@@ -24,7 +24,7 @@ class EasysocialApiResourceAlbum extends ApiResource
 {
 	public function get()
 	{
-	$this->plugin->setResponse($this->get_album());			
+	$this->plugin->setResponse($this->get_album_photos());			
 	}	
 	public function post()
 	{
@@ -32,21 +32,71 @@ class EasysocialApiResourceAlbum extends ApiResource
 	}
 	public function delete()
 	{
-	$this->plugin->setResponse($this->delete_album());
+	$this->plugin->setResponse($this->delete_check());
 	}
+	//common function to delete photo or album.
+	//switch case for photo delete or album delete.
+	public function delete_check()
+	{
+		$app = JFactory::getApplication();
+		$flag = $app->input->get('flag',NULL,'STRING');
+		switch($flag)
+		{        
+		case 'deletephoto':	$result1 = $this->delete_photo();
+							return $result1;	
+		break;							
+		case 'deletealbum':	$result = $this->delete_album();
+							return $result;
+		break;
+		}
+	}	
+	//this function is use to delete photo from album
+	public function delete_photo()
+	{
+		$user = JFactory::getUser($this->plugin->get('user')->id);
+		$app = JFactory::getApplication();
+		$id = $app->input->get('id',0,'INT');		       
+        // Load the photo table
+        $photo  = FD::table( 'Photo' );
+        $photo->load( $id );		
+		$lib = FD::photo( $photo->uid , $photo->type , $photo );		
+        if( !$id && !$photo->id )
+        {
+            return false;
+        }
+        // Load the photo library
+        // Test if the user is allowed to delete the photo
+        if( !$lib->deleteable() )
+        {
+            return false;
+        }
+        // Try to delete the photo
+        $state      = $photo->delete();
+        if( !$state )
+        {            
+            return false;
+        }
+        else
+        return $state;	
+	}		
 	//this function is used to get the photos from particular album
-	public function get_album()
+	public function get_album_photos()
 	{
 		$app = JFactory::getApplication();
 		$album_id = $app->input->get('album_id',0,'INT');
 		$uid = $app->input->get('uid',0,'INT');	
 		$mapp = new EasySocialApiMappingHelper();
 		$log_user= $this->plugin->get('user')->id;
+		$limitstart = $app->input->get('limitstart',0,'INT');
+		$limit =  $app->input->get('limit',10,'INT');	
 		$mydata['album_id']=$album_id;
 		$mydata['uid']=$uid;
-		
+		$mydata['limitstart']=$limitstart;
+		$mydata['limit']=$limit;	
 		
 		$ob = new EasySocialModelPhotos();
+		$ob->setState('limitstart',$limitstart);
+		$ob->setState('limit',$limitstart);
 		$photos = $ob->getPhotos($mydata);
 		//loading photo table	
 		$photo  = FD::table( 'Photo' );

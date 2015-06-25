@@ -17,5 +17,8 @@ class plgAPIEasysocial extends ApiPlugin
 		parent::__construct($subject = 'api' , $config = array());
 
 		ApiResource::addIncludePath(dirname(__FILE__).'/easysocial');
+		
+		$this->setResourceAccess('sociallogin', 'public', 'post');
+		
 	}
 }

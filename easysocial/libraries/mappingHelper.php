@@ -115,7 +115,7 @@ class EasySocialApiMappingHelper
 		return $result;
 	}
 	
-	public function albumsSchema($rows,$userid)	
+	public function albumsSchema($rows)	
 	{
 		$lang = JFactory::getLanguage();
 		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, 'en-GB', true);
@@ -136,7 +136,8 @@ class EasySocialApiMappingHelper
 				$item->cover_featured=$row->cover_featured;
 				$item->cover_large=$row->cover_large;				
 				$item->cover_square=$row->cover_square;				
-				$item->cover_thumbnail=$row->cover_thumbnail;				
+				$item->cover_thumbnail=$row->cover_thumbnail;
+				$item->count=$row->count;				
 				$result[] = $item;
 			}
 		}
@@ -204,7 +205,7 @@ class EasySocialApiMappingHelper
 				// Set the stream title
 				$item->id = $row->uid;
 				
-				//$url = FRoute::stream( array('id' => $row->uid , 'layout' => 'item', 'sef' => false ));
+				//$stream_url = FRoute::stream( array('id' => $row->uid , 'layout' => 'item', 'sef' => false ));
 	//print_r($url);die("in api");
 				//$item->title = strip_tags($row->title);
 				//code changed as request not right way
@@ -246,8 +247,10 @@ class EasySocialApiMappingHelper
 
 				//create users object
 				$actors = array();
+				$user_url = array();
 				foreach($row->actors as $actor)
 				{
+					$user_url[$actor->id] = JURI::root().FRoute::profile( array('id' => $actor->id , 'layout' => 'item', 'sef' => false ));
 					$actors[] = $this->createUserObj($actor->id); 
 				}
 
@@ -275,6 +278,34 @@ class EasySocialApiMappingHelper
 				// set the if this stream is mini mode or not.
 				// mini mode should not have any actions such as - likes, comments, share and etc.
 				$item->mini = $row->display == SOCIAL_STREAM_DISPLAY_MINI ? true : false;
+				
+				//build share url
+				$sharing = FD::get( 'Sharing', array( 'url' => FRoute::stream( array( 'layout' => 'item', 'id' => $row->uid, 'external' => true, 'xhtml' => true ) ), 'display' => 'dialog', 'text' => JText::_( 'COM_EASYSOCIAL_STREAM_SOCIAL' ) , 'css' => 'fd-small' ) );
+				$item->share_url = $sharing->url;
+				
+				//create urls for app side mapping
+				//$log_usr = FRoute::profile( array('id' => $row->uid , 'layout' => 'item', 'sef' => false ));
+				$strm_urls = array();
+				$strm_urls['actors'] = $user_url;
+				switch( $row->type )
+				{
+					/*case 'story':	$strm_urls['actors'] = $user_url;
+									break;*/
+					case 'apps':	$strm_urls['apps'] = JURI::root().FRoute::apps( array('id' => $row->element_id , 'layout' => 'item', 'sef' => false ));
+									break;
+					case 'dashboard':	$strm_urls['dashboard'] = JURI::root().FRoute::dashboard( array('id' => $row->element_id , 'layout' => 'item', 'sef' => false ));
+									break;
+					case 'albums':	$strm_urls['album'] = JURI::root().FRoute::albums( array('id' => $row->element_id , 'layout' => 'item', 'sef' => false ));
+									break;
+					case 'photos':	$strm_urls['photos'] = JURI::root().FRoute::photos( array('id' => $row->element_id , 'layout' => 'item', 'sef' => false ));
+									break;
+					case 'groups':	$strm_urls['groups'] = JURI::root().FRoute::groups( array('id' => $row->element_id , 'layout' => 'item', 'sef' => false ));
+									break;
+					
+				}
+				
+				$item->strm_urls = $strm_urls; 
+//print_r($strm_urls);die("in map");
 
 				$result[]	= $item;
 				//$result[]	= $row;

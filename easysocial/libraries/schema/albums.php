@@ -18,5 +18,6 @@ class GetalbumsSimpleSchema {
 	public $cover_featured;
 	public $cover_large;
 	public $cover_square;
-	public $cover_thumbnail;	
+	public $cover_thumbnail;
+	public $count;	
 }

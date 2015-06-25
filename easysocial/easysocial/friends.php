@@ -19,7 +19,6 @@ class EasysocialApiResourceFriends extends ApiResource
 	{
 		$this->plugin->setResponse($this->getFriends());
 	}
-
 	public function post()
 	{
 	   $this->plugin->setResponse($this->getFriends());
@@ -28,36 +27,70 @@ class EasysocialApiResourceFriends extends ApiResource
 	function getFriends()
 	{
 		$avt_model = FD::model( 'Avatars' );
-		$default = $avt_model->getDefaultAvatars(0,$type = SOCIAL_TYPE_PROFILES); 
-		print_r($default);die("in api");
+		$default = $avt_model->getDefaultAvatars(0,$type = SOCIAL_TYPE_PROFILES); 		
 		//init variable
 		$app = JFactory::getApplication();
 		$user = JFactory::getUser($this->plugin->get('user')->id);
 		$userid = $app->input->get('target_user',0,'INT');
-
+		$filter = $app->input->get('filter',NULL,'STRING');
 		$search = $app->input->get('search','','STRING');
+		$limit = $app->input->get('limit',10,'INT');
+		$limitstart = $app->input->get('limitstart',0,'INT');		
+		$options['limit']=$limit;
+		$options['limitstart']=$limitstart;
 		
 		$mapp = new EasySocialApiMappingHelper();
-
+		
 		if($userid == 0)
 		$userid = $user->id;
 		
 		$frnd_mod = FD::model( 'Friends' );
-
-		// if search word present then search user as per term and given id
-		if(empty($search))
-		{
-			$ttl_list = $frnd_mod->getFriends($userid); 
-	    }
-	    else
-	    {
-			$ttl_list = $frnd_mod->search($userid,$search,'username');
-		}
+		$frnd_mod->setState('limit',$limit);
+		$frnd_mod->setState('limitstart',$limitstart);
 		
-	    $frnd_list = $mapp->mapItem( $ttl_list,'user',$userid);
-
+		$ttl_list = array();
+		switch($filter)
+		{			
+			case 'pending': //get the total pending friends.
+							$options[ 'state' ]	= SOCIAL_FRIENDS_STATE_PENDING;																					
+			break;			
+			case 'all':		//getting all friends
+							$options[ 'state' ]	= SOCIAL_FRIENDS_STATE_FRIENDS;
+							
+			break;			
+			case 'request':	//getting sent requested friends.
+							$options[ 'state' ]	= SOCIAL_FRIENDS_STATE_PENDING;
+							$options[ 'isRequest' ]	= true;							
+			break;
+			
+			case 'suggest': //getting suggested friends							
+							$sugg_list = $frnd_mod->getSuggestedFriends($userid);
+							foreach($sugg_list as $sfnd)
+							{
+								$ttl_list[] = $sfnd->friend;
+							}
+							if(empty($ttl_list))
+							 $flag=1;
+							else 
+							 $flag=0;							
+			break;						
+			case 'invites': //getiing invited friends
+							 $invites['data'] = $frnd_mod->getInvitedUsers($userid);
+							 return $invites;
+			break;			
+		}		
+		// if search word present then search user as per term and given id
+		if(empty($search) && empty($ttl_list) && $flag!=1)
+		{
+			$ttl_list = $frnd_mod->getFriends($userid,$options); 
+	    }
+	    else if(!empty($search) && empty($filter)) 
+	    {						
+			$ttl_list = $frnd_mod->search($userid,$search,'username');
+		}		
+	    $frnd_list['data'] = $mapp->mapItem( $ttl_list,'user',$userid);
 	    //get other data
-	    foreach($frnd_list as $ky=>$lval)
+	    foreach($frnd_list['data'] as $ky=>$lval)
 	    {	
 			//get mutual friends of given user
 			if($userid != $user->id)
@@ -75,7 +108,16 @@ class EasysocialApiResourceFriends extends ApiResource
 			//$lval->mutual = $frnd_mod->getMutualFriendCount($user->id,$lval->id);
 			//$lval->isFriend = $frnd_mod->isFriends($user->id,$lval->id);
 		}
-
+		//pending
+		 $frnd_list['status']['pendings'] = $frnd_mod->getTotalPendingFriends( $userid );
+		 //all frined
+		 $frnd_list['status']['allfriend'] = $frnd_mod->getTotalFriends( $userid , array( 'state' => SOCIAL_FRIENDS_STATE_FRIENDS ) );
+			//suggested
+		 $frnd_list['status']['suggested'] = $frnd_mod->getSuggestedFriends( $userid, null, true );
+		 //request sent		 
+		 $frnd_list['status']['sentreq']   = $frnd_mod->getTotalRequestSent( $userid );
+		 //invited
+		 $frnd_list['status']['invite']    = $frnd_mod->getTotalInvites( $userid );
 		return( $frnd_list );
 	}
 }

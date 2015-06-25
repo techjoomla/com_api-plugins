@@ -50,7 +50,10 @@ class EasysocialApiResourceNewsfeed extends ApiResource
         $filter = $app->input->get('filter', 'everyone', 'STRING');
         //get tag
         $tag = $app->input->get('tag', '', 'STRING');
-		
+        
+        $config = JFactory::getConfig();
+        $sef = $config->set('sef', 0);
+	//print_r($config);die("in api");
 		//map object
 		$mapp = new EasySocialApiMappingHelper();
 
@@ -97,7 +100,7 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 			}
 		}
 
-//print_r($options);
+//print_r($stream);
 //die("in api");
 
 		$stream->get($options);

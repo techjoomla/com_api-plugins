@@ -56,6 +56,11 @@ class EasysocialApiResourceGetalbums extends ApiResource
          $album->cover_square = $album->getCover('square');
          $album->cover_thumbnail = $album->getCover('thumbnail');         		
 		}
+		//getting count of photos in every albums.	
+		foreach($albums as $alb)
+		{
+		 $alb->count = $obj->getTotalPhotos($alb->id);		
+		}		
 		$all_albums = $mapp->mapItem($albums,'albums',$log_user);		
 		return $all_albums;		
 	}

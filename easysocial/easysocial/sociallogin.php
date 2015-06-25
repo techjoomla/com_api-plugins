@@ -13,14 +13,6 @@ defined('_JEXEC') or die( 'Restricted access' );
 jimport('joomla.plugin.plugin');
 jimport('joomla.html.html');
 
-/*
-require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/foundry.php';
-require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/story/story.php';
-require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/photo/photo.php';
-require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/groups.php';
-require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/covers.php';
-require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/albums.php';
-*/
 require_once JPATH_SITE.'/components/com_jfbconnect/libraries/factory.php';
 require_once(JPATH_ADMINISTRATOR . '/components/com_jfbconnect/assets/facebook-api/facebook.php');
 require_once(JPATH_ADMINISTRATOR . '/components/com_jfbconnect/models/usermap.php');
@@ -94,7 +86,6 @@ class EasysocialApiResourceSociallogin extends ApiResource
 				$pdata['email'] = $email;
 				$pdata['password'] = $password;
 
-print_r( $loginRegisterModel->createNewUser( $provider ) );die("in api 111");
 				$fbuser = $loginRegisterModel->createNewUser( $provider );
 	
 			}
@@ -103,7 +94,6 @@ print_r( $loginRegisterModel->createNewUser( $provider ) );die("in api 111");
                    $jUserId = $userMapModel->getJoomlaUserId($providerUserId, strtolower($provider->name));
         }
 
-print_r($jUserId);die("in api 11"); 
 
 		$jUser = JUser::getInstance($jUserId);
 		
@@ -114,8 +104,6 @@ print_r($jUserId);die("in api 11");
             $options = array('silent' => 1, 'provider' => $provider, 'provider_user_id' => $providerUserId); // Disable other authentication messages
             // hack for J3.2.0 bug. Should remove after 3.2.1 is available.
             $password = $provider->secretKey;
-
-print_r( $password );die("in api");
 
             $loginSuccess = $app->login(array('username' => $provider->appId, 'password' => $password), $options);
         }

@@ -17,38 +17,69 @@ require_once( EBLOG_HELPERS . '/date.php' );
 require_once( EBLOG_HELPERS . '/string.php' );
 require_once( EBLOG_CLASSES . '/adsense.php' );
 
+//for image upload
+require_once( EBLOG_CLASSES . '/mediamanager.php' );
+require_once( EBLOG_HELPERS . '/image.php' );
+require_once( EBLOG_CLASSES . '/easysimpleimage.php' );
+require_once( EBLOG_CLASSES . '/mediamanager/local.php' );
+require_once( EBLOG_CLASSES . '/mediamanager/types/image.php' );
+
 class EasyblogApiResourceBlog extends ApiResource
 {
 
 	public function __construct( &$ubject, $config = array()) {
 		parent::__construct( $ubject, $config = array() );
 	}
-
+	public function delete()
+	{
+	$this->plugin->setResponse($this->delete_blog());
+	}
 	public function post()
 	{    	
-			$input = JFactory::getApplication()->input;
-			$blog = EasyBlogHelper::getTable( 'Blog', 'Table' );
-			$post = $input->post->getArray(array());
-			
-			$blog->bind($post);
-			$blog->created_by = $this->plugin->getUser()->id;
-			
+		$input = JFactory::getApplication()->input;
+		$blog = EasyBlogHelper::getTable( 'Blog', 'Table' );
+		$post = $input->post->getArray(array());
+		$log_user = $this->plugin->get('user')->id;
+		$res = new stdClass;
+		
+		//code for upload
+		$blog->bind($post);
+
+		$blog->permalink = str_replace('+','-',$blog->title);
+		$blog->published = 1;
+		
+		//$blog->write_content = 1;
+		//$blog->write_content_hidden = 1;
+		
+		$blog->created_by = $log_user;
+		//this come from app side
+		$blog->allowcomment = 1;
+		$blog->subscription = 1;
+		$blog->frontpage = 1;
+		$blog->send_notification_emails = 1;
+		//
+		$blog->created = date("Y-m-d h:i:s");
+		$blog->publish_up = date("Y-m-d h:i:s");
+		$blog->created_by = $this->plugin->getUser()->id;
+
 			if (!$blog->store()) {
 				$this->plugin->setResponse( $this->getErrorResponse(404, $blog->getError()) );
 				return;
 			}
 			
 			$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($blog, '<p><br><pre><a><blockquote><strong><h2><h3><em><ul><ol><li>');
+			
+
 			$this->plugin->setResponse( $item );
    	   
 	}
 	
-	public function get() 
-	{
+	public function get() {
 		$input = JFactory::getApplication()->input;
 		$model = EasyBlogHelper::getModel( 'Blog' );
 		$config = EasyBlogHelper::getConfig();
 		$id = $input->get('id', null, 'INT');
+
 		// If we have an id try to fetch the user
 		$blog = EasyBlogHelper::getTable( 'Blog' );
 		$blog->load( $id );
@@ -64,6 +95,7 @@ class EasyblogApiResourceBlog extends ApiResource
 			$this->plugin->setResponse( $this->getErrorResponse(404, 'Blog not found') );
 			return;
 		}
+
 		$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($blog, '<p><br><pre><a><blockquote><strong><h2><h3><em><ul><ol><li><iframe>');
 		// Tags
 		$modelPT	= EasyBlogHelper::getModel( 'PostTag' );
@@ -74,5 +106,23 @@ class EasyblogApiResourceBlog extends ApiResource
 		
 		$this->plugin->setResponse( $item );
 	}
-	
+	public function delete_blog()
+	{		
+		$app = JFactory::getApplication();
+		$id = $app->input->get('id',0,'INT');
+		$blog = EasyBlogHelper::getTable( 'Blog', 'Table' );
+		$blog->load( $id );
+		if(!$blog->id || !$id)
+		{
+			$res->status =0;	
+			$res->message='blog not exists';
+			return $res;	
+		}
+		else
+		{
+			$val = $blog->delete($id);
+			$val->message='blog deleted successfully';
+			return $val;
+		}	
+	}	
 }

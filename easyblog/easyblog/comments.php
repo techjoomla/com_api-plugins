@@ -20,6 +20,7 @@ class EasyblogApiResourceComments extends ApiResource
 {
 
 	public function get() {
+
 		$input = JFactory::getApplication()->input;
 		$model = EasyBlogHelper::getModel( 'Blog' );
 		$id = $input->get('id', null, 'INT');
@@ -35,8 +36,9 @@ class EasyblogApiResourceComments extends ApiResource
 		}
 
 		$rows = $model->getBlogComment($id);
-		
+
 		foreach ($rows as $row) {
+
 			$item = new CommentSimpleSchema;
 			$item->commentid = $row->id;
 			$item->postid = $row->post_id;

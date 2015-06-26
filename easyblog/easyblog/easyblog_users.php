@@ -45,11 +45,9 @@ class EasyblogApiResourceEasyblog_users extends ApiResource
 		$search =  $app->input->get('search','','STRING');		
 		$ob1  = new EasyBlogModelBlogger();
 		$ob1->setState('limitstart',$limitstart);
-		$bloggers = $ob1->getAllBloggers('latest',$limit, $filter='showallblogger' , $search );
-		
-		$blogger = EasyBlogHelper::getTable( 'Profile', 'Table' );
-		
-		foreach($bloggers as $usr )
+		$bloggers = $ob1->getAllBloggers('latest',$limit, $filter='showallblogger' , $search );		
+		$blogger = EasyBlogHelper::getTable( 'Profile', 'Table' );		
+		foreach( $bloggers as $usr )
 		{
 			$blogger->load($usr->id);
 			//$avatar = $blogger->getAvatar();

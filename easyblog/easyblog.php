@@ -33,6 +33,7 @@ class plgAPIEasyblog extends ApiPlugin
 		$this->setResourceAccess('latest', 'public', 'get');
 		$this->setResourceAccess('category', 'public', 'get');
 		$this->setResourceAccess('blog', 'public', 'get');
+		$this->setResourceAccess('blog', 'public', 'post');
 		$this->setResourceAccess('comments', 'public', 'get');
 		$this->setResourceAccess('easyblog_users', 'public', 'get');
 		

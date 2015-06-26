@@ -9,6 +9,16 @@ defined('_JEXEC') or die( 'Restricted access' );
 
 jimport('joomla.user.user');
 require_once( EBLOG_CONTROLLERS . '/media.php' );
+require_once( EBLOG_HELPERS . '/date.php' );
+require_once( EBLOG_HELPERS . '/string.php' );
+require_once( EBLOG_CLASSES . '/adsense.php' );
+
+//for image upload
+require_once( EBLOG_CLASSES . '/mediamanager.php' );
+require_once( EBLOG_HELPERS . '/image.php' );
+require_once( EBLOG_CLASSES . '/easysimpleimage.php' );
+require_once( EBLOG_CLASSES . '/mediamanager/local.php' );
+require_once( EBLOG_CLASSES . '/mediamanager/types/image.php' );
 
 class EasyblogApiResourceImage extends ApiResource
 {
@@ -18,11 +28,58 @@ class EasyblogApiResourceImage extends ApiResource
 	}
 
 	public function post()
-	{    	
-			$controller = new EasyBlogControllerMedia;
+	{
+			//old  code
+			/*$controller = new EasyBlogControllerMedia;
 			$op = $controller->upload();
+			*/
 			
-			// No setResponse needed since the upload method spits JSON and dies
+			$input = JFactory::getApplication()->input;
+			$log_user = $this->plugin->get('user')->id;
+			$res = new stdClass;
+			// Let's get the path for the current request.
+			$file	= JRequest::getVar( 'file' , '' , 'FILES' , 'array' );
+
+			if($file['name'])
+			{
+			$place 	= 'user:'.$this->plugin->get('user')->id;
+			
+			// The user might be from a subfolder?
+			$source	= urldecode('/'.$file['name']);
+
+			// @task: Let's find the exact path first as there could be 3 possibilities here.
+			// 1. Shared folder
+			// 2. User folder
+			$absolutePath 		= EasyBlogMediaManager::getAbsolutePath( $source , $place );
+			$absoluteURI		= EasyBlogMediaManager::getAbsoluteURI( $source , $place );
+
+			$allowed		= EasyImageHelper::canUploadFile( $file , $message );
+
+			if( $allowed !== true )
+			{
+				$res->status= 0;
+				$res->message = 'Upload is not allowed';
+				return $res;
+			}
+
+			$media 				= new EasyBlogMediaManager();
+			$upload_result		= $media->upload( $absolutePath , $absoluteURI , $file , $source , $place );
+
+			//adjustment
+			$upload_result->key = $place.$source;
+			$upload_result->group = 'files';
+			$upload_result->parentKey = $place.'|/';
+			$upload_result->friendlyPath = 'My Media/'.$source;
+			unset($upload_result->variations);
+			$this->plugin->setResponse($upload_result);
+
+			return $upload_result;
+			
+			}
+			else
+			{
+				$this->plugin->setResponse( $this->getErrorResponse(404, __FUNCTION__ . ' Upload unsuccessfull.' ) );
+			}
 	}
 	
 	public function get() {

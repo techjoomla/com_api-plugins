@@ -49,8 +49,7 @@ class EasyBlogSimpleSchemaHelper
 		$image_data = json_decode($blog->image);
 		
 		$item->postid = $blog->id;
-		$item->title = $blog->title;
-		
+		$item->title = $blog->title;		
 		$item->text = $blog->text;
 		$item->textplain = $this->sanitize($item->textplain);
 		

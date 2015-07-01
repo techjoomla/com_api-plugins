@@ -75,11 +75,11 @@ class EasysocialApiResourceGroup_members extends ApiResource
 		$access = $user->getAccess();
 		$total = $user->getTotalGroups();
 
-		/*if ($access->exceeded('groups.join', $total)) {
+		if ($access->exceeded('groups.join', $total)) {
 			$obj->success = 0;
 			$obj->message = 'group joining limit exceeded';
 			return $obj;
-		}*/
+		}
 		
 		// Create a member record for the group
 		$members = $group->createMember($log_user);

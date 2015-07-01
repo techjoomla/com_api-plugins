@@ -206,11 +206,14 @@ class EasySocialApiMappingHelper
 				$item->id = $row->uid;
 				
 				//$stream_url = FRoute::stream( array('id' => $row->uid , 'layout' => 'item', 'sef' => false ));
-	//print_r($url);die("in api");
+	//print_r($row->title);die("in api");
 				//$item->title = strip_tags($row->title);
 				//code changed as request not right way
 				$item->title = $row->title;
-				$item->title = str_replace('href="','href="'.JURI::root(),$item->title);
+				if($row->type != 'links')
+				{
+					$item->title = str_replace('href="','href="'.JURI::root(),$item->title);
+				}
 				$item->type = $row->type;
 				$item->group = $row->cluster_type;
 				$item->element_id = $row->contextId;
@@ -227,9 +230,11 @@ class EasySocialApiMappingHelper
 				{
 					$item->raw_content_url = $row->content;
 				}
-								
-				$item->raw_content_url = str_replace('href="','href="'.JURI::root(),$item->raw_content_url);
 				
+				if($row->type != 'links')
+				{				
+					$item->raw_content_url = str_replace('href="','href="'.JURI::root(),$item->raw_content_url);
+				}
 				// Set the publish date
 				$item->published = $row->created->toMySQL();
 				
@@ -253,7 +258,24 @@ class EasySocialApiMappingHelper
 					$user_url[$actor->id] = JURI::root().FRoute::profile( array('id' => $actor->id , 'layout' => 'item', 'sef' => false ));
 					$actors[] = $this->createUserObj($actor->id); 
 				}
+				
+				//with share obj users object
+				//$with_usr = array();
+				$with_user_url = array();
+				
+				foreach($row->with as $actor)
+				{
+					$withurl = JURI::root().FRoute::profile( array('id' => $actor->id , 'layout' => 'item', 'sef' => false ));
+					$with_user_url[] = "<a href='".$withurl."'>".$actor->username."</a>";
+					
+					//$with_url = $with_url." and ".
+					
+					//$with_user_url[] = $this->createUserObj($actor->id); 
+				}
+				$with_str = implode(' and ',$with_user_url);
+                $item->with = 'with '.$with_str;
 
+                //
 				$item->actor = $actors;
 
 				$item->likes = (!empty($row->likes))?$this->createlikeObj($row->likes,$userid):null;
@@ -300,6 +322,15 @@ class EasySocialApiMappingHelper
 					case 'photos':	$strm_urls['photos'] = JURI::root().FRoute::photos( array('id' => $row->element_id , 'layout' => 'item', 'sef' => false ));
 									break;
 					case 'groups':	$strm_urls['groups'] = JURI::root().FRoute::groups( array('id' => $row->element_id , 'layout' => 'item', 'sef' => false ));
+									break;
+					case 'links':	$lnk_arr = explode('shared', $item->title);
+									
+									//preg_match_all('~<a(.*?)href="([^"]+)"(.*?)>~', $lnk_arr[1], $matches);
+									preg_match_all('/href=\"(.*?)\"/i', $lnk_arr[1], $matches);
+									
+									//print_r( $matches[1][0] );die("in api");
+									$strm_urls['links'] = $matches[1][0];
+									//$strm_urls['links'] = FRoute::external( $matches[1][0] , $xhtml = false , $ssl = null , $tmpl = false, $sef = false );
 									break;
 					
 				}

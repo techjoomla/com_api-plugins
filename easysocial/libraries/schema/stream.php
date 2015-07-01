@@ -25,6 +25,7 @@ class streamSimpleSchema {
 	public $comments;
 	public $share_url;
 	public $stream_url;
+	public $with;
 	
 }
 

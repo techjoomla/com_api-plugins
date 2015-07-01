@@ -180,7 +180,7 @@ class EasysocialApiResourceShare extends ApiResource
 			$args['actorId'] = $log_usr;
 			$args['contextIds'] = 0;
 			$args['contextType']	= $type;
-
+//print_r($args);die("in api");
 			if($type == 'photos')
 			{
 				$photo_obj = $this->uploadPhoto($log_usr,$type);

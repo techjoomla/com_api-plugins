@@ -25,16 +25,19 @@ class EasysocialApiResourceSociallogin extends ApiResource
 {
 	public function get()
 	{
-		$this->plugin->setResponse('Use post method to login');
+		$this->plugin->setResponse($this->getKeys());
 	}
 
 	public function post()
 	{
+		
 		$app = JFactory::getApplication();
 
 		//$type = $app->input->get('type','story','STRING');
 		
 		$provider_nm = $app->input->get('provider','facebook','CMD');
+		$user_id = $app->input->get('user_id',0,'INT');
+		$tokan = $app->input->get('tokan',0,'RAW');
 		$email = $app->input->get('email','','STRING');
 		$password = $app->input->get('password','','STRING');
 		
@@ -49,9 +52,7 @@ class EasysocialApiResourceSociallogin extends ApiResource
 
 		$provider->setSessionToken();
 		$provider->client->setExtendedAccessToken();
-        
-    //print_r($user);die("in api");
-        
+       
         //$provider_obj->client->getUser();
         
         $provider->onBeforeLogin();
@@ -107,14 +108,27 @@ class EasysocialApiResourceSociallogin extends ApiResource
 
             $loginSuccess = $app->login(array('username' => $provider->appId, 'password' => $password), $options);
         }
-
-
+	
+		$this->plugin->setResponse($jUser);
 		
-//print_r( $provider_obj->client->getUser($log_usr) );die("in api");
-//$lifetime = $config->set('sef', 45);
-
-
-		$this->plugin->setResponse($result);
+	}
+	
+	public function getKeys()
+	{
+		
+		$app	= JFactory::getApplication();
+		
+		$jfb_params = JFBCFactory::config()->getSettings();
+		
+		$result = array();
+		
+		$result['fb_app_id'] = $jfb_params->get('facebook_app_id');
+		$result['fb_app_key'] = $jfb_params->get('facebook_secret_key');
+		
+		$result['g_app_id'] = $jfb_params->get('google_app_id');
+		$result['g_app_key'] = $jfb_params->get('google_secret_key');
+		
+		return $result;
 	}
 	
 }

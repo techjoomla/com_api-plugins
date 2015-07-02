@@ -206,7 +206,7 @@ class EasySocialApiMappingHelper
 				$item->id = $row->uid;
 				
 				//$stream_url = FRoute::stream( array('id' => $row->uid , 'layout' => 'item', 'sef' => false ));
-	//print_r($row->title);die("in api");
+	
 				//$item->title = strip_tags($row->title);
 				//code changed as request not right way
 				$item->title = $row->title;
@@ -219,6 +219,13 @@ class EasySocialApiMappingHelper
 				$item->element_id = $row->contextId;
 				//
 				$item->content = $row->content;
+				
+	/*$dom = new DOMDocument;
+	$dom->loadHTML( $item->content );
+	$nodes = $dom->getElementsByTagName('a');
+	$attr  = $nodes->item(0)->getAttribute('href');
+	
+	print_r( $attr );die("in api");*/
 				
 				$item->preview = $row->preview;
 				// Set the stream content
@@ -313,6 +320,9 @@ class EasySocialApiMappingHelper
 				{
 					/*case 'story':	$strm_urls['actors'] = $user_url;
 									break;*/
+					case 'discussions': $strm_urls['discussions'] = JURI::root().FRoute::apps( array('id' => $row->id , 'layout' => 'canvas', 'sef' => false ));
+					//FRoute::apps( array( 'layout' => 'canvas' , 'customView' => 'item' , 'uid' => $group->getAlias() , 'type' => SOCIAL_TYPE_GROUP , 'id' => $this->getApp()->getAlias() , 'discussionId' => $discussion->id ) , false );
+									break;
 					case 'apps':	$strm_urls['apps'] = JURI::root().FRoute::apps( array('id' => $row->element_id , 'layout' => 'item', 'sef' => false ));
 									break;
 					case 'dashboard':	$strm_urls['dashboard'] = JURI::root().FRoute::dashboard( array('id' => $row->element_id , 'layout' => 'item', 'sef' => false ));

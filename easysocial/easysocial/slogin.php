@@ -35,7 +35,7 @@ class EasysocialApiResourceSlogin extends ApiResource
 
 	public function post()
 	{
-	   $this->plugin->setResponse($this->keygen());
+		$this->plugin->setResponse($this->keygen());
 	}
 	//public function for genrate key
 	public function keygen()
@@ -49,22 +49,28 @@ class EasysocialApiResourceSlogin extends ApiResource
 			//$provider = $app->input->get('provider', 'facebook' , 'STRING');
 			
 			$user_id = $app->input->get('user_id',0,'INT');
-			$tokan = $app->input->get('tokan',0,'RAW');
+			$tokan = $app->input->get('tokan',0,'STRING');
 			$username = $app->input->get('username','','STRING');
 			$name = $app->input->get('name','','STRING');
-			$email = $app->input->get('email','','STRING');
+			$email_crp = $app->input->get('email','','STRING');
 			
+			//$crpt = base64_encode($email_crp.$tokan);
+
+			$email_crp = base64_decode( $email_crp );
+			$email = str_replace( $tokan,'', $email_crp );
+
 			$reg_usr = 0;
 			
 			if($email )
 			{
 				$reg_usr = $this->check_user($email);
-
+//print_r( $_POST );
+//var_dump( $reg_usr );
+//die("in slogin api");
 				if( $reg_usr == null )
 				{
 					$user_details = $this->createUser($username,$name,$email);
 					$reg_usr = $user_details['user_id'];
-//print_r( $user_details );die("in api");
 				}
 				
 			}
@@ -190,7 +196,7 @@ class EasysocialApiResourceSlogin extends ApiResource
 
 		$app              = JFactory::getApplication();
 		$data['username'] = $username;
-		$data['password'] = '';
+		$data['password'] = JUserHelper::genRandomPassword(8);
 		$data['name']     = $name;
 		$data['email']    = $email;
 

@@ -42,7 +42,7 @@ class EasysocialApiResourceGetalbums extends ApiResource
 		//creating object and calling relatvie method for data fetching.
 		$obj = new EasySocialModelAlbums();		
 		$obj->setState('limitstart',$limitstart);
-		$obj->setState('limit',$limitstart);				
+		$obj->setState('limit',$limit);				
 		// first param is user id,user type and third contains array for pagination.
 		$albums = $obj->getAlbums($uid,$type,$mydata);
 		//use to load table of album.

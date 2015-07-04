@@ -72,12 +72,12 @@ class EasysocialApiResourceFriends extends ApiResource
 							if(empty($ttl_list))
 							 $flag=1;
 							else 
-							 $flag=0;							
+							 $flag=0; 							
 			break;						
 			case 'invites': //getiing invited friends
-							 $invites['data'] = $frnd_mod->getInvitedUsers($userid);
-							 return $invites;
-			break;			
+							  $invites['data'] = $frnd_mod->getInvitedUsers($userid);
+							  return $invites;
+			break;		
 		}		
 		// if search word present then search user as per term and given id
 		if(empty($search) && empty($ttl_list) && $flag!=1)

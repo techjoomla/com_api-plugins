@@ -13,6 +13,7 @@ class PhotosSimpleSchema {
 	public $uid;
 	public $type;
 	public $title;
+	public $isowner;
 	public $caption;
 	public $created;
 	public $state;
@@ -20,5 +21,8 @@ class PhotosSimpleSchema {
 	public $image_large;
 	public $image_square;
 	public $image_thumbnail;
-	public $image_featured;	
+	public $image_featured;
+	public $likes;
+	public $comments;
+	public $comment_element;
 }

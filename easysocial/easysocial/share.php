@@ -103,8 +103,9 @@ class EasysocialApiResourceShare extends ApiResource
 			
 		$friends = array();
 
-		if (!empty($friends_tags) && $type == 'story' ) {
-
+		if (!empty( $friends_tags )) {
+			
+			//$type = 'story';
 			// Get the friends model
 			$model = FD::model('Friends');
 
@@ -122,7 +123,7 @@ class EasysocialApiResourceShare extends ApiResource
 		{
 			$friends = null;
 		}
-
+//var_dump($friends);die("in share api");
 		$privacyRule = ( $type == 'photos' ) ? 'photos.view' : 'story.view';
 			
 			//for hashtag mentions
@@ -150,7 +151,7 @@ class EasysocialApiResourceShare extends ApiResource
 					{
 						$mention = new stdClass();
 						$mention->start = $posn[$indx++];
-						$mention->length = strlen($val) - 1;
+						$mention->length = strlen($val) - 0;
 						$mention->value = str_replace('#','',$val);
 						$mention->type = 'hashtag';
 						
@@ -159,7 +160,6 @@ class EasysocialApiResourceShare extends ApiResource
 				}
 
 			}
-
 			// Options that should be sent to the stream lib
 			$args = array(
 							'content' => $content,
@@ -180,7 +180,7 @@ class EasysocialApiResourceShare extends ApiResource
 			$args['actorId'] = $log_usr;
 			$args['contextIds'] = 0;
 			$args['contextType']	= $type;
-//print_r($args);die("in api");
+//print_r($args);die("in share api");
 			if($type == 'photos')
 			{
 				$photo_obj = $this->uploadPhoto($log_usr,$type);

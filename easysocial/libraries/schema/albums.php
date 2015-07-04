@@ -19,5 +19,11 @@ class GetalbumsSimpleSchema {
 	public $cover_large;
 	public $cover_square;
 	public $cover_thumbnail;
-	public $count;	
+	public $count;
+	public $likes;
+	public $total;
+	public $comments;
+	public $comment_element;
+	public $commentcount;
+	public $isowner;
 }

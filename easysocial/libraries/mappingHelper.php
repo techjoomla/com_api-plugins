@@ -74,10 +74,10 @@ class EasySocialApiMappingHelper
 						return $this->streamSchema($rows,$userid);
 						break;
 			case 'albums':
-						return $this->albumsSchema($rows);
+						return $this->albumsSchema($rows,$userid);
 						break;			
 			case 'photos':
-						return $this->photosSchema($rows);
+						return $this->photosSchema($rows,$userid);
 						break;
 		}
 		
@@ -93,44 +93,55 @@ class EasySocialApiMappingHelper
 		{	
 			if(isset($row->id))
 			{					
-				$item = new PhotosSimpleSchema();				
+				$item = new PhotosSimpleSchema();	
+				$item->isowner= ($row->uid == $userid)?true:false;			
 				$item->id = $row->id;
 				$item->album_id = $row->album_id;
 				$item->cover_id = $row->cover_id;
 				$item->type = $row->type;
-				$item->uid = $row->uid;
+				$item->uid = $row->id; // for post comment photo id is required.
 				$item->user_id = $row->user_id;
 				$item->title = JText::_($row->title);
-				$item->caption=JText::_($row->caption);
-				$item->created=$row->created;
+				$item->caption= JText::_($row->caption);
+				$item->created=$row->created;				
 				$item->state=$row->state;
 				$item->assigned_date=$row->assigned_date;
 				$item->image_large=$row->image_large;
 				$item->image_square=$row->image_square;				
 				$item->image_thumbnail=$row->image_thumbnail;				
-				$item->image_featured=$row->image_featured;				
+				$item->image_featured=$row->image_featured;
+				$like = FD::photo();
+				$like->data->id=$row->id;
+				$data = $like->likes();				
+				$item->likes=$this->createlikeObj($data,$userid);
+				$comobj=$like->comments();
+				$comobj->stream_id=1;
+				$item->comment_element = $comobj->element.".".$comobj->group.".".$comobj->verb;			
+				$item->comments=$this->createCommentsObj($comobj);
 				$result[] = $item;
 			}
 		}
 		return $result;
 	}
 	
-	public function albumsSchema($rows)	
-	{
+public function albumsSchema($rows,$userid)	
+	{	
 		$lang = JFactory::getLanguage();
 		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, 'en-GB', true);
 		$result = array();		
 		foreach($rows as $ky=>$row)
 		{	
 			if(isset($row->id))
-			{					
-				$item = new GetalbumsSimpleSchema();				
+			{	
+				
+				$item = new GetalbumsSimpleSchema();
+				
 				$item->id = $row->id;
 				$item->cover_id = $row->cover_id;
 				$item->type = $row->type;
 				$item->uid = $row->uid;
 				$item->title = JText::_($row->title);
-				$item->caption=JText::_($row->caption);
+				$item->caption= JText::_($row->caption);
 				$item->created=$row->created;
 				$item->assigned_date=$row->assigned_date;
 				$item->cover_featured=$row->cover_featured;
@@ -138,6 +149,20 @@ class EasySocialApiMappingHelper
 				$item->cover_square=$row->cover_square;				
 				$item->cover_thumbnail=$row->cover_thumbnail;
 				$item->count=$row->count;				
+				$likes = FD::likes($row->id, SOCIAL_TYPE_ALBUM , 'create', SOCIAL_APPS_GROUP_USER );				
+				$item->likes = $this->createlikeObj($likes,$userid);
+			    //$item->total=$item->likes->total;			
+				// Get album comments
+				$comments = FD::comments($row->id, SOCIAL_TYPE_ALBUM , 'create', SOCIAL_APPS_GROUP_USER , array('url' => $row->getPermalink()));				
+				$item->comment_element = $comments->element.".".$comments->group.".".$comments->verb;				
+				$comments->stream_id=1;
+				//$comments->element=$item->comment_element;				
+				$item->comments = $this->createCommentsObj($comments);				
+				$options = array('uid' => $comments->uid, 'element' => $item->comment_element, 'stream_id' => $comments->stream_id);				
+				$model  = FD::model('Comments');
+				$comcount = $model->getCommentCount($options);	
+				$item->commentcount=$comcount;				
+				$item->isowner = ( $row->uid == $userid )?true:false;				
 				$result[] = $item;
 			}
 		}
@@ -220,12 +245,33 @@ class EasySocialApiMappingHelper
 				//
 				$item->content = $row->content;
 				
-	/*$dom = new DOMDocument;
-	$dom->loadHTML( $item->content );
-	$nodes = $dom->getElementsByTagName('a');
-	$attr  = $nodes->item(0)->getAttribute('href');
 	
-	print_r( $attr );die("in api");*/
+	//$attr  = $nodes->item(0)->getAttribute('href');
+	/*
+	$dom = new DOMDocument;
+	$dom->loadHTML( $row->content );
+	$nodes = $dom->getElementsByTagName('a');
+	$content_urls = array();
+	
+	if( $nodes->length )
+	{
+		$xpath = new DOMXPath($dom);
+		$nodes = $xpath->query('//a/@href');
+		
+		foreach($nodes as $href)
+		{
+			 $content_urls[] = $href->nodeValue;
+			 //$href->nodeValue = 'new value';              // set new attribute value
+			//$href->parentNode->removeAttribute('href');  // remove attribute
+		}
+		
+print_r( $content_urls );die("in 11 api");
+		
+		//$val = FRoute::external( $attr , $xhtml = false , $ssl = null , $tmpl = false, $sef = false );
+		//$val = FRoute::raw( $attr );
+
+	}*/
+	
 				
 				$item->preview = $row->preview;
 				// Set the stream content
@@ -279,9 +325,13 @@ class EasySocialApiMappingHelper
 					
 					//$with_user_url[] = $this->createUserObj($actor->id); 
 				}
-				$with_str = implode(' and ',$with_user_url);
-                $item->with = 'with '.$with_str;
-
+				$item->with = null;
+				
+				if( !empty($with_user_url) )
+				{
+					$with_str = implode(' and ',$with_user_url);
+					$item->with = 'with '.$with_str;
+				}
                 //
 				$item->actor = $actors;
 
@@ -315,12 +365,13 @@ class EasySocialApiMappingHelper
 				//create urls for app side mapping
 				//$log_usr = FRoute::profile( array('id' => $row->uid , 'layout' => 'item', 'sef' => false ));
 				$strm_urls = array();
+				
 				$strm_urls['actors'] = $user_url;
 				switch( $row->type )
 				{
 					/*case 'story':	$strm_urls['actors'] = $user_url;
 									break;*/
-					case 'discussions': $strm_urls['discussions'] = JURI::root().FRoute::apps( array('id' => $row->id , 'layout' => 'canvas', 'sef' => false ));
+					case 'discussions': $strm_urls['discussions'] = JURI::root().FRoute::apps( array('id' => $row->uid , 'layout' => 'canvas', 'sef' => false ));
 					//FRoute::apps( array( 'layout' => 'canvas' , 'customView' => 'item' , 'uid' => $group->getAlias() , 'type' => SOCIAL_TYPE_GROUP , 'id' => $this->getApp()->getAlias() , 'discussionId' => $discussion->id ) , false );
 									break;
 					case 'apps':	$strm_urls['apps'] = JURI::root().FRoute::apps( array('id' => $row->element_id , 'layout' => 'item', 'sef' => false ));
@@ -335,18 +386,12 @@ class EasySocialApiMappingHelper
 									break;
 					case 'links':	$lnk_arr = explode('shared', $item->title);
 									
-									//preg_match_all('~<a(.*?)href="([^"]+)"(.*?)>~', $lnk_arr[1], $matches);
 									preg_match_all('/href=\"(.*?)\"/i', $lnk_arr[1], $matches);
-									
-									//print_r( $matches[1][0] );die("in api");
 									$strm_urls['links'] = $matches[1][0];
-									//$strm_urls['links'] = FRoute::external( $matches[1][0] , $xhtml = false , $ssl = null , $tmpl = false, $sef = false );
 									break;
-					
 				}
 				
 				$item->strm_urls = $strm_urls; 
-//print_r($strm_urls);die("in map");
 
 				$result[]	= $item;
 				//$result[]	= $row;

@@ -35,6 +35,9 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 	{
 		//init variable
 		$app = JFactory::getApplication();
+		//code for get non sef urls 
+		$jrouter = JFactory::getApplication()->getRouter();
+		$jrouter->setMode(JROUTER_MODE_RAW);
 		
 		$log_user = JFactory::getUser($this->plugin->get('user')->id);
 
@@ -100,20 +103,16 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 			}
 		}
 
-//print_r($stream);
-//die("in api");
-
 		$stream->get($options);
 
 		$result 	= $stream->toArray();
 
 		$data	= array();
-	
-		// Set the url to this listing
-		//$data->url = FRoute::stream();
 
 		$data11 = $mapp->mapItem($result,'stream',$target_user);
-
+		
+		$jrouter->setMode(JROUTER_MODE_SEF);
+		
 		return $data11;
 	}
 

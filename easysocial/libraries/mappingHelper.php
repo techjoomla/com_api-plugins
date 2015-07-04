@@ -217,9 +217,8 @@ public function albumsSchema($rows,$userid)
 	//function for stream main obj
 	public function streamSchema($rows,$userid) 
 	{
-		//$conv_model = FD::model('Conversations');
 		$result = array();
-
+		
 		foreach($rows as $ky=>$row)
 		{
 			if(isset($row->uid))
@@ -230,8 +229,6 @@ public function albumsSchema($rows,$userid)
 				// Set the stream title
 				$item->id = $row->uid;
 				
-				//$stream_url = FRoute::stream( array('id' => $row->uid , 'layout' => 'item', 'sef' => false ));
-	
 				//$item->title = strip_tags($row->title);
 				//code changed as request not right way
 				$item->title = $row->title;
@@ -367,10 +364,9 @@ print_r( $content_urls );die("in 11 api");
 				$strm_urls = array();
 				
 				$strm_urls['actors'] = $user_url;
+				
 				switch( $row->type )
 				{
-					/*case 'story':	$strm_urls['actors'] = $user_url;
-									break;*/
 					case 'discussions': $strm_urls['discussions'] = JURI::root().FRoute::apps( array('id' => $row->uid , 'layout' => 'canvas', 'sef' => false ));
 					//FRoute::apps( array( 'layout' => 'canvas' , 'customView' => 'item' , 'uid' => $group->getAlias() , 'type' => SOCIAL_TYPE_GROUP , 'id' => $this->getApp()->getAlias() , 'discussionId' => $discussion->id ) , false );
 									break;
@@ -392,7 +388,6 @@ print_r( $content_urls );die("in 11 api");
 				}
 				
 				$item->strm_urls = $strm_urls; 
-
 				$result[]	= $item;
 				//$result[]	= $row;
 				//end new

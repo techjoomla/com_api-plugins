@@ -1,12 +1,10 @@
 <?php
 /**
- * @package	K2 API plugin
- * @version 1.0
- * @author 	Rafael Corral
- * @link 	http://www.rafaelcorral.com
- * @copyright Copyright (C) 2011 Rafael Corral. All rights reserved.
- * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
- */
+ * @package API plugins
+ * @copyright Copyright (C) 2009 2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
+ * @license GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
+ * @link http://www.techjoomla.com
+*/
 
 defined('_JEXEC') or die( 'Restricted access' );
 
@@ -22,8 +20,9 @@ class EasysocialApiResourceGetalbums extends ApiResource
 {
 	public function get()
 	{
-	$this->plugin->setResponse($this->get_albums());			
-	}	
+	$this->plugin->setResponse($this->get_albums());
+	}
+	//get user album as per id / login user
 	public function get_albums()
 	{
 		$app = JFactory::getApplication();
@@ -34,15 +33,24 @@ class EasysocialApiResourceGetalbums extends ApiResource
 		$type = $app->input->get('type',0,'STRING');	
 		$mapp = new EasySocialApiMappingHelper();
 		//accepting pagination values.
-		$limitstart = $app->input->get('limitstart',0,'INT');
-		$limit =  $app->input->get('limit',0,'INT');		
+		$limitstart = $app->input->get('limitstart',5,'INT');
+		$limit =  $app->input->get('limit',10,'INT');		
 		// taking values in array for pagination of albums.		
-		$mydata['limitstart']=$limitstart;
-		$mydata['limit']=$limit;		
+		//$mydata['limitstart']=$limitstart;
+		$mydata['excludeblocked'] = 1;
+		$mydata['pagination'] = 1;
+		//$mydata['limit'] = $limit;
+		$mydata['privacy'] = true;
 		//creating object and calling relatvie method for data fetching.
 		$obj = new EasySocialModelAlbums();		
-		$obj->setState('limitstart',$limitstart);
-		$obj->setState('limit',$limit);				
+		
+		//$obj->setState('limitstart',$limitstart);
+		//$obj->setState('limit',$limit);
+		
+		//$obj->limitstart = $limitstart;
+		//$obj->limit= $limit;
+		
+	
 		// first param is user id,user type and third contains array for pagination.
 		$albums = $obj->getAlbums($uid,$type,$mydata);
 		//use to load table of album.
@@ -59,9 +67,13 @@ class EasysocialApiResourceGetalbums extends ApiResource
 		//getting count of photos in every albums.	
 		foreach($albums as $alb)
 		{
-		 $alb->count = $obj->getTotalPhotos($alb->id);		
+		 $alb->count = $obj->getTotalPhotos($alb->id);
 		}		
-		$all_albums = $mapp->mapItem($albums,'albums',$log_user);		
-		return $all_albums;		
+		$all_albums = $mapp->mapItem($albums,'albums',$log_user);
+		
+		$output = array_slice($all_albums, $limitstart, $limit);
+	
+	    return $output;
+
 	}
 }	

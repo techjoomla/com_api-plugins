@@ -316,15 +316,8 @@ class EasySocialApiUploadHelper
 	}
 	
 	// photo-album image upload function	
-	public function albumPhotoUpload($log_usr=0,$type=null)
-	{
-		//FD::checkToken();
-        // Only registered users should be allowed to upload photos
-        //FD::requireLogin();
-        // Get the current view
-        //$view   = $this->getCurrentView();
-        // Get current user.
-        $my     = FD::user();
+	public function albumPhotoUpload($log_usr=0,$type=null,$id)
+	{   
         // Load up the configuration
         $config     = FD::config();
         // Check if the photos is enabled
@@ -334,39 +327,20 @@ class EasySocialApiUploadHelper
         }
         // Load the album table     
 		 $album = FD::table( 'Album' );
-         $album->load( $album->id );  
+         $album->load( $id );  
 
         // Check if the album id provided is valid
         if (!$album->id || !$album->id) 
         {            
             return false;
-        }
-        
+        }        
         // Get the uid and the type
         $uid        = $album->uid;
         $type       = $album->type;
         // Load the photo library
-        $lib = FD::photo( $uid , $type );
-
-        // Check if the upload is for profile pictures
-        if (!$isAvatar) {
-            // Check if the person exceeded the upload limit
-            if ($lib->exceededUploadLimit()) {
-                return false;
-            }
-            // Check if the person exceeded the upload limit
-            if ($lib->exceededDiskStorage()) {
-             return false;
-            }
-
-            // Check if the person exceeded their daily upload limit
-            if ($lib->exceededDailyUploadLimit()) {
-                return false;
-            }
-        }
+        $lib = FD::photo( $uid , $type );       
         // Set uploader options
         $options = array( 'name' => 'file', 'maxsize' => $lib->getUploadFileSizeLimit() );
-
         // Get uploaded file
         $file   = FD::uploader( $options )->getFile();
         // If there was an error getting uploaded file, stop.
@@ -472,11 +446,7 @@ class EasySocialApiUploadHelper
         // Add Stream when a new photo is uploaded
         if ($createStream) {
             $photo->addPhotosStream( 'create' );
-        }
-
-        if ($isAvatar) {
-            return $photo;
-        }
+        }       
 		// After storing the photo, trigger rules that should occur after a photo is stored		
 		return $photo; 
 	}

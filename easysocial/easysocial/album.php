@@ -1,12 +1,10 @@
 <?php
 /**
- * @package	K2 API plugin
- * @version 1.0
- * @author 	Rafael Corral
- * @link 	http://www.rafaelcorral.com
- * @copyright Copyright (C) 2011 Rafael Corral. All rights reserved.
- * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
- */
+ * @package API plugins
+ * @copyright Copyright (C) 2009 2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
+ * @license GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
+ * @link http://www.techjoomla.com
+*/
 
 defined('_JEXEC') or die( 'Restricted access' );
 
@@ -35,28 +33,25 @@ class EasysocialApiResourceAlbum extends ApiResource
 	{
 	$this->plugin->setResponse($this->delete_check());
 	}
-	//common function to delete photo or album.
 	//switch case for photo delete or album delete.
 	public function delete_check()
 	{
-		
 		$app = JFactory::getApplication();
 		$flag = $app->input->get('flag',NULL,'STRING');
 		
 		switch($flag)
 		{        
-		case 'deletephoto':	$result1 = $this->delete_photo();
+			case 'deletephoto':	$result1 = $this->delete_photo();
 							return $result1;	
-		break;							
-		case 'deletealbum':	$result = $this->delete_album();
+							break;							
+			case 'deletealbum':	$result = $this->delete_album();
 							return $result;
-		break;
-		}		
+							break;
+		}
 	}	
 	//this function is use to delete photo from album
 	public function delete_photo()
-	{
-		
+	{		
 		$user = JFactory::getUser($this->plugin->get('user')->id);
 		$app = JFactory::getApplication();
 		$id = $app->input->get('id',0,'INT');		       
@@ -95,6 +90,7 @@ class EasysocialApiResourceAlbum extends ApiResource
 		$log_user= $this->plugin->get('user')->id;
 		$limitstart = $app->input->get('limitstart',0,'INT');
 		$limit =  $app->input->get('limit',10,'INT');	
+		
 		$mydata['album_id']=$album_id;
 		$mydata['uid']=$uid;
 		$mydata['start']=$limitstart;
@@ -149,7 +145,7 @@ class EasysocialApiResourceAlbum extends ApiResource
 		$title = $app->input->get('title',0,'USER');				
 		// Load the album
 		$album	= FD::table( 'Album' );
-		$album->load( $post[ 'id' ] );
+		$album->load();
 		// Determine if this item is a new item
 		$isNew 	= true;			
 		if( $album->id )
@@ -190,8 +186,14 @@ class EasysocialApiResourceAlbum extends ApiResource
 			return false;
 		}
 		$photo_obj = new EasySocialApiUploadHelper();
-		$photodata = $photo_obj->albumPhotoUpload($uid,$type);				
+		$photodata = $photo_obj->albumPhotoUpload($uid,$type,$album->id);				
 		$album->params=$photodata;
+		if(!$album->cover_id) 
+        {	
+            $album->cover_id  = $photodata->id;
+			// Store the album
+            $album->store();
+        }
 	return $album;
     }
 

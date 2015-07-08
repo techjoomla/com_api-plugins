@@ -83,14 +83,14 @@ class EasySocialApiMappingHelper
 		
 		return $item;
 	}
-	
+	//To build photo object 
 	public function photosSchema($rows,$userid)
 	{
 		$lang = JFactory::getLanguage();
 		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, 'en-GB', true);
 		$result = array();		
 		foreach($rows as $ky=>$row)
-		{	
+		{
 			if(isset($row->id))
 			{					
 				$item = new PhotosSimpleSchema();	
@@ -123,17 +123,18 @@ class EasySocialApiMappingHelper
 		}
 		return $result;
 	}
-	
-public function albumsSchema($rows,$userid)	
+	//to build ablum object
+	public function albumsSchema($rows,$userid)	
 	{	
+		//To load easysocial language constant
 		$lang = JFactory::getLanguage();
 		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, 'en-GB', true);
-		$result = array();		
+		$result = array();
+		
 		foreach($rows as $ky=>$row)
 		{	
 			if(isset($row->id))
-			{	
-				
+			{
 				$item = new GetalbumsSimpleSchema();
 				
 				$item->id = $row->id;
@@ -145,17 +146,19 @@ public function albumsSchema($rows,$userid)
 				$item->created=$row->created;
 				$item->assigned_date=$row->assigned_date;
 				$item->cover_featured=$row->cover_featured;
-				$item->cover_large=$row->cover_large;				
-				$item->cover_square=$row->cover_square;				
+				$item->cover_large=$row->cover_large;
+				$item->cover_square=$row->cover_square;
 				$item->cover_thumbnail=$row->cover_thumbnail;
 				$item->count=$row->count;				
 				$likes = FD::likes($row->id, SOCIAL_TYPE_ALBUM , 'create', SOCIAL_APPS_GROUP_USER );				
 				$item->likes = $this->createlikeObj($likes,$userid);
 			    //$item->total=$item->likes->total;			
+				
 				// Get album comments
 				$comments = FD::comments($row->id, SOCIAL_TYPE_ALBUM , 'create', SOCIAL_APPS_GROUP_USER , array('url' => $row->getPermalink()));				
 				$item->comment_element = $comments->element.".".$comments->group.".".$comments->verb;				
 				$comments->stream_id=1;
+				
 				//$comments->element=$item->comment_element;				
 				$item->comments = $this->createCommentsObj($comments);				
 				$options = array('uid' => $comments->uid, 'element' => $item->comment_element, 'stream_id' => $comments->stream_id);				
@@ -169,9 +172,7 @@ public function albumsSchema($rows,$userid)
 		return $result;		
 	}
 	
-	
-	
-	
+	//To build field object
 	public function fieldsSchema($rows,$userid)
 	{
 		
@@ -195,17 +196,19 @@ public function albumsSchema($rows,$userid)
 				$fobj->step = $row->step_id;
 				$fobj->field_value = $fmod_obj->getCustomFieldsValue($row->id,$userid , SOCIAL_FIELDS_GROUP_USER);
 				
+				
 				if($fobj->field_name == 'Gender')
 				{
 					$fobj->field_value = ( $fobj->field_value == 1 )?'male':'female';
 				}
+				/*
 				//to manage address as per site
 				if( $fobj->unique_key == 'ADDRESS' )
 				{
 					//$fobj->field_value = $row->data['address'];
 					$fobj->field_value = $row->data['state'].','.$row->data['country'];
 				}
-				
+				*/
 				$fobj->params = json_decode($row->params);
 				
 				$data[] = $fobj; 
@@ -241,34 +244,6 @@ public function albumsSchema($rows,$userid)
 				$item->element_id = $row->contextId;
 				//
 				$item->content = $row->content;
-				
-	
-	//$attr  = $nodes->item(0)->getAttribute('href');
-	/*
-	$dom = new DOMDocument;
-	$dom->loadHTML( $row->content );
-	$nodes = $dom->getElementsByTagName('a');
-	$content_urls = array();
-	
-	if( $nodes->length )
-	{
-		$xpath = new DOMXPath($dom);
-		$nodes = $xpath->query('//a/@href');
-		
-		foreach($nodes as $href)
-		{
-			 $content_urls[] = $href->nodeValue;
-			 //$href->nodeValue = 'new value';              // set new attribute value
-			//$href->parentNode->removeAttribute('href');  // remove attribute
-		}
-		
-print_r( $content_urls );die("in 11 api");
-		
-		//$val = FRoute::external( $attr , $xhtml = false , $ssl = null , $tmpl = false, $sef = false );
-		//$val = FRoute::raw( $attr );
-
-	}*/
-	
 				
 				$item->preview = $row->preview;
 				// Set the stream content
@@ -365,7 +340,7 @@ print_r( $content_urls );die("in 11 api");
 				
 				$strm_urls['actors'] = $user_url;
 				
-				switch( $row->type )
+				/*switch( $row->type )
 				{
 					case 'discussions': $strm_urls['discussions'] = JURI::root().FRoute::apps( array('id' => $row->uid , 'layout' => 'canvas', 'sef' => false ));
 					//FRoute::apps( array( 'layout' => 'canvas' , 'customView' => 'item' , 'uid' => $group->getAlias() , 'type' => SOCIAL_TYPE_GROUP , 'id' => $this->getApp()->getAlias() , 'discussionId' => $discussion->id ) , false );
@@ -387,7 +362,7 @@ print_r( $content_urls );die("in 11 api");
 									break;
 				}
 				
-				$item->strm_urls = $strm_urls; 
+				$item->strm_urls = $strm_urls; */
 				$result[]	= $item;
 				//$result[]	= $row;
 				//end new
@@ -774,32 +749,6 @@ print_r( $content_urls );die("in 11 api");
 	//calculate laps time
 	function calLaps($date)
 	{
-		/*
-		$start_date = new DateTime($date);
-		$since_start = $start_date->diff(new DateTime(date('Y-m-d h:i:s a')));
-	
-		$time_str = array();
-		foreach($since_start as $ky=>$val)
-		{
-			switch($ky)
-			{
-				case 'y': $time_str[] = ($val)?$val.' Years':null;
-							break;
-				case 'm': $time_str[] = ($val)?$val.' month':null;
-							break;
-				case 'd': $time_str[] = ($val)?$val.' day':null;
-							break;
-				case 'h': $time_str[] = ($val)?$val.' hours':null;
-							break;
-				case 'i': $time_str[] = ($val)?$val.' minute':null;
-							break;
-				case 's': $time_str[] = ($val)?$val.' seconds':null;
-							break;
-			}
-		}
-		
-		return $str_time = implode(" ",array_filter($time_str));
-		*/
 		if(strtotime($date) == 0)
 		{
 			return 0;
@@ -872,4 +821,26 @@ print_r( $content_urls );die("in 11 api");
 		
 		return $text;
 	}
+	
+	public function frnd_nodes($data,$user)
+	{
+		//print_r($this->plugin->get('user')->id);die();
+		//$user = JFactory::getUser($this->plugin->get('user')->id);
+		$frnd_mod = FD::model( 'Friends' );
+		$list = array();
+		foreach($data as $k=>$node)
+		{
+			//~ print_r($node);
+			//~ die();
+			if($node->id != $user->id)
+			{								
+				$node->mutual = $frnd_mod->getMutualFriendCount($user->id,$node->id);
+				$node->isFriend = $frnd_mod->isFriends($user->id,$node->id);
+				$node->approval_pending = $frnd_mod->isPendingFriends($user->id,$node->id);			
+			}
+		}		
+		return $data;	
+	 }	
+	
+	
 }

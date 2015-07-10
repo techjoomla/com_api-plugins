@@ -158,7 +158,7 @@ class EasySocialApiMappingHelper
 				$comments = FD::comments($row->id, SOCIAL_TYPE_ALBUM , 'create', SOCIAL_APPS_GROUP_USER , array('url' => $row->getPermalink()));				
 				$item->comment_element = $comments->element.".".$comments->group.".".$comments->verb;				
 				$comments->stream_id=1;
-				
+			
 				//$comments->element=$item->comment_element;				
 				$item->comments = $this->createCommentsObj($comments);				
 				$options = array('uid' => $comments->uid, 'element' => $item->comment_element, 'stream_id' => $comments->stream_id);				
@@ -547,7 +547,11 @@ class EasySocialApiMappingHelper
 	{
 		if($rows == null || $userid == 0)
 		{
-			return false;
+			$ret_arr = new stdClass;
+			$ret_arr->status = false;
+			$ret_arr->message = "No group found in search";
+			
+			return $ret_arr;
 		}
 
 		$result = array();

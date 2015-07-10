@@ -81,8 +81,8 @@ class EasysocialApiResourceSearch extends ApiResource
 		}
 		
 		$base_obj = $mapp->mapItem($susers,'user',$log_user->id);
+
 		$list['user'] = $this->createSearchObj( $base_obj );
-		//$list['user'] = $this->basefrndObj($susers);
 		
 		//for group
 		$query1 = $db->getQuery(true);
@@ -116,8 +116,14 @@ class EasysocialApiResourceSearch extends ApiResource
 	//format friends object into required object
 	function createSearchObj($data=null)
 	{
-		if($data==null)
-		return 0;
+		if( $data == null )
+		{
+			$ret_arr = new stdClass;
+			$ret_arr->status = false;
+			$ret_arr->message = "No user found in search";
+			
+			return $ret_arr;
+		}
 		
 		$user = JFactory::getUser($this->plugin->get('user')->id);
 		$frnd_mod = new EasySocialModelFriends();
@@ -134,7 +140,7 @@ class EasysocialApiResourceSearch extends ApiResource
 				$list[] = $node;
 			}
 		}
-		
+
 		return $list;
 		
 	}

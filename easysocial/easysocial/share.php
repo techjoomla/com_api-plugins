@@ -103,7 +103,6 @@ class EasysocialApiResourceShare extends ApiResource
 
 		if (!empty( $friends_tags )) {
 			
-			//$type = 'story';
 			// Get the friends model
 			$model = FD::model('Friends');
 
@@ -121,24 +120,29 @@ class EasysocialApiResourceShare extends ApiResource
 		{
 			$friends = null;
 		}
-//var_dump($friends);die("in share api");
+
 		$privacyRule = ( $type == 'photos' ) ? 'photos.view' : 'story.view';
 			
 			//for hashtag mentions
 			$mentions = null;
 
-			if($type == 'hashtag')
+			//if($type == 'hashtag' || !empty($content))
+			if(!empty($content))
 			{
-				$type = 'story';
+				//$type = 'story';
 				$start = 0;
 				$posn = array();
 				
+				//code adjust for 0 position hashtag
+				$content = 'a '.$content;
 				while($pos = strpos(($content),'#',$start))
 				{
 					//echo 'Found # at position '.$pos."\n";
-					$posn[] = $pos;
+					$posn[] = $pos - 2;
 					$start = $pos+1;
 				}
+				$content = substr($content, 2);
+				//
 				//$pos = strpos(($content),'#',$start);
 				
 				$cont_arr = explode(' ',$content);
@@ -158,6 +162,20 @@ class EasysocialApiResourceShare extends ApiResource
 				}
 
 			}
+			$contextIds = 0;
+			if($type == 'photos')
+			{
+				$photo_obj = $this->uploadPhoto($log_usr,$type);
+				
+				$photo_ids[] = $photo_obj->id;
+				$contextIds = (count($photo_ids))?$photo_ids:null;
+			}
+			else
+			{
+				$type = 'story';
+			}
+			
+			
 			// Options that should be sent to the stream lib
 			$args = array(
 							'content' => $content,
@@ -176,17 +194,10 @@ class EasysocialApiResourceShare extends ApiResource
 
 			$photo_ids = array();
 			$args['actorId'] = $log_usr;
-			$args['contextIds'] = 0;
+			$args['contextIds'] = $contextIds;
 			$args['contextType']	= $type;
+			
 //print_r($args);die("in share api");
-			if($type == 'photos')
-			{
-				$photo_obj = $this->uploadPhoto($log_usr,$type);
-				
-				$photo_ids[] = $photo_obj->id;
-				$args['contextIds'] = (count($photo_ids))?$photo_ids:null;
-			}
-
 			// Create the stream item
 			$stream = $story->create($args);
 
@@ -247,7 +258,7 @@ class EasysocialApiResourceShare extends ApiResource
 
 		// Bind photo data
 		$photo              = FD::table( 'Photo' );
-		$photo->uid         = $uid;
+		$photo->uid         = 0;
 		$photo->type        = $type;
 		$photo->user_id     = $my->id;
 		$photo->album_id    = $album->id;

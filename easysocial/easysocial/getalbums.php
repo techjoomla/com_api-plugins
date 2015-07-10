@@ -48,8 +48,7 @@ class EasysocialApiResourceGetalbums extends ApiResource
 		//$obj->setState('limit',$limit);
 		
 		//$obj->limitstart = $limitstart;
-		//$obj->limit= $limit;
-		
+		//$obj->limit= $limit;	
 	
 		// first param is user id,user type and third contains array for pagination.
 		$albums = $obj->getAlbums($uid,$type,$mydata);

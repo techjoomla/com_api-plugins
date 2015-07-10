@@ -79,6 +79,7 @@ class EasysocialApiResourceFriends extends ApiResource
 			break;						
 			case 'invites': //getiing invited friends
 							  $invites['data'] = $frnd_mod->getInvitedUsers($userid);
+							  $mssg="You have no invitations";
 							  if(empty($invites['data']))
 							  {
 								$invites['data']['message']=$mssg;
@@ -102,16 +103,20 @@ class EasysocialApiResourceFriends extends ApiResource
 	    foreach($frnd_list['data'] as $ky=>$lval)
 	    {	
 			//get mutual friends of given user
-			if($userid != $user->id)
+			if( $lval->id != $user->id)
 			{
 				$lval->mutual = $frnd_mod->getMutualFriendCount($user->id,$lval->id);
-				$lval->isFriend = $frnd_mod->isFriends($user->id,$lval->id);
+				
+				//if( $user->id != $lval->id )
+				$lval->isFriend = $frnd_mod->isFriends( $user->id,$lval->id );
+				$lval->isself = false;
 				//$lval->mutual_frnds = $frnd_mod->getMutualFriends($userid,$lval->id);
 			}
 			else
 			{
 				$lval->mutual = $frnd_mod->getMutualFriendCount($userid,$lval->id);
-				$lval->isFriend = $frnd_mod->isFriends($user->id,$lval->id);
+				$lval->isFriend = $frnd_mod->isFriends($userid,$lval->id);
+				$lval->isself = true;
 			}
 
 			//$lval->mutual = $frnd_mod->getMutualFriendCount($user->id,$lval->id);

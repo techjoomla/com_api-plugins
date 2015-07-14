@@ -16,7 +16,7 @@ require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/friends.php'
 
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/mappingHelper.php';
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/uploadHelper.php';
-
+//this api use for get all notification in app
 class EasysocialApiResourceNotification extends ApiResource
 {
 	public function get()

@@ -330,7 +330,7 @@ class EasySocialApiMappingHelper
 				// mini mode should not have any actions such as - likes, comments, share and etc.
 				$item->mini = $row->display == SOCIAL_STREAM_DISPLAY_MINI ? true : false;
 				
-				//build share url
+				//build share url use for share post through app
 				$sharing = FD::get( 'Sharing', array( 'url' => FRoute::stream( array( 'layout' => 'item', 'id' => $row->uid, 'external' => true, 'xhtml' => true ) ), 'display' => 'dialog', 'text' => JText::_( 'COM_EASYSOCIAL_STREAM_SOCIAL' ) , 'css' => 'fd-small' ) );
 				$item->share_url = $sharing->url;
 				

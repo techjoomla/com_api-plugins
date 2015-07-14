@@ -12,7 +12,6 @@ jimport('joomla.plugin.plugin');
 jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/sharing/sharing.php';
-//require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/albums.php';
 
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/mappingHelper.php';
 

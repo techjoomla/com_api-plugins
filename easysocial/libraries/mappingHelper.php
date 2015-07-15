@@ -298,12 +298,22 @@ class EasySocialApiMappingHelper
 					//$with_user_url[] = $this->createUserObj($actor->id); 
 				}
 				$item->with = null;
-				
+				//to maintain site view for with url
 				if( !empty($with_user_url) )
-				{
-					$with_str = implode(' and ',$with_user_url);
-					$item->with = 'with '.$with_str;
-				}
+			   {
+				   $cnt = sizeof($with_user_url);                                                                                
+				   $item->with = 'with '.$with_user_url[0];
+																				   
+				   for($i=0;$i<$cnt-2;$i++)
+				   {                                                
+						   $item->with = $item->with.', '.$with_user_url[$i+1];                                        
+				   }
+				   if($cnt-1 != 0)
+				   {
+						   $item->with =  $item->with.' and '.$with_user_url[$cnt-1];                                        
+				   }  
+			   }
+				
                 //
 				$item->actor = $actors;
 

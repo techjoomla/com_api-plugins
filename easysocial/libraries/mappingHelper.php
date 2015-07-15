@@ -648,15 +648,19 @@ class EasySocialApiMappingHelper
 
 		if( $userid != $other_user_id )
 		{
+			$frnd_mod = FD::model( 'Friends' );
 			$log_user_obj = FD::user( $userid );
 			$user_obj->isfriend = $log_user_obj->isFriends( $other_user_id );
 			$user_obj->isfollower = $log_user_obj->isFollowed( $other_user_id );
+			$user_obj->approval_pending = $frnd_mod->isPendingFriends($userid,$other_user_id);
+
 			//$user_obj->approval_pending = $user->isPending($other_user_id);
 		}
 		$user_obj->friend_count = $other_user_obj->getTotalFriends();
 		$user_obj->follower_count = $other_user_obj->getTotalFollowers();
 		$user_obj->badges = $other_user_obj->getBadges();
 		$user_obj->points = $other_user_obj->getPoints();
+		
 		
 		return $user_obj;
 	}

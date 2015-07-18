@@ -40,7 +40,9 @@ class EasysocialApiResourceGetalbums extends ApiResource
 		$mydata['excludeblocked'] = 1;
 		$mydata['pagination'] = 1;
 		//$mydata['limit'] = $limit;
-		$mydata['privacy'] = true;
+		$mydata['privacy'] = true;		
+		$mydata['order'] = 'a.assigned_date';		
+		$mydata['direction'] = 'DESC';		
 		//creating object and calling relatvie method for data fetching.
 		$obj = new EasySocialModelAlbums();		
 		
@@ -56,8 +58,11 @@ class EasysocialApiResourceGetalbums extends ApiResource
 		$album = FD::table( 'Album' );
 				
 		foreach($albums as $album )
-		{		
+		{
+		 if($album->cover_id)
+         {
          $album->load( $album->cover_id );
+		 }
          $album->cover_featured = $album->getCover('featured');
          $album->cover_large = $album->getCover('large');
          $album->cover_square = $album->getCover('square');

@@ -95,6 +95,10 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 					//$tag = '';
 					$options['tag'] = $tag;
 					break;
+				case 'sticky':
+					//$options['guest'] = true;
+					$options['type'] = 'sticky';
+					break;
 				default:
 					$options['context'] = $filter;
 					break;

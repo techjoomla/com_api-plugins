@@ -34,11 +34,11 @@ class EasysocialApiResourceComments extends ApiResource
 		$verb = $app->input->get('verb', '', 'string');
 		$uid = $app->input->get('uid', 0, 'int');//element id
 
-		$input = $app->input->get( 'comment', '' ,'STRING');
+		$input = $app->input->get( 'comment', '' ,'RAW');
 		$params = $app->input->get( 'params',array(),'ARRAY');//params
 		$streamid = $app->input->get( 'stream_id', '' , 'INT');//whole stream id
 		$parent = $app->input->get( 'parent', 0 ,'INT');//parent comment id
-	
+
 		$result = new stdClass;
 		$valid = 1;
 		

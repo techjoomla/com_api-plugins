@@ -50,7 +50,10 @@ class EasysocialApiResourceGroup_members extends ApiResource
 		$grp_model = FD::model('Groups');
 		foreach($user_list as $user)
 		{
+			$user->isMember = $grp_model->isMember( $user->id,$group_id );
 			$user->isOwner = $grp_model->isOwner( $user->id,$group_id );
+			$user->isInvited = $grp_model->isInvited( $user->id,$group_id );
+			$user->isPendingMember = $grp_model->isPendingMember( $user->id,$group_id );
 		}
 		
 		//manual pagination code
@@ -84,7 +87,7 @@ class EasysocialApiResourceGroup_members extends ApiResource
 		
 		$obj->success = 1;
 		$obj->state = $members->state;
-		$obj->message = 'joining application sent';
+		$obj->message = 'Great! Your request has been sent successfully and it is pending approval from the site administrator.';
 		
 		return $obj;
 		

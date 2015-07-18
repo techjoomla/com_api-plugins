@@ -81,23 +81,31 @@ class EasysocialApiResourceShare extends ApiResource
 			$clusterType = ($cluster) ? 'group' : null;
 			$isCluster = $cluster ? true : false;
 
-			/*if ($isCluster) {
+			if ($isCluster) {
 				
 				$group = FD::group($cluster);
 				$permissions = $group->getParams()->get('stream_permissions', null);
 
-				if($permissions == null)
+				if($permissions != null)
 				{
+					// If the user is not an admin, ensure that permissions has member
+					if ($group->isMember() && !in_array('member', $permissions) && !$group->isOwner() && !$group->isAdmin()) {
+						$result->message = 'This group memder do not have share data permission';
+					}
+
+					// If the user is an admin, ensure that permissions has admin
+					if ($group->isAdmin() && !in_array('admin', $permissions) && !$group->isOwner()) {
+						$result->message = 'This group admin do not have share data permission';
+					}
+					
 					$result->id = 0;
 					$result->status  = 0;
-					$result->message = 'This group do not have share data permission';
-					
 					$this->plugin->setResponse($result);
-					return true;
+					return;
 				}
-			}*/
+			}
 			
-			//validate friends 
+		//validate friends 
 			
 		$friends = array();
 
@@ -151,16 +159,23 @@ class EasysocialApiResourceShare extends ApiResource
 				{
 					if(preg_match('/[\'^#,|=_+¬-]/', $val))
 					{
-						$mention = new stdClass();
-						$mention->start = $posn[$indx++];
-						$mention->length = strlen($val) - 0;
-						$mention->value = str_replace('#','',$val);
-						$mention->type = 'hashtag';
-						
-						$mentions[] = $mention; 
+						//$vsl = substr_count($val,'#');
+						$val_arr = array_filter(explode('#',$val));
+	
+						foreach($val_arr as $subval)
+						{
+							$subval = '#'.$subval;
+							$mention = new stdClass();
+							$mention->start = $posn[$indx++];
+							$mention->length = strlen($subval) - 0;
+							$mention->value = str_replace('#','',$subval);
+							$mention->type = 'hashtag';
+							
+							$mentions[] = $mention;
+						} 
 					}
 				}
-
+//print_r( $mentions );die("in share api");
 			}
 			$contextIds = 0;
 			if($type == 'photos')

@@ -197,18 +197,18 @@ class EasySocialApiMappingHelper
 				$fobj->field_value = $fmod_obj->getCustomFieldsValue($row->id,$userid , SOCIAL_FIELDS_GROUP_USER);
 				
 				
-				if($fobj->field_name == 'Gender')
+				if($fobj->field_name == 'Gender' &&  $fobj->field_value != null )
 				{
 					$fobj->field_value = ( $fobj->field_value == 1 )?'male':'female';
 				}
-				/*
+				
 				//to manage address as per site
 				if( $fobj->unique_key == 'ADDRESS' )
 				{
 					//$fobj->field_value = $row->data['address'];
 					$fobj->field_value = $row->data['state'].','.$row->data['country'];
 				}
-				*/
+				
 				$fobj->params = json_decode($row->params);
 				
 				$data[] = $fobj; 
@@ -435,7 +435,7 @@ class EasySocialApiMappingHelper
 				
 				$row->group = (isset($row->group))?$row->group:null;
 				$row->verb = (isset($row->group))?$row->verb:null;
-				
+
 				$item->uid = $cdt->id;
 				$item->element = $cdt->element;
 				$item->element_id = $row->uid;

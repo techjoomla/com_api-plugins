@@ -21,5 +21,6 @@ class userSimpleSchema {
 	public $points;
 	public $more_info;
 	public $isOwner;
+	public $isrequestor;
 	
 }

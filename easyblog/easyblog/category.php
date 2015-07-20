@@ -59,6 +59,7 @@ class EasyblogApiResourceCategory extends ApiResource
 		
 		foreach ($rows as $k => $v) {
 			$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($v, '', 100, array('text'));
+			$item->isowner = ( $v->created_by == $this->plugin->get('user')->id )?true:false;
 			$posts[] = $item;
 		}
 		

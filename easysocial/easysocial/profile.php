@@ -121,6 +121,15 @@ class EasysocialApiResourceProfile extends ApiResource
 				}
 				
 			}
+			
+			$friendmodel = FD::model( 'Friends' );
+			$result = $friendmodel->getPendingRequests($log_user);
+			$user_obj->isrequestor=false;
+			foreach($result as $res)
+			{
+				   if($res->actor_id == $other_user_id)
+				   $user_obj->isrequestor=true;   
+			}
 
 			$user_obj->more_info = $field_arr; 
 

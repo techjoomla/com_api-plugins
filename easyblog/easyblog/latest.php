@@ -37,9 +37,6 @@ class EasyblogApiResourceLatest extends ApiResource
 		$blog 		= EasyBlogHelper::getTable( 'Blog' );
 		$blog->load( $id );
 		$modelPT	= EasyBlogHelper::getModel( 'PostTag' );
-		
-
-		
 		//~ if ($id && !$tags) {
 			//~ if(!$blog->id) 
 			//~ {
@@ -58,20 +55,20 @@ class EasyblogApiResourceLatest extends ApiResource
 			$sorting	= $this->plugin->params->get( 'sorting' , 'featured' );
 		}//for get users blog
 		else if($user_id)
-		{	$blogs = EasyBlogHelper::getModel( 'Blogs' );
-			$rows = $blogs->getBlogs( $user_id );
+		{	$blogs = EasyBlogHelper::getModel( 'Blog' );
+			$rows = $blogs->getBlogsBy('blogger', $user_id, 'latest');
 		}
 		else
 		{	//to get latest blog
 			$sorting	= $this->plugin->params->get( 'sorting' , 'latest' );
 			$rows 		= $model->getBlogsBy( $sorting , '' , $sorting , 0, EBLOG_FILTER_PUBLISHED, $search );
-		}
-		
+		}		
 		//data mapping
 		foreach ($rows as $k => $v) 
 		{
 			$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($v,'', 100, array('text'));							
 			$item->tags = $modelPT->getBlogTags($item->postid);
+			$item->isowner = ( $v->created_by == $this->plugin->get('user')->id )?true:false;
 			$posts[] = $item;
 		}
 		$this->plugin->setResponse( $posts );

@@ -97,13 +97,15 @@ class EasyblogApiResourceBlog extends ApiResource
 		}
 
 		$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($blog, '<p><br><pre><a><blockquote><strong><h2><h3><em><ul><ol><li><iframe>');
+		$item->isowner = ( $blog->created_by == $this->plugin->get('user')->id )?true:false;
 		// Tags
 		$modelPT	= EasyBlogHelper::getModel( 'PostTag' );
 		$item->tags = $modelPT->getBlogTags($blog->id);
 		
 		//created by vishal - for show extra images
 		$item->text = preg_replace('/"images/i', '"'.JURI::root().'images', $item->text );
-		
+		//$item->text = str_replace('href="','href="'.JURI::root(),$item->text);
+				
 		$this->plugin->setResponse( $item );
 	}
 	public function delete_blog()
@@ -121,8 +123,9 @@ class EasyblogApiResourceBlog extends ApiResource
 		else
 		{
 			$val = $blog->delete($id);
-			$val->message='blog deleted successfully';
-			return $val;
+			$re->status = $val;
+			$res->message='blog deleted successfully';
+			return $res;
 		}	
 	}	
 }

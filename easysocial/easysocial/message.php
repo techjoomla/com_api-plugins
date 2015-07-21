@@ -29,16 +29,14 @@ class EasysocialApiResourceMessage extends ApiResource
 	{
 		$app = JFactory::getApplication();
 		$recipients = $app->input->get('recipients',null,'ARRAY');
-		$msg = $app->input->get('message',null,'STRING');
+		$msg = $app->input->get('message',null,'RAW');
 		//$target_usr = $app->input->get('target_user',0,'INT');
 		$conversion_id = $app->input->get('conversion_id',0,'INT');
 		$log_usr = $this->plugin->get('user')->id;
 		$valid = 1;
 		// Normalize CRLF (\r\n) to just LF (\n)
 		$msg = str_ireplace("\r\n", "\n", $msg);
-	
-	//print_r($recipients);die("in post message");
-	
+
 		$result = new stdClass;
 		if(count($recipients)<1)
 		{

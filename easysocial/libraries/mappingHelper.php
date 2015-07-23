@@ -344,6 +344,11 @@ class EasySocialApiMappingHelper
 				$sharing = FD::get( 'Sharing', array( 'url' => FRoute::stream( array( 'layout' => 'item', 'id' => $row->uid, 'external' => true, 'xhtml' => true ) ), 'display' => 'dialog', 'text' => JText::_( 'COM_EASYSOCIAL_STREAM_SOCIAL' ) , 'css' => 'fd-small' ) );
 				$item->share_url = $sharing->url;
 				
+				// Check if this item has already been bookmarked
+				$sticky = FD::table('StreamSticky');
+				
+				$item->isPinned = $sticky->load(array('stream_id' => $row->uid));
+				
 				//create urls for app side mapping
 				//$log_usr = FRoute::profile( array('id' => $row->uid , 'layout' => 'item', 'sef' => false ));
 				$strm_urls = array();

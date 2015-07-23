@@ -26,6 +26,7 @@ class streamSimpleSchema {
 	public $share_url;
 	public $stream_url;
 	public $with;
+	public $isPinned;
 	
 }
 

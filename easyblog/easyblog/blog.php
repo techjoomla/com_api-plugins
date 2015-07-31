@@ -53,8 +53,8 @@ class EasyblogApiResourceBlog extends ApiResource
 		
 		$blog->created_by = $log_user;
 		//this come from app side
-		$blog->allowcomment = 1;
-		$blog->subscription = 1;
+		$blog->allowcomment = $post['allowcomment'];
+		$blog->subscription = $post['subscription'];
 		$blog->frontpage = 1;
 		$blog->send_notification_emails = 1;
 		//
@@ -98,6 +98,8 @@ class EasyblogApiResourceBlog extends ApiResource
 
 		$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($blog, '<p><br><pre><a><blockquote><strong><h2><h3><em><ul><ol><li><iframe>');
 		$item->isowner = ( $blog->created_by == $this->plugin->get('user')->id )?true:false;
+		$item->allowcomment = $blog->allowcomment;
+		$item->allowsubscribe = $blog->subscription;
 		// Tags
 		$modelPT	= EasyBlogHelper::getModel( 'PostTag' );
 		$item->tags = $modelPT->getBlogTags($blog->id);

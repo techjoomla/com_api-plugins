@@ -41,9 +41,9 @@ class EasyblogApiResourceBlog extends ApiResource
 		$post = $input->post->getArray(array());
 		$log_user = $this->plugin->get('user')->id;
 		$res = new stdClass;
-		
+	
 		//code for upload
-		$blog->bind($post);
+		$blog->bind($post,true);
 
 		$blog->permalink = str_replace('+','-',$blog->title);
 		$blog->published = 1;
@@ -53,10 +53,10 @@ class EasyblogApiResourceBlog extends ApiResource
 		
 		$blog->created_by = $log_user;
 		//this come from app side
-		$blog->allowcomment = 1;
+		/*$blog->allowcomment = 1;
 		$blog->subscription = 1;
 		$blog->frontpage = 1;
-		$blog->send_notification_emails = 1;
+		$blog->send_notification_emails = 1;*/
 		//
 		$blog->created = date("Y-m-d h:i:s");
 		$blog->publish_up = date("Y-m-d h:i:s");
@@ -98,6 +98,8 @@ class EasyblogApiResourceBlog extends ApiResource
 
 		$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($blog, '<p><br><pre><a><blockquote><strong><h2><h3><em><ul><ol><li><iframe>');
 		$item->isowner = ( $blog->created_by == $this->plugin->get('user')->id )?true:false;
+		$item->allowcomment = $blog->allowcomment;
+        $item->allowsubscribe = $blog->subscription;
 		// Tags
 		$modelPT	= EasyBlogHelper::getModel( 'PostTag' );
 		$item->tags = $modelPT->getBlogTags($blog->id);

@@ -53,7 +53,6 @@ class EasyblogApiResourceBlog extends ApiResource
 		
 		$blog->created_by = $log_user;
 
-		//
 		$blog->created = date("Y-m-d h:i:s");
 		$blog->publish_up = date("Y-m-d h:i:s");
 		$blog->created_by = $this->plugin->getUser()->id;
@@ -95,7 +94,9 @@ class EasyblogApiResourceBlog extends ApiResource
 		$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($blog, '<p><br><pre><a><blockquote><strong><h2><h3><em><ul><ol><li><iframe>');
 		$item->isowner = ( $blog->created_by == $this->plugin->get('user')->id )?true:false;
 		$item->allowcomment = $blog->allowcomment;
+
         $item->allowsubscribe = $blog->subscription;
+
 		// Tags
 		$modelPT	= EasyBlogHelper::getModel( 'PostTag' );
 		$item->tags = $modelPT->getBlogTags($blog->id);

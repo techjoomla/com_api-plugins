@@ -44,10 +44,10 @@ class EasysocialApiResourceShare extends ApiResource
 		
 		$friends_tags = $app->input->get('friends_tags',null,'ARRAY');
 		
-		$log_usr = $this->plugin->get('user')->id;
+		$log_usr = intval($this->plugin->get('user')->id);
 		//now take login user stream for target
-		$targetId = ( $targetId != $log_usr )?$targetId:'';
-		
+		$targetId = ( $targetId != $log_usr )?$targetId:$log_usr;
+
 		$valid = 1;
 		$result = new stdClass;
 		
@@ -180,7 +180,7 @@ class EasysocialApiResourceShare extends ApiResource
 			$contextIds = 0;
 			if($type == 'photos')
 			{
-				$photo_obj = $this->uploadPhoto($log_usr,$type);
+				$photo_obj = $this->uploadPhoto($log_usr,'user');
 				
 				$photo_ids[] = $photo_obj->id;
 				$contextIds = (count($photo_ids))?$photo_ids:null;
@@ -190,6 +190,8 @@ class EasysocialApiResourceShare extends ApiResource
 				$type = 'story';
 			}
 			
+			// Process moods here
+			$mood = FD::table('Mood');
 			
 			// Options that should be sent to the stream lib
 			$args = array(
@@ -202,20 +204,35 @@ class EasysocialApiResourceShare extends ApiResource
 							'cluster'		=> $cluster,
 							'clusterType'	=> $clusterType,
 							'mood'			=> null,
-							'privacyRule'	=> 'public',
-							'privacyValue'	=> '',
-							'privacyCustom'	=> $privacyRule
+							'privacyRule'	=> $privacyRule,
+							'privacyValue'	=> 'public',
+							'privacyCustom'	=> ''
 						);
 
 			$photo_ids = array();
 			$args['actorId'] = $log_usr;
 			$args['contextIds'] = $contextIds;
 			$args['contextType']	= $type;
-			
-//print_r($args);die("in share api");
+
 			// Create the stream item
 			$stream = $story->create($args);
+			
+			// Privacy is only applicable to normal postings
+			if (!$isCluster) {
+				$privacyLib = FD::privacy();
 
+				if ($type == 'photos') {
+
+					$photoIds = FD::makeArray($contextIds);
+
+					foreach ($photoIds as $photoId) {
+						$privacyLib->add($privacyRule, $photoId, $type, 'public', null, '');
+					}
+				} else {
+					$privacyLib->add($privacyRule, $stream->uid, $type, 'public', null, '');
+				}
+
+			}
 			// Add badge for the author when a report is created.
 			$badge = FD::badges();
 			$badge->log('com_easysocial', 'story.create', $log_usr, JText::_('Posted a new update'));
@@ -273,12 +290,13 @@ class EasysocialApiResourceShare extends ApiResource
 
 		// Bind photo data
 		$photo              = FD::table( 'Photo' );
-		$photo->uid         = 0;
+		$photo->uid         = $log_usr;
 		$photo->type        = $type;
 		$photo->user_id     = $my->id;
 		$photo->album_id    = $album->id;
 		$photo->title       = $file[ 'name' ];
 		$photo->caption     = '';
+		$photo->state     = 1;
 		$photo->ordering    = 0;
 
 		// Set the creation date alias

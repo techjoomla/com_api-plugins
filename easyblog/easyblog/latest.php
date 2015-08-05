@@ -69,6 +69,19 @@ class EasyblogApiResourceLatest extends ApiResource
 			$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($v,'', 100, array('text'));							
 			$item->tags = $modelPT->getBlogTags($item->postid);
 			$item->isowner = ( $v->created_by == $this->plugin->get('user')->id )?true:false;
+			
+			if($v->blogpassword!='')
+			{
+                $item->ispassword=true;
+            }
+            else
+            {
+                $item->ispassword=false;
+            }
+                
+            $item->blogpassword=$v->blogpassword;
+			
+			
 			$posts[] = $item;
 		}
 		$this->plugin->setResponse( $posts );

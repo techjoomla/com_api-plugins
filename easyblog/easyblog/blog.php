@@ -52,11 +52,7 @@ class EasyblogApiResourceBlog extends ApiResource
 		//$blog->write_content_hidden = 1;
 		
 		$blog->created_by = $log_user;
-		//this come from app side
-		/*$blog->allowcomment = 1;
-		$blog->subscription = 1;
-		$blog->frontpage = 1;
-		$blog->send_notification_emails = 1;*/
+
 		//
 		$blog->created = date("Y-m-d h:i:s");
 		$blog->publish_up = date("Y-m-d h:i:s");

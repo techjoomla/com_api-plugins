@@ -40,13 +40,17 @@ class EasyblogApiResourceBlog extends ApiResource
 		$blog = EasyBlogHelper::getTable( 'Blog', 'Table' );
 		$post = $input->post->getArray(array());
 		$log_user = $this->plugin->get('user')->id;
+		$createTag=array();
 		$res = new stdClass;
 	
 		//code for upload
 		$blog->bind($post,true);
 
 		$blog->permalink = str_replace('+','-',$blog->title);
-		$blog->published = 1;
+		//for publish unpublish blog.
+		$blog->published = $post['published'];
+		//create tags for blog
+		$createTag = $post['tags'];	
 		
 		//$blog->write_content = 1;
 		//$blog->write_content_hidden = 1;
@@ -61,7 +65,9 @@ class EasyblogApiResourceBlog extends ApiResource
 				$this->plugin->setResponse( $this->getErrorResponse(404, $blog->getError()) );
 				return;
 			}
-			
+		//create tags for blog called the function	
+		$blog->processTags( $createTag, 1 );
+		$blog->processTrackbacks();
 			$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($blog, '<p><br><pre><a><blockquote><strong><h2><h3><em><ul><ol><li>');
 			
 

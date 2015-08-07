@@ -1,11 +1,15 @@
 <?php
-
 /**
- * @package API plugins
- * @copyright Copyright (C) 2009 2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
- * @license GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
- * @link http://www.techjoomla.com
-*/
+ * @package		EasyBlog
+ * @copyright	Copyright (C) 2011 Stack Ideas Private Limited. All rights reserved.
+ * @license		GNU/GPL, see LICENSE.php
+ *
+ * EasyBlog is free software. This version may have been modified pursuant
+ * to the GNU General Public License, and as distributed it includes or
+ * is derivative of works licensed under the GNU General Public License or
+ * other free or open source software licenses.
+ * See COPYRIGHT.php for copyright notices and details.
+ */
 
 defined('_JEXEC') or die('Restricted access');
 jimport( 'simpleschema.blog.post' );
@@ -30,11 +34,17 @@ class EasyBlogSimpleSchemaHelper
 				$formatDate = false;
 		}
 		$blog->created = $created->toMySQL();
-		$blog->text	= $row->intro . $row->content;
+		
+		if( $config->get( 'main_rss_content' ) == 'introtext' )
+		{
+			$blog->text = ( !empty( $row->intro ) ) ? $row->intro : $row->content;
+		}
+		else
+		{
+			$blog->text	= $row->intro . $row->content;
 		   
-		$config->set('max_video_width', 320);
-		$config->set('max_video_width', 180);
-		$blog->text = EasyBlogHelper::getHelper( 'Videos' )->processVideos( $blog->text );
+		}
+		$blog->text = EasyBlogHelper::getHelper( 'Videos' )->strip( $blog->text );
 		$blog->text = EasyBlogGoogleAdsense::stripAdsenseCode( $blog->text );
 		
 		$category = EasyBlogHelper::getTable( 'Category', 'Table' );
@@ -56,7 +66,8 @@ class EasyBlogSimpleSchemaHelper
 		$image_data = json_decode($blog->image);
 		
 		$item->postid = $blog->id;
-		$item->title = $blog->title;		
+		$item->title = $blog->title;
+		
 		$item->text = $blog->text;
 		$item->textplain = $this->sanitize($item->textplain);
 		
@@ -70,12 +81,8 @@ class EasyBlogSimpleSchemaHelper
 		
 		$item->category->categoryid = $category->id;
 		$item->category->title = $category->title;
-		
-		$item->url = JURI::root() . trim(EasyBlogRouter::_('index.php?option=com_easyblog&view=entry&id=' . $blog->id ), '/');
-		
-		// Tags
-		$modelPT	= EasyBlogHelper::getModel( 'PostTag' );
-		$item->tags		= $modelPT->getBlogTags($blog->id);
+
+		$item->url = JURI::root() . trim('index.php?option=com_easyblog&view=entry&id=' . $blog->id, '/');
 
 		foreach ($skip as $v) {
 			unset($item->$v);

@@ -80,8 +80,14 @@ class EasyblogApiResourceLatest extends ApiResource
             }
                 
             $item->blogpassword=$v->blogpassword;
-			
-			
+            $model			= EasyBlogHelper::getModel( 'Ratings' );
+			$ratingValue	= $model->getRatingValues( $item->postid, 'entry');
+		 	$item->rate = $ratingValue;
+		 	$item->isVoted = $model->hasVoted($item->postid,'entry',$this->plugin->get('user')->id);
+		 	if($item->rate->ratings==0)
+			{					
+				$item->rate->ratings=-2;
+			}			
 			$posts[] = $item;
 		}
 		$this->plugin->setResponse( $posts );

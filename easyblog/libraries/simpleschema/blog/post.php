@@ -36,6 +36,8 @@ class PostSimpleSchema {
 	
 	public $rating;
 	
+	public $rate = array();
+	
 	public $category;
 	
 	public function __construct() {

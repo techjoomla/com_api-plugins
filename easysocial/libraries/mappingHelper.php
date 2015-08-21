@@ -246,6 +246,40 @@ class EasySocialApiMappingHelper
 				$item->content = $row->content;
 				
 				$item->preview = $row->preview;
+				
+				//hari - code for build video iframe
+				//check code optimisation
+				$frame_match= preg_match('/;iframe.*?>/', $row->preview);
+				   if($frame_match)
+				   {
+					   $dom = new DOMDocument;
+					   $dom->loadHTML($row->preview);
+					   foreach ($dom->getElementsByTagName('a') as $node) {
+							   $first = $node->getAttribute( 'href' );                                        
+							   break;                                
+					   }
+					   if(strstr($first,"youtu.be"))        
+					   {
+							   $first=preg_replace("/\s+/",'',$first);
+							   $first=preg_replace("/youtu.be/","youtube.com/embed",$first);                                        
+							   $abc=$first."?feature=oembed";
+							   $item->preview ='<div class="video-container"><iframe src="'.$abc.'" frameborder="0" allowfullscreen=""></iframe></div>';
+					   }                                        
+					   else
+					   {
+					   $df=preg_replace("/\s+/",'',$first);                                        
+					   $df=preg_replace("/watch\?v=([a-zA-Z0-9\]+)([a-zA-Z0-9\/\\\\?\&\;\%\=\.])/i","embed/$1 ",$first);
+					   $abc=$df."?feature=oembed";
+					   $df=preg_replace("/\s+/",'',$abc);
+					   $item->preview ='<div class="video-container"><iframe src="'.$df.'" frameborder="0" allowfullscreen=""></iframe></div>';        
+					   }
+				   }
+				   else
+				   {
+						   $item->preview = $row->preview;
+				   }
+				//end
+				
 				// Set the stream content
 				if(!empty($item->preview))
 				{
@@ -346,8 +380,11 @@ class EasySocialApiMappingHelper
 				
 				// Check if this item has already been bookmarked
 				$sticky = FD::table('StreamSticky');
-				
-				$item->isPinned = $sticky->load(array('stream_id' => $row->uid));
+				$item->isPinned = null;
+				if($sticky)
+				{	
+					$item->isPinned = $sticky->load(array('stream_id' => $row->uid));
+				}
 				
 				//create urls for app side mapping
 				//$log_usr = FRoute::profile( array('id' => $row->uid , 'layout' => 'item', 'sef' => false ));

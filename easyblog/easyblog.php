@@ -17,19 +17,38 @@ class plgAPIEasyblog extends ApiPlugin
 		parent::__construct($subject, $config = array());
 
 		$easyblog = JPATH_ROOT . '/administrator/components/com_easyblog/easyblog.php';
-		if (!JFile::exists($easyblog) || !JComponentHelper::isEnabled('com_easysocial', true)) {
+		if (!JFile::exists($easyblog) || !JComponentHelper::isEnabled('com_easyblog', true)) {
 			ApiError::raiseError(404, 'Easyblog not installed');
 			return;
 		}
-
+		
+		//load helper file
+		require_once JPATH_SITE.'/plugins/api/easyblog/helper/simpleschema.php';
 		// Load Easyblog language & bootstrap files
 		$language = JFactory::getLanguage();
 		$language->load('com_easyblog');
-		require_once( JPATH_ROOT . '/components/com_easyblog/constants.php' );
-		require_once( EBLOG_HELPERS . '/helper.php' );
+		
+		$xml = JFactory::getXML(JPATH_ADMINISTRATOR .'/components/com_easyblog/easyblog.xml');
+		$version = (string)$xml->version;
+
+		if($version<5)
+		{	
+			require_once( JPATH_ROOT . '/components/com_easyblog/constants.php' );
+			require_once( JPATH_ROOT . '/components/com_easyblog/helpers/helper.php' );
+			ApiResource::addIncludePath(dirname(__FILE__).'/easyblog4');
+		}
+		else
+		{	
+			ApiResource::addIncludePath(dirname(__FILE__).'/easyblog5');
+			require_once JPATH_ADMINISTRATOR.'/components/com_easyblog/includes/easyblog.php';
+			require_once JPATH_ADMINISTRATOR.'/components/com_easyblog/includes/constants.php' ;
+			//require_once JPATH_ADMINISTRATOR.'/components/com_easyblog/includes/gettable/gettable.php' ;
+			require_once( JPATH_ADMINISTRATOR.'/components/com_easyblog/includes'. '/date/date.php' );
+			require_once( JPATH_ADMINISTRATOR.'/components/com_easyblog/includes'. '/string/string.php' );
+			require_once( JPATH_ADMINISTRATOR.'/components/com_easyblog/includes'. '/adsense/adsense.php' );
+		}
 
 		// Set resources & access
-		ApiResource::addIncludePath(dirname(__FILE__).'/easyblog');
 		$this->setResourceAccess('latest', 'public', 'get');
 		$this->setResourceAccess('category', 'public', 'get');
 		$this->setResourceAccess('blog', 'public', 'get');

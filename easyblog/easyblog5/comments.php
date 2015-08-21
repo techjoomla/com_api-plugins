@@ -53,7 +53,8 @@ class EasyblogApiResourceComments extends ApiResource
 			$item->updated_date = $row->modified;
 
 			// Author
-			$item->author->name = isset($row->poster->nickname) ? $row->poster->nickname : $row->name;
+			//$item->author->name = isset($row->poster->nickname) ? $row->poster->nickname : $row->name;
+			$item->author->name = $row->author->nickname;
 			$item->author->photo = isset($row->poster->avatar) ? $row->poster->avatar : 'default_blogger.png';
 			$item->author->photo = JURI::root() . 'components/com_easyblog/assets/images/' . $item->author->photo;
 			$item->author->email = $row->email;
@@ -128,9 +129,11 @@ class EasyblogApiResourceComments extends ApiResource
 		$comment	= EasyBlogHelper::table( 'Comment' );
 
 		// We need to rename the esname and esemail back to name and email.
+		$post['post_id'] = $post['id'];
 		$post['name']	= $post['esname'];
 		$post['email']	= $post['esemail'];
 
+		unset($post['id']);
 		unset($post['esname']);
 		unset($post['esemail']);
 
@@ -334,8 +337,19 @@ class EasyblogApiResourceComments extends ApiResource
 		}
 		else
 		{
-			if( (! EasyBlogHelper::getHelper( 'email' )->isValidInetAddress( $post['esemail'] )) && ($config->get( 'comment_require_email' ) || isset( $post['subscribe-to-blog']) ))
+			if ( ($config->get( 'comment_require_email' ) || isset( $post['subscribe-to-blog']) ))
 			{
+				$regex = $strict?
+				'/^([.0-9a-z_-]+)@(([0-9a-z-]+\.)+[0-9a-z]{2,4})$/i' : 
+				'/^([*+!.&#$¦\'\\%\/0-9a-z^_`{}=?~:-]+)@(([0-9a-z-]+\.)+[0-9a-z]{2,4})$/i';
+				if (preg_match($regex, trim($post['esemail']), $matches))
+				{
+					return array($matches[1], $matches[2]);
+				}
+				else
+				{
+					return false;
+				}				
 				$this->err[0]	= JText::_('COM_EASYBLOG_COMMENT_EMAIL_INVALID');
 				$this->err[1]	= 'esemail';
 				return false;

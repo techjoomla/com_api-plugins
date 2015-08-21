@@ -245,7 +245,7 @@ class EasySocialApiMappingHelper
 				//
 				$item->content = $row->content;
 				
-				$item->preview = $row->preview;
+				//$item->preview = $row->preview;
 				
 				//hari - code for build video iframe
 				//check code optimisation

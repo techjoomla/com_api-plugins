@@ -14,7 +14,7 @@
 defined('_JEXEC') or die('Restricted access');
 jimport( 'simpleschema.blog.post' );
 
-class EasyBlogSimpleSchemaHelper
+class EasyBlogSimpleSchemaHelper11
 {
 	public function mapPost($row, $strip_tags='', $text_length=0, $skip=array()) {
 		$config	= EasyBlogHelper::getConfig();

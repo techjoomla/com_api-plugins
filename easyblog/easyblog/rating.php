@@ -7,20 +7,17 @@
 */
 defined('_JEXEC') or die( 'Restricted access' );
 jimport('joomla.user.user');
-jimport( 'simpleschema.category' );
-jimport( 'simpleschema.person' );
-jimport( 'simpleschema.blog.post' );
+
 require_once( EBLOG_HELPERS . '/date.php' );
 require_once( EBLOG_HELPERS . '/string.php' );
 require_once( EBLOG_CLASSES . '/adsense.php' );
-//for image upload
-require_once( EBLOG_CLASSES . '/mediamanager.php' );
-require_once( EBLOG_HELPERS . '/image.php' );
-require_once( EBLOG_CLASSES . '/easysimpleimage.php' );
-require_once( EBLOG_CLASSES . '/mediamanager/local.php' );
-require_once( EBLOG_CLASSES . '/mediamanager/types/image.php' );
+
 class EasyblogApiResourceRating extends ApiResource
 {
+	public function get()
+	{
+		$this->plugin->setResponse("unsupported method,please use post method");
+	}
 	public function post()
 	{
 		$this->plugin->setResponse($this->setRatings());
@@ -31,13 +28,15 @@ class EasyblogApiResourceRating extends ApiResource
 		 $user_id = $input->get('uid',0,'INT');		
 		 $blog_id = $input->get('blogid',0,'INT');		 	 
 		 $values = $input->get('values',0,'INT');		 	 
-		 $model			= EasyBlogHelper::getTable( 'Ratings' );		 
-		 $model->uid = $blog_id;
-		 $model->created_by = $user_id;
-		 $model->value = $values;
-		 $model->type = 'entry';
-		 $model->fill($user_id,$blog_id,'entry');		 
-		 $ratingValue = $model->store();
+		 $tabel	= EasyBlogHelper::getTable( 'Ratings' );		 
+		 $tabel->uid = $blog_id;
+		 $tabel->created_by = $user_id;
+		 $tabel->value = $values;
+		 $tabel->type = 'entry';
+		 //before store ratings need to fill the stars
+		 $tabel->fill($user_id,$blog_id,'entry');
+		 //rating star will be stored now.		 
+		 $ratingValue = $tabel->store();
 		 return $ratingValue;
 	}	
 }

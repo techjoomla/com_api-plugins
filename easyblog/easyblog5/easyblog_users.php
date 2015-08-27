@@ -37,13 +37,17 @@ class EasyblogApiResourceEasyblog_users extends ApiResource
 	{
 		$app = JFactory::getApplication();
 		$limitstart = $app->input->get('limitstart',0,'INT');
-		$limit =  $app->input->get('limit',0,'INT');		
-		$search =  $app->input->get('search','','STRING');		
+		$limit =  $app->input->get('limit',0,'INT');
+		$search =  $app->input->get('search','','STRING');
+		//order options are 
+		//latest,alphabet,featured,latestpost,postcount,active
+		$orderBy =  $app->input->get('orderby','alphabet','STRING');
+		
 		$ob1  = new EasyBlogModelBlogger();
 		$ob1->setState('limitstart',$limitstart);
 		//$bloggers = $ob1->getAllBloggers('latest',$limit, $filter='showallblogger' , $search );		
-		$bloggers = $ob1->getBloggers('latest',$limit, $filter='showallblogger' , $search );		
-		$blogger = EasyBlogHelper::table( 'Profile' );		
+		$bloggers = $ob1->getBloggers( $orderBy,$limit, $filter='showallblogger' , $search );		
+		$blogger = EasyBlogHelper::table( 'Profile' );
 		foreach( $bloggers as $usr )
 		{
 			$blogger->load($usr->id);

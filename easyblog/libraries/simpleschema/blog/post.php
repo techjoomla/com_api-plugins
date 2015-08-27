@@ -5,8 +5,8 @@
  * @license GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
  * @link http://www.techjoomla.com
 */
-jimport('simpleschema.person');
-jimport('simpleschema.category');
+jimport('simpleschema.easyblog.person');
+jimport('simpleschema.easyblog.category');
 
 class PostSimpleSchema {
 

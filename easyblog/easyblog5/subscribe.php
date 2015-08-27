@@ -17,9 +17,9 @@ jimport('joomla.application.component.model');
 jimport('joomla.user.helper');
 jimport('joomla.user.user');
 jimport('joomla.application.component.helper');
-jimport( 'simpleschema.blog.post' );
-jimport( 'simpleschema.category' );
-jimport( 'simpleschema.person' );
+jimport( 'simpleschema.easyblog.blog.post' );
+jimport( 'simpleschema.easyblog.category' );
+jimport( 'simpleschema.easyblog.person' );
 
 /*require_once( EBLOG_HELPERS . '/date.php' );
 require_once( EBLOG_HELPERS . '/string.php' );

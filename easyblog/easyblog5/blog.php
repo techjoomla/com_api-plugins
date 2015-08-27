@@ -9,9 +9,9 @@
 defined('_JEXEC') or die( 'Restricted access' );
 
 jimport('joomla.user.user');
-jimport( 'simpleschema.category' );
-jimport( 'simpleschema.person' );
-jimport( 'simpleschema.blog.post' );
+jimport( 'simpleschema.easyblog.category' );
+jimport( 'simpleschema.easyblog.person' );
+jimport( 'simpleschema.easyblog.blog.post' );
 
 //for image upload
 require_once( EBLOG_ADMIN_INCLUDES . '/mediamanager/mediamanager.php' );
@@ -89,7 +89,7 @@ class EasyblogApiResourceBlog extends ApiResource
 			$this->plugin->setResponse( $this->getErrorResponse(404, $blog->getError()) );
 			return;
 		}
-		
+
 		$bpost = EB::post($post->id);
 		// $post->bind($row);
 		$item = EB::formatter('entry', $bpost);
@@ -140,8 +140,8 @@ class EasyblogApiResourceBlog extends ApiResource
 		
 		//created by vishal - for show extra images
 		//$item->text = preg_replace('/"images/i', '"'.JURI::root().'images', $item->text );
-		//$item->text = str_replace('href="','href="'.JURI::root(),$item->text);
-		//$item->text = str_replace('src="','src="'.JURI::root(),$item->text);
+		$item->text = str_replace('href="','href="'.JURI::root(),$item->text);
+		$item->text = str_replace('src="','src="'.JURI::root(),$item->text);
 				
 		$this->plugin->setResponse( $item );
 	}

@@ -9,9 +9,9 @@
 defined('_JEXEC') or die( 'Restricted access' );
 
 jimport('joomla.user.user');
-jimport( 'simpleschema.category' );
-jimport( 'simpleschema.person' );
-jimport( 'simpleschema.blog.post' );
+jimport( 'simpleschema.easyblog.category' );
+jimport( 'simpleschema.easyblog.person' );
+jimport( 'simpleschema.easyblog.blog.post' );
 
 require_once( EBLOG_HELPERS . '/date.php' );
 require_once( EBLOG_HELPERS . '/string.php' );
@@ -73,8 +73,9 @@ class EasyblogApiResourceBlog extends ApiResource
 		//create tags for blog called the function	
 		$blog->processTags( $createTag, 1 );
 		$blog->processTrackbacks();
-			$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($blog, '<p><br><pre><a><blockquote><strong><h2><h3><em><ul><ol><li>');
-			
+			//$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($blog, '<p><br><pre><a><blockquote><strong><h2><h3><em><ul><ol><li>');
+			$scm_obj = new EasyBlogSimpleSchema_4();
+			$item = $scm_obj->mapPost($v,'', 100, array('text'));
 
 			$this->plugin->setResponse( $item );
    	   
@@ -104,7 +105,7 @@ class EasyblogApiResourceBlog extends ApiResource
 
 		//$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($blog, '<p><br><pre><a><blockquote><strong><h2><h3><em><ul><ol><li><iframe>');
 		$scm_obj = new EasyBlogSimpleSchema_4();
-		$item = $scm_obj->mapPost($post, '<p><br><pre><a><blockquote><strong><h2><h3><em><ul><ol><li><iframe>');
+		$item = $scm_obj->mapPost($blog, '<p><br><pre><a><blockquote><strong><h2><h3><em><ul><ol><li><iframe>');
 		
 		$item->isowner = ( $blog->created_by == $this->plugin->get('user')->id )?true:false;
 		$item->allowcomment = $blog->allowcomment;
@@ -117,8 +118,8 @@ class EasyblogApiResourceBlog extends ApiResource
 		
 		//created by vishal - for show extra images
 		//$item->text = preg_replace('/"images/i', '"'.JURI::root().'images', $item->text );
-		//$item->text = str_replace('href="','href="'.JURI::root(),$item->text);
-		//$item->text = str_replace('src="','src="'.JURI::root(),$item->text);
+		$item->text = str_replace('href="','href="'.JURI::root(),$item->text);
+		$item->text = str_replace('src="','src="'.JURI::root(),$item->text);
 				
 		$this->plugin->setResponse( $item );
 	}

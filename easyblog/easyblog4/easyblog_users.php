@@ -15,9 +15,9 @@ jimport('joomla.application.component.model');
 jimport('joomla.user.helper');
 jimport('joomla.user.user');
 jimport('joomla.application.component.helper');
-jimport( 'simpleschema.blog.post' );
-jimport( 'simpleschema.category' );
-jimport( 'simpleschema.person' );
+jimport( 'simpleschema.easyblog.blog.post' );
+jimport( 'simpleschema.easyblog.category' );
+jimport( 'simpleschema.easyblog.person' );
 
 JModelLegacy::addIncludePath(JPATH_SITE.'components/com_api/models');
 require_once JPATH_SITE.'/components/com_easyblog/models/users.php';

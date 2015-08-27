@@ -8,9 +8,9 @@
 defined('_JEXEC') or die( 'Restricted access' );
 
 jimport('joomla.user.user');
-jimport( 'simpleschema.person' );
-jimport( 'simpleschema.blog.post' );
-jimport( 'simpleschema.blog.comment' );
+jimport( 'simpleschema.easyblog.person' );
+jimport( 'simpleschema.easyblog.blog.post' );
+jimport( 'simpleschema.easyblog.blog.comment' );
 
 /*
 require_once( EBLOG_HELPERS . '/date.php' );

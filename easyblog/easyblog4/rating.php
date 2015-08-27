@@ -7,9 +7,9 @@
 */
 defined('_JEXEC') or die( 'Restricted access' );
 jimport('joomla.user.user');
-jimport( 'simpleschema.category' );
-jimport( 'simpleschema.person' );
-jimport( 'simpleschema.blog.post' );
+jimport( 'simpleschema.easyblog.category' );
+jimport( 'simpleschema.easyblog.person' );
+jimport( 'simpleschema.easyblog.blog.post' );
 require_once( EBLOG_HELPERS . '/date.php' );
 require_once( EBLOG_HELPERS . '/string.php' );
 require_once( EBLOG_CLASSES . '/adsense.php' );

@@ -8,7 +8,7 @@
 */
 
 defined('_JEXEC') or die('Restricted access');
-jimport( 'simpleschema.blog.post' );
+jimport( 'simpleschema.easyblog.blog.post' );
 
 class EasyBlogSimpleSchema_plg 
 {
@@ -69,6 +69,7 @@ class EasyBlogSimpleSchema_plg
 		{
 			//$item->image->url = $blog->getImage();
 			$item->image->url = $row->getImage('large');
+			$item->image->url = 'http:'.$item->image->url;
 			//$item->image->url = ltrim($item->image->url,'//');
 		}
 		else

@@ -7,9 +7,9 @@
 */
 defined('_JEXEC') or die( 'Restricted access' );
 jimport('joomla.user.user');
-jimport( 'simpleschema.category' );
-jimport( 'simpleschema.person' );
-jimport( 'simpleschema.blog.post' );
+jimport( 'simpleschema.easyblog.category' );
+jimport( 'simpleschema.easyblog.person' );
+jimport( 'simpleschema.easyblog.blog.post' );
 
 require_once( EBLOG_HELPERS . '/date.php' );
 require_once( EBLOG_HELPERS . '/string.php' );
@@ -27,7 +27,7 @@ class EasyblogApiResourceLatest extends ApiResource
 		
 		$input = JFactory::getApplication()->input;
 		$model = EasyBlogHelper::getModel( 'Blog' );
-		//$id = $input->get('id', null, 'INT');
+		$id = $input->get('id', null, 'INT');
 		$search = $input->get('search', null, 'STRING');
 		$featured = $input->get('featured',0,'INT');
 		$tags = $input->get('tags',0,'INT');

@@ -8,9 +8,9 @@
 defined('_JEXEC') or die( 'Restricted access' );
 
 jimport('joomla.user.user');
-jimport( 'simpleschema.category' );
-jimport( 'simpleschema.person' );
-jimport( 'simpleschema.blog.post' );
+jimport( 'simpleschema.easyblog.category' );
+jimport( 'simpleschema.easyblog.person' );
+jimport( 'simpleschema.easyblog.blog.post' );
 /*
 require_once( EBLOG_HELPERS . '/date.php' );
 require_once( EBLOG_HELPERS . '/string.php' );
@@ -84,8 +84,8 @@ class EasyblogApiResourceCategory extends ApiResource
 		foreach ($rows as $k => $v) {
 			//$item = EasyBlogHelper::getHelper( 'SimpleSchema' )->mapPost($v, '', 100, array('text'));
 			$scm_obj = new EasyBlogSimpleSchema_plg();
-			$item = $scm_obj->mapPost($v, '', 100, array('text'));
-
+			$item = $scm_obj->mapPost($v,'', 100, array('text'));
+			
 			$item->isowner = ( $v->created_by == $this->plugin->get('user')->id )?true:false;
 
 			if($v->blogpassword!='')

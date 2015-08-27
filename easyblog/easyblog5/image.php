@@ -66,10 +66,7 @@ class EasyblogApiResourceImage extends ApiResource
 
 			$absolutePath 		= EasyBlogMediaManager::getPath( $source );
 			$absoluteURI		= EasyBlogMediaManager::getUrl( $source );
-print_r($source);
-print_r($absolutePath);
-print_r($absoluteURI);
-die("in image api");
+
 			$allowed		= EasyImageHelper::canUploadFile( $file , $message );
 
 			if( $allowed !== true )
@@ -88,7 +85,7 @@ die("in image api");
 			$upload_result->parentKey = $place.'|/';
 			$upload_result->friendlyPath = 'My Media/'.$source;
 			unset($upload_result->variations);
-print_r($upload_result);die("in image");
+
 			$this->plugin->setResponse($upload_result);
 
 			return $upload_result;

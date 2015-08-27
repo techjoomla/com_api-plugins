@@ -249,14 +249,28 @@ class EasySocialApiMappingHelper
 				
 				//hari - code for build video iframe
 				//check code optimisation
-				$frame_match= preg_match('/;iframe.*?>/', $row->preview);
-				   if($frame_match)
+				if($row->preview)  
+                {
+                    $frame_match= preg_match('/;iframe.*?>/', $row->preview);
+                }    
+                else
+                {
+                    $frame_match= preg_match('/;iframe.*?>/', $row->content);  
+                    $row->preview = $row->content; 
+                    $item->content = null;                 
+                }
+                
+                if($frame_match)
 				   {
 					   $dom = new DOMDocument;
 					   $dom->loadHTML($row->preview);
 					   foreach ($dom->getElementsByTagName('a') as $node) {
-							   $first = $node->getAttribute( 'href' );                                        
-							   break;                                
+							$vurls = $node->getAttribute( 'href' );                    
+							if(preg_match('/youtu/', $vurls))
+							{
+								$first = $vurls;
+								break;        
+							}                                
 					   }
 					   if(strstr($first,"youtu.be"))        
 					   {

@@ -14,6 +14,7 @@ jimport('joomla.html.html');
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/foundry.php';
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/story/story.php';
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/photo/photo.php';
+require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/crawler/crawler.php';
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/groups.php';
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/covers.php';
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/albums.php';
@@ -44,9 +45,18 @@ class EasysocialApiResourceShare extends ApiResource
 		
 		$friends_tags = $app->input->get('friends_tags',null,'ARRAY');
 		
+		$urls = $app->input->get('urls','','ARRAY');
+		
 		$log_usr = intval($this->plugin->get('user')->id);
 		//now take login user stream for target
 		$targetId = ( $targetId != $log_usr )?$targetId:$log_usr;
+		
+		if($type == 'links')
+		{
+			//$urls = explode(',',$content);
+			$content = $urls[count($urls)-1];
+			$url_data = $this->crawlLink($urls);
+		}
 
 		$valid = 1;
 		$result = new stdClass;
@@ -155,27 +165,31 @@ class EasysocialApiResourceShare extends ApiResource
 				
 				$cont_arr = explode(' ',$content);
 				$indx= 0;
-				foreach($cont_arr as $val)
+
+				if( $posn[$indx++] != null )
 				{
-					if(preg_match('/[\'^#,|=_+¬-]/', $val))
+					foreach($cont_arr as $val)
 					{
-						//$vsl = substr_count($val,'#');
-						$val_arr = array_filter(explode('#',$val));
-	
-						foreach($val_arr as $subval)
+						if(preg_match('/[\'^#,|=_+¬-]/', $val))
 						{
-							$subval = '#'.$subval;
-							$mention = new stdClass();
-							$mention->start = $posn[$indx++];
-							$mention->length = strlen($subval) - 0;
-							$mention->value = str_replace('#','',$subval);
-							$mention->type = 'hashtag';
-							
-							$mentions[] = $mention;
-						} 
+							//$vsl = substr_count($val,'#');
+							$val_arr = array_filter(explode('#',$val));
+		
+							foreach($val_arr as $subval)
+							{
+								$subval = '#'.$subval;
+								$mention = new stdClass();
+								$mention->start = $posn[$indx++];
+								$mention->length = strlen($subval) - 0;
+								$mention->value = str_replace('#','',$subval);
+								$mention->type = 'hashtag';
+								
+								$mentions[] = $mention;
+							} 
+						}
 					}
 				}
-//print_r( $mentions );die("in share api");
+
 			}
 			$contextIds = 0;
 			if($type == 'photos')
@@ -192,6 +206,13 @@ class EasysocialApiResourceShare extends ApiResource
 			
 			// Process moods here
 			$mood = FD::table('Mood');
+			/*$hasMood = $mood->bindPost($post);
+
+			// If this exists, we need to store them
+			if ($hasMood) {
+			$mood->user_id = $this->my->id;
+			$mood->store();
+			}*/
 			
 			// Options that should be sent to the stream lib
 			$args = array(
@@ -203,7 +224,7 @@ class EasysocialApiResourceShare extends ApiResource
 							'mentions'		=> $mentions,
 							'cluster'		=> $cluster,
 							'clusterType'	=> $clusterType,
-							'mood'			=> null,
+							'mood'			=> $mood,
 							'privacyRule'	=> $privacyRule,
 							'privacyValue'	=> 'public',
 							'privacyCustom'	=> ''
@@ -213,9 +234,15 @@ class EasysocialApiResourceShare extends ApiResource
 			$args['actorId'] = $log_usr;
 			$args['contextIds'] = $contextIds;
 			$args['contextType']	= $type;
-
+//print_r( $args );die("in share api");
 			// Create the stream item
 			$stream = $story->create($args);
+			
+			/*if ($hasMood) {
+				$mood->namespace = 'story.user.create';
+				$mood->namespace_uid = $stream->id;
+				$mood->store();
+			}*/
 			
 			// Privacy is only applicable to normal postings
 			if (!$isCluster) {
@@ -357,6 +384,42 @@ class EasysocialApiResourceShare extends ApiResource
 		//$sphoto = new SocialPhotos($photo_obj->id);
 
 		return $photo; 
+	}
+	
+	public function crawlLink($urls)
+	{
+		// Get the crawler
+		$crawler = FD::get('crawler');
+		// Result placeholder
+		$result = array();
+		
+		foreach ($urls as $url) {
+
+			// Generate a hash for the url
+			$hash = md5($url);
+
+			$link = FD::table('Link');
+			$exists = $link->load(array('hash' => $hash));
+
+			// If it doesn't exist, store it.
+			if (!$exists) {
+
+				$crawler->crawl($url);
+
+				// Get the data from our crawler library
+				$data = $crawler->getData();
+
+				// Now we need to cache the link so that the next time, we don't crawl it again.
+				$link->hash = $hash;
+				$link->data = json_encode($data);
+				$link->store();
+			}
+
+			$result[$url] = json_decode($link->data);
+
+		}
+		
+		return $result;
 	}
 	
 	//function for upload file

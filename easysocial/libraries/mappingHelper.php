@@ -265,28 +265,23 @@ class EasySocialApiMappingHelper
 					   $dom = new DOMDocument;
 					   $dom->loadHTML($row->preview);
 					   foreach ($dom->getElementsByTagName('a') as $node) {
-							$vurls = $node->getAttribute( 'href' );                    
-							if(preg_match('/youtu/', $vurls))
+							$vurls = $node->getAttribute( 'href' );
+							                   
+							if(preg_match('/com_easysocial/', $vurls))
+							{
+								continue;
+							}
+							else
 							{
 								$first = $vurls;
+								//all video data
+								$url_data = $this->crawlLink($vurls);
+								$item->preview = '<div class="video-container">'.$url_data->oembed->html.'</div>';
+	
 								break;        
 							}                                
 					   }
-					   if(strstr($first,"youtu.be"))        
-					   {
-							   $first=preg_replace("/\s+/",'',$first);
-							   $first=preg_replace("/youtu.be/","youtube.com/embed",$first);                                        
-							   $abc=$first."?feature=oembed";
-							   $item->preview ='<div class="video-container"><iframe src="'.$abc.'" frameborder="0" allowfullscreen=""></iframe></div>';
-					   }                                        
-					   else
-					   {
-					   $df=preg_replace("/\s+/",'',$first);                                        
-					   $df=preg_replace("/watch\?v=([a-zA-Z0-9\]+)([a-zA-Z0-9\/\\\\?\&\;\%\=\.])/i","embed/$1 ",$first);
-					   $abc=$df."?feature=oembed";
-					   $df=preg_replace("/\s+/",'',$abc);
-					   $item->preview ='<div class="video-container"><iframe src="'.$df.'" frameborder="0" allowfullscreen=""></iframe></div>';        
-					   }
+					   
 				   }
 				   else
 				   {
@@ -438,6 +433,40 @@ class EasySocialApiMappingHelper
 
 		return $result;
 	}
+	
+	//crowlink link data for video post
+	public function crawlLink($url)
+	{
+		// Get the crawler
+		$crawler = FD::get('crawler');
+		// Result placeholder
+		$result = null;
+		
+			// Generate a hash for the url
+			$hash = md5($url);
+
+			$link = FD::table('Link');
+			$exists = $link->load(array('hash' => $hash));
+
+			// If it doesn't exist, store it.
+			if (!$exists) {
+
+				$crawler->crawl($url);
+
+				// Get the data from our crawler library
+				$data = $crawler->getData();
+
+				// Now we need to cache the link so that the next time, we don't crawl it again.
+				$link->hash = $hash;
+				$link->data = json_encode($data);
+				$link->store();
+			}
+
+		$result = json_decode($link->data);
+
+		return $result;
+	}
+	
 	
 	//create like object
 	public function createLikeObj($row,$userid)

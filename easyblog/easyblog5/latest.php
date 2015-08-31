@@ -67,6 +67,7 @@ class EasyblogApiResourceLatest extends ApiResource
 			//$rows = EB::formatter('list', $rows, false);
 		}
 		$rows = EB::formatter('list', $rows, false);
+	
 		//data mapping
 		foreach ($rows as $k => $v) 
 		{
@@ -95,7 +96,14 @@ class EasyblogApiResourceLatest extends ApiResource
 			{					
 				$item->rate->ratings=-2;
 			}
-				
+			
+			// Load up the media manager library
+			if($v->image)
+			{
+				//code for EB gives wron url some time in schema when same image upload in app
+				$mm = EB::mediamanager();
+				$item->image->url = 'http:'.$mm->getUrl($v->image);
+			}
 			$posts[] = $item;
 		}
 		$this->plugin->setResponse( $posts );

@@ -40,6 +40,7 @@ class EasyblogApiResourceLatest extends ApiResource
 		$featured = $input->get('featured',0,'INT');
 		$tags = $input->get('tags',0,'INT');
 		$user_id = $input->get('user_id',0,'INT');
+		$limit = $input->get('limit',0,'INT');
 		$posts = array();
 		// If we have an id try to fetch the user
 		$blog 		= EasyBlogHelper::table( 'Blog' );
@@ -57,13 +58,13 @@ class EasyblogApiResourceLatest extends ApiResource
 		}//for get users blog
 		else if($user_id)
 		{	$blogs = EasyBlogHelper::getModel( 'Blog' );
-			$rows = $blogs->getBlogsBy('blogger', $user_id, 'latest');
+			$rows = $blogs->getBlogsBy('blogger', $user_id, 'latest',$limit);
 		}
 		else
 		{	//to get latest blog
 			//$sorting	= $this->plugin->params->get( 'sorting' , 'latest' );
 			//$rows 	= $model->getBlogsBy( $sorting , '' , $sorting , 0, EBLOG_FILTER_PUBLISHED, $search );
-			$rows = $model->getBlogsBy('', '', 'latest', 0, EBLOG_FILTER_PUBLISHED, null, true, array(), false, false, true, '', '', null, 'listlength', false);
+			$rows = $model->getBlogsBy('', '', 'latest', $limit, EBLOG_FILTER_PUBLISHED, null, true, array(), false, false, true, '', '', null, 'listlength', false);
 			//$rows = EB::formatter('list', $rows, false);
 		}
 		$rows = EB::formatter('list', $rows, false);
@@ -112,10 +113,15 @@ class EasyblogApiResourceLatest extends ApiResource
 	public function getfeature_Blog()
 	{
 		$app = JFactory::getApplication();
-		$limit = $app->input->get('limit',10,'INT');	
-		$categories = $app->input->get('categories','','STRING');	
+		$limit = $app->input->get('limit',10,'INT');
+		//$limitstart = $app->input->get('limitstart',10,'INT');
+		
+		$categories = $app->input->get('categories','','STRING');
 		$blogss = new	EasyBlogModelBlog();
+		
 		$blogss->setState('limit',$limit);
+		//$blogss->setState('limitstart',$limitstart);
+		
 		$res = $blogss->getFeaturedBlog(array(),$limit);
 		return $res;	
 	}	

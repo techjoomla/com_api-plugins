@@ -35,10 +35,22 @@ class EasyblogApiResourceTags extends ApiResource
 	//get tags
 	public function getTags()
 	{
+		$app = JFactory::getApplication();
+		
+		$limitstart = $app->input->get('limitstart',0,'INT');
+		$limit =  $app->input->get('limit',20,'INT');
+		
 		$Tagmodel = EasyBlogHelper::getModel( 'Tags' );
+		
+		//$Tagmodel->setState('limit', $limit);
+		//$Tagmodel->setState('limitstart', $limitstart);
+
 		//$allTags = $Tagmodel->getTags();
 		$allTags = $Tagmodel->getTagCloud();
-		return $allTags;	
+		
+		$allTags = array_slice($allTags, $limitstart, $limit);
+		
+		return $allTags;
 	}
 	//future requirement.
 	//~ public function searchTag()
@@ -58,6 +70,9 @@ class EasyblogApiResourceTags extends ApiResource
 	   $input = JFactory::getApplication()->input;
 	   $keyword = $input->get('title','', 'STRING');
 	   $wordSearch = true;                
+	   
+	   $result = $Tagmodel->search( $keyword,$wordSearch ); 
+	   /*
 	   $db = EB::db();
 	   $query = array();
 	   $search = $wordSearch ? '%' . $keyword . '%' : $keyword . '%';
@@ -66,9 +81,11 @@ class EasyblogApiResourceTags extends ApiResource
 	   $query[] = 'AND ' . $db->quoteName('published') . '=' . $db->Quote(1);
 
 	   $query = implode(' ', $query);
+	
 	   $db->setQuery($query);
 	   $result = $db->loadObjectList();
-
+		*/
+		
 	   $output = array_slice($result, $limitstart, $limit);
 	   return $output;
 	}

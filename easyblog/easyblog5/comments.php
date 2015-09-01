@@ -27,6 +27,10 @@ class EasyblogApiResourceComments extends ApiResource
 		$input = JFactory::getApplication()->input;
 		$model = EasyBlogHelper::getModel( 'Blog' );
 		$id = $input->get('id', null, 'INT');
+		
+		$limitstart = $input->get('limitstart', 0, 'INT');
+		$limit = $input->get('limit', 10, 'INT');
+		
 		$comments = array();
 
 		// If we have an id try to fetch the blog
@@ -37,7 +41,11 @@ class EasyblogApiResourceComments extends ApiResource
 			$this->plugin->setResponse( $this->getErrorResponse(404, 'Invalid Blog') );
 			return;
 		}
-
+		
+		//set limit
+		$model->setState('limitstart', $limitstart );
+		$model->setState('limit', $limit );
+		
 		$rows = $model->getBlogComment($id);
 
 		foreach ($rows as $row) {

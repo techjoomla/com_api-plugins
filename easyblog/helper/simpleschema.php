@@ -65,12 +65,17 @@ class EasyBlogSimpleSchema_plg
 		$item->textplain = $this->sanitize($item->textplain);
 
 		$item->image = new stdClass();
-		if($row->image)
+		if( $row->image != NULL || $row->image != null )
 		{
 			//$item->image->url = $blog->getImage();
 			$item->image->url = $row->getImage('large');
 			$item->image->url = 'http:'.$item->image->url;
 			//$item->image->url = ltrim($item->image->url,'//');
+			
+			//$item->image->url = null;
+			
+			//$mm = EB::mediamanager();
+			//$item->image->url = 'http:'.$mm->getUrl($row->image);
 		}
 		else
 		{
@@ -78,7 +83,7 @@ class EasyBlogSimpleSchema_plg
 		}
 		//$item->image->url = ($image_data->url)?$image_data->url:'';
 		//$item->image->url = null;
-		
+
 		$item->created_date = $blog->created;
 		$ebdate = new EasyBlogDate();
 		$item->created_date_elapsed	= $ebdate->getLapsedTime( $blog->created );

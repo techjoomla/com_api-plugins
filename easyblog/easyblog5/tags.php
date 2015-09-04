@@ -40,6 +40,11 @@ class EasyblogApiResourceTags extends ApiResource
 		$limitstart = $app->input->get('limitstart',0,'INT');
 		$limit =  $app->input->get('limit',20,'INT');
 		
+		if($limitstart)
+		{
+			$limit = $limit + $limitstart;
+		}
+		
 		$Tagmodel = EasyBlogHelper::getModel( 'Tags' );
 		
 		//$Tagmodel->setState('limit', $limit);

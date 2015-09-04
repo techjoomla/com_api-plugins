@@ -334,7 +334,8 @@ class EasySocialApiMappingHelper
 				foreach($row->with as $actor)
 				{
 					$withurl = JURI::root().FRoute::profile( array('id' => $actor->id , 'layout' => 'item', 'sef' => false ));
-					$with_user_url[] = "<a href='".$withurl."'>".$actor->username."</a>";
+					//$with_user_url[] = "<a href='".$withurl."'>".$actor->username."</a>";
+					$with_user_url[] = "<a href='".$withurl."'>".$actor->name."</a>";
 					
 					//$with_url = $with_url." and ".
 					

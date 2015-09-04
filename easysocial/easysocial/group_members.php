@@ -31,10 +31,16 @@ class EasysocialApiResourceGroup_members extends ApiResource
 	{
 		//init variable
 		$app = JFactory::getApplication();
-		$log_user = $this->plugin->get('user')->id;		
+		$log_user = $this->plugin->get('user')->id;
 		$group_id = $app->input->get('group_id',0,'INT');
 		$limitstart = $app->input->get('limitstart',0,'INT');
 		$limit = $app->input->get('limit',10,'INT');
+		
+		if($limitstart)
+		{
+			$limit = $limit + $limitstart;
+		}
+		
 		$state = $app->input->get('state',1,'INT');
 		$getAdmin = $app->input->get('admin',1,'INT');
 		$options = array( 'groupid' => $group_id );

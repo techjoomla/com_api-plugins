@@ -64,7 +64,7 @@ class EasysocialApiResourceGroups extends ApiResource
 		$filters['limit'] = $app->input->get('limit',0,'INT');
 
 		$model = FD::model('Groups');
-		$options = array('state' => SOCIAL_STATE_PUBLISHED,'ordering' => 'latest');
+		$options = array('state' => SOCIAL_STATE_PUBLISHED,'ordering' => 'latest','limit'=>$filters['limit']);
 		$groups = array();
 
 		if($filters['featured'])

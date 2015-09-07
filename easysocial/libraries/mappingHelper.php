@@ -132,7 +132,7 @@ class EasySocialApiMappingHelper
 		$result = array();
 		
 		foreach($rows as $ky=>$row)
-		{	
+		{
 			if(isset($row->id))
 			{
 				$item = new GetalbumsSimpleSchema();
@@ -149,27 +149,27 @@ class EasySocialApiMappingHelper
 				$item->cover_large=$row->cover_large;
 				$item->cover_square=$row->cover_square;
 				$item->cover_thumbnail=$row->cover_thumbnail;
-				$item->count=$row->count;				
+				$item->count=$row->count;
 				$likes = FD::likes($row->id, SOCIAL_TYPE_ALBUM , 'create', SOCIAL_APPS_GROUP_USER );				
 				$item->likes = $this->createlikeObj($likes,$userid);
-			    //$item->total=$item->likes->total;			
+			    //$item->total=$item->likes->total;
 				
 				// Get album comments
 				$comments = FD::comments($row->id, SOCIAL_TYPE_ALBUM , 'create', SOCIAL_APPS_GROUP_USER , array('url' => $row->getPermalink()));				
-				$item->comment_element = $comments->element.".".$comments->group.".".$comments->verb;				
+				$item->comment_element = $comments->element.".".$comments->group.".".$comments->verb;
 				$comments->stream_id=1;
 			
-				//$comments->element=$item->comment_element;				
-				$item->comments = $this->createCommentsObj($comments);				
+				//$comments->element=$item->comment_element;
+				$item->comments = $this->createCommentsObj($comments);
 				$options = array('uid' => $comments->uid, 'element' => $item->comment_element, 'stream_id' => $comments->stream_id);				
 				$model  = FD::model('Comments');
-				$comcount = $model->getCommentCount($options);	
-				$item->commentcount=$comcount;				
-				$item->isowner = ( $row->uid == $userid )?true:false;				
+				$comcount = $model->getCommentCount($options);
+				$item->commentcount=$comcount;
+				$item->isowner = ( $row->uid == $userid )?true:false;
 				$result[] = $item;
 			}
 		}
-		return $result;		
+		return $result;	
 	}
 	
 	//To build field object
@@ -500,7 +500,6 @@ class EasySocialApiMappingHelper
 	//create comments object
 	public function createCommentsObj($row,$limitstart=0,$limit=10)
 	{
-
 		if (!is_bool($row->uid))
 		{
 			$options = array('uid' => $row->uid, 'element' => $row->element, 'stream_id' => $row->stream_id, 'start' => $limitstart, 'limit' => $limit);
@@ -543,6 +542,8 @@ class EasySocialApiMappingHelper
 				$item->likes->hasLiked = $likesModel->hasLiked($item->uid,'comments.' . 'user' . '.like',$cdt->created_by);
 				$data['data'][] = $item;
 			}
+
+			$data['total'] = count($data['data']);
 			
 			return $data;
 		}

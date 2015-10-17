@@ -31,26 +31,75 @@ class EasysocialApiResourceGroup_members extends ApiResource
 	{
 		//init variable
 		$app = JFactory::getApplication();
-		$log_user = $this->plugin->get('user')->id;
+		$log_user = $this->plugin->get('user')->id;		
 		$group_id = $app->input->get('group_id',0,'INT');
 		$limitstart = $app->input->get('limitstart',0,'INT');
 		$limit = $app->input->get('limit',10,'INT');
-		
+		$mapp = new EasySocialApiMappingHelper();
+		$data = array();
+		//hari
+		$filter = $app->input->get('filter','going','STRING');		
+	
 		if($limitstart)
 		{
 			$limit = $limit + $limitstart;
 		}
 		
+		//for filter user by type
+		$type = $app->input->get('type','group','STRING');
+		
 		$state = $app->input->get('state',1,'INT');
 		$getAdmin = $app->input->get('admin',1,'INT');
-		$options = array( 'groupid' => $group_id );
-		$gruserob   = new EasySocialModelGroupMembers();
-		$data = $gruserob->getItems($options);
-		$mapp = new EasySocialApiMappingHelper();
-		foreach($data as $val ) 
-		{
-			$val->id = $val->uid; 
+
+		if($type == 'group')
+		{		
+			$options = array( 'groupid' => $group_id );
+			$gruserob   = new EasySocialModelGroupMembers();
+			$data = $gruserob->getItems($options);
+
+			foreach($data as $val ) 
+			{
+				$val->id = $val->uid; 
+			}
+		
 		}
+		else if( $type == 'event' )
+		{
+			//hari
+			//Get event guest with filter.
+			if(!empty($filter))
+			{			
+				switch($filter)
+				{
+					case 'going':
+									$options['state'] = SOCIAL_EVENT_GUEST_GOING;
+					break;
+					case 'notgoing':
+									$options['state'] = SOCIAL_EVENT_GUEST_NOT_GOING;
+					break;
+					case 'maybe': 
+									$options['state'] = SOCIAL_EVENT_GUEST_MAYBE;
+										
+					break;
+					case 'admins':
+									$options['admin'] = true;
+					break;
+				}
+				$options['users'] = true;
+				$eguest = FD::model('Events');	
+				$data = $eguest->getGuests($group_id,$options);
+			}
+
+		}
+		
+		if(empty($data))
+                {
+                    $ret_arr = new stdClass;
+                    $ret_arr->status = false;
+                    $ret_arr->message = "No member found";
+                    return $ret_arr;
+                }		
+
 		$user_list = $mapp->mapItem( $data,'user',$log_user );
 		
 		$grp_model = FD::model('Groups');
@@ -88,12 +137,21 @@ class EasysocialApiResourceGroup_members extends ApiResource
 			return $obj;
 		}
 		
+		if(!$group->isMember( $log_user ))
+		{
 		// Create a member record for the group
 		$members = $group->createMember($log_user);
 		
 		$obj->success = 1;
 		$obj->state = $members->state;
 		$obj->message = 'Great! Your request has been sent successfully and it is pending approval from the site administrator.';
+		}
+		else
+		{
+		$obj->success = 0;
+		$obj->state = $members->state;
+		$obj->message = 'Already joined to group';
+		}
 		
 		return $obj;
 		

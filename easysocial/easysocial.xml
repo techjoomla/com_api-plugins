@@ -16,4 +16,22 @@
         <folder>libraries</folder>
         <folder>easysocial</folder>
     </files>
+	
+	<config>
+		<fields name="params">
+			<fieldset name="basic">
+					
+					<field name="allow_notify" type="radio" default="0" label="Allow Push notification" description="If you select yes, need to add GCM registration user key for push notification">
+						<option value="0">No</option>
+						<option value="1">Yes</option>
+					</field>
+					
+					<field name="project_no" type="text" default="" label="Project Number" description="GCM project number" />
+					
+					<field name="gcm_server_key" type="text" default="" label="GCM server key" description="GCM server registration key for push notifications" />
+					
+				</fieldset>
+		</fields>
+	</config>
+    
 </extension>

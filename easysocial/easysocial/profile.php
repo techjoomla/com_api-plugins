@@ -111,26 +111,32 @@ class EasysocialApiResourceProfile extends ApiResource
 			
 			}
 			
-			//for kieth requierment code
+			//for change data type 
 			
 			foreach($field_arr as $ky=>$fld)
 			{
-				if($fld->field_name == 'Password'|| $fld->field_name == 'Birthdate' || $fld->field_name == 'Timezone' || $fld->field_name == 'Home Church')
+				if($fld->field_name == 'Password'||  $fld->field_name == 'Timezone' || $fld->field_name == 'Home Church')
 				{
 					unset($field_arr[$ky]);
 				}
-				
+				elseif($fld->field_name == 'Birthday')
+				{    
+					$fld->field_value=date('Y-m-d',strtotime($fld->field_value));
+				}				
 			}
 			
 			$friendmodel = FD::model( 'Friends' );
 			$result = $friendmodel->getPendingRequests($log_user);
 			$user_obj->isrequestor=false;
-			foreach($result as $res)
-			{
-				   if($res->actor_id == $other_user_id)
-				   $user_obj->isrequestor=true;   
+			
+			if($result)
+			{			
+				foreach($result as $res)
+				{
+					   if($res->actor_id == $other_user_id)
+					   $user_obj->isrequestor=true;   
+				}
 			}
-
 			$user_obj->more_info = $field_arr; 
 
 		}

@@ -28,6 +28,7 @@ require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/category.php';
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/albums.php';
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/photos.php';
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/createalbum.php';
+require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/events.php';
 
 
 class EasySocialApiMappingHelper
@@ -79,6 +80,9 @@ class EasySocialApiMappingHelper
 			case 'photos':
 						return $this->photosSchema($rows,$userid);
 						break;
+			case 'event':
+                                               return $this->eventsSchema($rows,$userid);                                                
+                                               break;
 		}
 		
 		return $item;
@@ -132,7 +136,7 @@ class EasySocialApiMappingHelper
 		$result = array();
 		
 		foreach($rows as $ky=>$row)
-		{
+		{	
 			if(isset($row->id))
 			{
 				$item = new GetalbumsSimpleSchema();
@@ -149,27 +153,30 @@ class EasySocialApiMappingHelper
 				$item->cover_large=$row->cover_large;
 				$item->cover_square=$row->cover_square;
 				$item->cover_thumbnail=$row->cover_thumbnail;
-				$item->count=$row->count;
+				$item->count=$row->count;				
 				$likes = FD::likes($row->id, SOCIAL_TYPE_ALBUM , 'create', SOCIAL_APPS_GROUP_USER );				
 				$item->likes = $this->createlikeObj($likes,$userid);
-			    //$item->total=$item->likes->total;
+			    //$item->total=$item->likes->total;			
 				
 				// Get album comments
 				$comments = FD::comments($row->id, SOCIAL_TYPE_ALBUM , 'create', SOCIAL_APPS_GROUP_USER , array('url' => $row->getPermalink()));				
-				$item->comment_element = $comments->element.".".$comments->group.".".$comments->verb;
+				$item->comment_element = $comments->element.".".$comments->group.".".$comments->verb;				
 				$comments->stream_id=1;
 			
-				//$comments->element=$item->comment_element;
-				$item->comments = $this->createCommentsObj($comments);
+				//$comments->element=$item->comment_element;				
+				$item->comments = $this->createCommentsObj($comments);				
 				$options = array('uid' => $comments->uid, 'element' => $item->comment_element, 'stream_id' => $comments->stream_id);				
 				$model  = FD::model('Comments');
-				$comcount = $model->getCommentCount($options);
-				$item->commentcount=$comcount;
-				$item->isowner = ( $row->uid == $userid )?true:false;
+				$comcount = $model->getCommentCount($options);	
+				//code edit for comment count 
+				$item->total=$comcount;
+				$item->comments['total']=$comcount;
+				
+				$item->isowner = ( $row->uid == $userid )?true:false;				
 				$result[] = $item;
 			}
 		}
-		return $result;	
+		return $result;		
 	}
 	
 	//To build field object
@@ -249,39 +256,30 @@ class EasySocialApiMappingHelper
 				
 				//hari - code for build video iframe
 				//check code optimisation
-				if($row->preview)  
-                {
-                    $frame_match= preg_match('/;iframe.*?>/', $row->preview);
-                }    
-                else
-                {
-                    $frame_match= preg_match('/;iframe.*?>/', $row->content);  
-                    $row->preview = $row->content; 
-                    $item->content = null;                 
-                }
-                
-                if($frame_match)
+				$frame_match= preg_match('/;iframe.*?>/', $row->preview);
+				   if($frame_match)
 				   {
 					   $dom = new DOMDocument;
 					   $dom->loadHTML($row->preview);
 					   foreach ($dom->getElementsByTagName('a') as $node) {
-							$vurls = $node->getAttribute( 'href' );
-							                   
-							if(preg_match('/com_easysocial/', $vurls))
-							{
-								continue;
-							}
-							else
-							{
-								$first = $vurls;
-								//all video data
-								$url_data = $this->crawlLink($vurls);
-								$item->preview = '<div class="video-container">'.$url_data->oembed->html.'</div>';
-	
-								break;        
-							}                                
+							   $first = $node->getAttribute( 'href' );                                        
+							   break;                                
 					   }
-					   
+					   if(strstr($first,"youtu.be"))        
+					   {
+							   $first=preg_replace("/\s+/",'',$first);
+							   $first=preg_replace("/youtu.be/","youtube.com/embed",$first);                                        
+							   $abc=$first."?feature=oembed";
+							   $item->preview ='<div class="video-container"><iframe src="'.$abc.'" frameborder="0" allowfullscreen=""></iframe></div>';
+					   }                                        
+					   else
+					   {
+					   $df=preg_replace("/\s+/",'',$first);                                        
+					   $df=preg_replace("/watch\?v=([a-zA-Z0-9\]+)([a-zA-Z0-9\/\\\\?\&\;\%\=\.])/i","embed/$1 ",$first);
+					   $abc=$df."?feature=oembed";
+					   $df=preg_replace("/\s+/",'',$abc);
+					   $item->preview ='<div class="video-container"><iframe src="'.$df.'" frameborder="0" allowfullscreen=""></iframe></div>';        
+					   }
 				   }
 				   else
 				   {
@@ -334,8 +332,7 @@ class EasySocialApiMappingHelper
 				foreach($row->with as $actor)
 				{
 					$withurl = JURI::root().FRoute::profile( array('id' => $actor->id , 'layout' => 'item', 'sef' => false ));
-					//$with_user_url[] = "<a href='".$withurl."'>".$actor->username."</a>";
-					$with_user_url[] = "<a href='".$withurl."'>".$actor->name."</a>";
+					$with_user_url[] = "<a href='".$withurl."'>".$actor->username."</a>";
 					
 					//$with_url = $with_url." and ".
 					
@@ -360,6 +357,8 @@ class EasySocialApiMappingHelper
 				
                 //
 				$item->actor = $actors;
+				//This node is for Report-flag for the posts.
+				$item->isself = ( $actors[0]->id == $userid )?true:false;
 
 				$item->likes = (!empty($row->likes))?$this->createlikeObj($row->likes,$userid):null;
 				
@@ -435,40 +434,6 @@ class EasySocialApiMappingHelper
 		return $result;
 	}
 	
-	//crowlink link data for video post
-	public function crawlLink($url)
-	{
-		// Get the crawler
-		$crawler = FD::get('crawler');
-		// Result placeholder
-		$result = null;
-		
-			// Generate a hash for the url
-			$hash = md5($url);
-
-			$link = FD::table('Link');
-			$exists = $link->load(array('hash' => $hash));
-
-			// If it doesn't exist, store it.
-			if (!$exists) {
-
-				$crawler->crawl($url);
-
-				// Get the data from our crawler library
-				$data = $crawler->getData();
-
-				// Now we need to cache the link so that the next time, we don't crawl it again.
-				$link->hash = $hash;
-				$link->data = json_encode($data);
-				$link->store();
-			}
-
-		$result = json_decode($link->data);
-
-		return $result;
-	}
-	
-	
 	//create like object
 	public function createLikeObj($row,$userid)
 	{
@@ -500,6 +465,7 @@ class EasySocialApiMappingHelper
 	//create comments object
 	public function createCommentsObj($row,$limitstart=0,$limit=10)
 	{
+
 		if (!is_bool($row->uid))
 		{
 			$options = array('uid' => $row->uid, 'element' => $row->element, 'stream_id' => $row->stream_id, 'start' => $limitstart, 'limit' => $limit);
@@ -509,7 +475,7 @@ class EasySocialApiMappingHelper
 			$result = $model->getComments($options);
 
 			$data = array();
-			
+			$data['total'] = 0;
 			$data['base_obj'] = $row;
 			
 			$likesModel = FD::model('Likes');
@@ -542,9 +508,7 @@ class EasySocialApiMappingHelper
 				$item->likes->hasLiked = $likesModel->hasLiked($item->uid,'comments.' . 'user' . '.like',$cdt->created_by);
 				$data['data'][] = $item;
 			}
-
 			$data['total'] = count($data['data']);
-			
 			return $data;
 		}
 		
@@ -638,6 +602,86 @@ class EasySocialApiMappingHelper
 		
 		return $result;
 	}
+	//to build event obj.
+	public function eventsSchema($rows,$userid)
+	{
+		$lang = JFactory::getLanguage();
+		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, 'en-GB', true);
+		$result = array();		
+		foreach($rows as $ky=>$row)
+		{
+			if(isset($row->id))
+			{	
+				$item = new EventsSimpleSchema();
+				$item->id=$row->id;
+				$item->title=$row->title;
+				$item->description=$row->description;
+				//getting all event images
+				foreach($row->avatars As $ky=>$avt)
+				{
+					$avt_key = 'avatar_'.$ky;
+					$item->$avt_key = JURI::root().'media/com_easysocial/avatars/event/'.$row->id.'/'.$avt;
+										
+					$fst = JFile::exists('media/com_easysocial/avatars/event/'.$row->id.'/'.$avt);
+					//set default image
+					if(!$fst)
+					{
+						$item->$avt_key = JURI::root().'media/com_easysocial/defaults/avatars/event/'.$ky.'.png';
+					}
+				}
+				//end
+			
+				$item->params=$row->params;
+				$item->details=$row->meta;				
+				//$item->start_date = strtotime($row->meta->start);
+				$item->start_date = gmdate('D M j G:i:s a',strtotime($row->meta->start));
+				$item->end_date = gmdate('D M j G:i:s a',strtotime($row->meta->end));
+				$event = FD::model( 'events' );
+				$item->guests= $event->getTotalAttendees($row->id);
+				
+				$item->featured=$row->featured;
+				$item->created=$row->created;
+				$item->categoryId=$row->category_id;
+				$item->type=$row->type;
+			
+				//get category name
+				$category 	= FD::table('EventCategory');
+				$category->load($row->category_id);				
+				$item->category_name = $category->get('title');
+				
+				//event guest status
+				$eventobj=FD::event($row->id);	
+				$item->isAttending=$eventobj->isAttending($userid);
+				$item->isNotAttending=$eventobj->isNotAttending($userid);
+				$item->isOwner=$eventobj->isOwner($userid);				
+				
+				$event_owner=reset($row->admins);                               
+                		$item->owner = FD::user($event_owner)->username;
+                		//$item->owner=$user->username;
+				
+				$item->isMaybe=in_array($userid,$row->maybe);
+				$item->total_guest=$eventobj->getTotalGuests();
+				
+				
+				$item->location=$row->address;
+				$item->longitude=$row->longitude;
+				$item->latitude=$row->latitude;
+				$NameLocationLabel = $item->location;
+				$item->event_map_url_andr  =  "geo:".$item->latitude.",".$item->longitude."?q=".$NameLocationLabel;
+                		//$item->event_map_url_ios = "geo:".$item->latitude.",".$item->longitude."?q=".$NameLocationLabel;
+				$item->event_map_url_ios = "http://maps.apple.com/?q=".$NameLocationLabel."&sll=".$item->latitude.",".$item->longitude;				
+
+				//getting cover image of event
+				$eve = FD::table( 'Cover' );
+				$eve->type='event';
+				$eve->photo_id=$row->cover->photo_id;
+				$item->cover_image=$eve->getSource();
+				//end
+				$result[] = $item;
+			}
+		}
+		return($result);	
+	}
 	
 	//function for create group schema
 	public function groupSchema($rows=null,$userid=0) 
@@ -680,13 +724,13 @@ class EasySocialApiMappingHelper
 				$item->creator_name = JFactory::getUser($row->creator_uid)->username;
 				//$item->type = ($row->type == 1 )?'Public':'Public';
 				$item->type = $row->type;
-				$item->params = $row->params;
+				$item->params = (!empty($row->params))?$row->params:false;
 			
 				foreach($row->avatars As $ky=>$avt)
 				{
 					$avt_key = 'avatar_'.$ky;
 					$item->$avt_key = JURI::root().'media/com_easysocial/avatars/group/'.$row->id.'/'.$avt;
-										
+
 					$fst = JFile::exists('media/com_easysocial/avatars/group/'.$row->id.'/'.$avt);
 					//set default image
 					if(!$fst)
@@ -743,13 +787,36 @@ class EasySocialApiMappingHelper
 
 			//$user_obj->approval_pending = $user->isPending($other_user_id);
 		}
-		$user_obj->friend_count = $other_user_obj->getTotalFriends();
-		$user_obj->follower_count = $other_user_obj->getTotalFollowers();
-		$user_obj->badges = $other_user_obj->getBadges();
+		
+		//$user_obj->friend_count = $other_user_obj->getTotalFriends();
+		//$user_obj->follower_count = $other_user_obj->getTotalFollowers();
+		//$user_obj->badges = $this->createBadge($other_user_obj->getBadges());
 		$user_obj->points = $other_user_obj->getPoints();
 		
 		
 		return $user_obj;
+	}
+
+	//create badge object list
+	public function createBadge($rows)
+	{
+		$badges = array();
+
+		foreach( $rows as $row )
+		{
+			$std_obj = new stdClass();
+			$std_obj->id = $row->id;
+			$std_obj->title = JText::_($row->title);
+			$std_obj->description = JText::_($row->description);
+			$std_obj->alias = $row->alias;
+			$std_obj->howto = JText::_($row->howto);
+			$std_obj->avatar = JURI::root().$row->avatar;
+			$std_obj->achieved_date = $row->achieved_date;
+			$std_obj->created = $row->created;
+	
+			$badges[] = $std_obj; 
+		}
+		return $badges;
 	}
 	
 	//function for create user schema
@@ -909,6 +976,11 @@ class EasySocialApiMappingHelper
 		$image->cover_image = $user->getCover();
 		
 		$actor->image = $image;
+
+		$actor->points = $user->points;
+		$actor->badges = $this->createBadge($user->getBadges());        
+		$actor->friend_count = $user->getTotalFriends();
+		$actor->follower_count = $user->getTotalFollowers();
 		
 		return $actor;
 				

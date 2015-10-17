@@ -29,21 +29,13 @@ class EasyblogApiResourceCategory extends ApiResource
 		$model = EasyBlogHelper::getModel( 'Blog' );
 		$category = EasyBlogHelper::table( 'Category', 'Table' );
 		$id = $input->get('id', null, 'INT');
-		
-		$limitstart = $input->get('limitstart', 0, 'INT');
-		$limit = $input->get('limit', 20, 'INT');
-		
 		$search = $input->get('search', null, 'STRING');
 		$posts = array();
 		
-		//override orignal limit
-		if(!$limit)
-		$limit = EB::call('Pagination', 'getLimit', array(EBLOG_PAGINATION_CATEGORIES));
 		
 		if (!isset($id)) {
 			$categoriesmodel = EasyBlogHelper::getModel( 'Categories' );
 			$categories = $categoriesmodel->getCategoryTree('ordering');
-			$categories = array_slice( $categories,$limitstart,$limit );
 			$this->plugin->setResponse( $categories );
 			return;
 		}
@@ -80,7 +72,7 @@ class EasyblogApiResourceCategory extends ApiResource
 
 		// Get teamblog posts count
 		// $teamBlogCount = $model->getTeamBlogCount($category->id);
-		if(!$limit)
+
 		$limit = EB::call('Pagination', 'getLimit', array(EBLOG_PAGINATION_CATEGORIES));
 
 		// Get the posts in the category

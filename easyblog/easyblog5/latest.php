@@ -40,25 +40,12 @@ class EasyblogApiResourceLatest extends ApiResource
 		$featured = $input->get('featured',0,'INT');
 		$tags = $input->get('tags',0,'INT');
 		$user_id = $input->get('user_id',0,'INT');
-		
-		//limit adjustment
-		$limit = $input->get('limit',10,'INT');
-		$limitstart = $input->get('limitstart',0,'INT');
-		
-		if($limitstart)
-		{
-			$limit = $limit + $limitstart;
-		}
-		
 		$posts = array();
 		// If we have an id try to fetch the user
 		$blog 		= EasyBlogHelper::table( 'Blog' );
 		$blog->load( $id );
 		$modelPT	= EasyBlogHelper::getModel( 'PostTag' );
 		
-		//$model->setState('limit', $limit);
-		//$model->setState('limitstart', $limitstart);
-
 		if($tags)
 		{		
 			$rows = $model->getTaggedBlogs( $tags );
@@ -70,24 +57,23 @@ class EasyblogApiResourceLatest extends ApiResource
 		}//for get users blog
 		else if($user_id)
 		{	$blogs = EasyBlogHelper::getModel( 'Blog' );
-			$rows = $blogs->getBlogsBy('blogger', $user_id, 'latest',$limit);
+			$rows = $blogs->getBlogsBy('blogger', $user_id, 'latest');
 		}
 		else
 		{	//to get latest blog
 			//$sorting	= $this->plugin->params->get( 'sorting' , 'latest' );
 			//$rows 	= $model->getBlogsBy( $sorting , '' , $sorting , 0, EBLOG_FILTER_PUBLISHED, $search );
-			$rows = $model->getBlogsBy('', '', 'latest', $limit, EBLOG_FILTER_PUBLISHED, null, true, array(), false, false, true, '', '', null, 'listlength', false);
+			$rows = $model->getBlogsBy('', '', 'latest', 0, EBLOG_FILTER_PUBLISHED, null, true, array(), false, false, true, '', '', null, 'listlength', false);
 			//$rows = EB::formatter('list', $rows, false);
 		}
 		$rows = EB::formatter('list', $rows, false);
-
 		//data mapping
 		foreach ($rows as $k => $v) 
 		{
 			//$item = EB::helper( 'simpleschema' )->mapPost($v,'', 100, array('text'));							
 			$scm_obj = new EasyBlogSimpleSchema_plg();
 			$item = $scm_obj->mapPost($v,'', 100, array('text'));
-
+		
 			$item->tags = $modelPT->getBlogTags($item->postid);
 			$item->isowner = ( $v->created_by == $this->plugin->get('user')->id )?true:false;
 			
@@ -109,36 +95,19 @@ class EasyblogApiResourceLatest extends ApiResource
 			{					
 				$item->rate->ratings=-2;
 			}
-			
-			// Load up the media manager library
-			
-			if(strlen($v->image))
-			{
-				//code for EB gives wron url some time in schema when same image upload in app
-				$mm = EB::mediamanager();
-				$item->image->url = 'http:'.$mm->getUrl($v->image);
-			}
-
+				
 			$posts[] = $item;
 		}
-//print_r($posts);die("in latest api");
-		$posts = array_slice($posts,$limitstart,$limit);
-
 		$this->plugin->setResponse( $posts );
 	}
 	// get feature blog function.
 	public function getfeature_Blog()
 	{
 		$app = JFactory::getApplication();
-		$limit = $app->input->get('limit',10,'INT');
-		//$limitstart = $app->input->get('limitstart',10,'INT');
-		
-		$categories = $app->input->get('categories','','STRING');
+		$limit = $app->input->get('limit',10,'INT');	
+		$categories = $app->input->get('categories','','STRING');	
 		$blogss = new	EasyBlogModelBlog();
-		
 		$blogss->setState('limit',$limit);
-		//$blogss->setState('limitstart',$limitstart);
-		
 		$res = $blogss->getFeaturedBlog(array(),$limit);
 		return $res;	
 	}	

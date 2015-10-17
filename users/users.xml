@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension version="2.5.0" type="plugin" group="api" method="upgrade">
+<extension version="3.0.0" type="plugin" group="api" method="upgrade">
     <name>Api - Users</name>
     <version>1.6</version>
     <creationDate>10/11/2014</creationDate>
@@ -9,7 +9,6 @@
     <copyright>Techjoomla. All rights reserved.</copyright> 
     <license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
     <description>This plugin exposes users to the Joomla! API. Supports creation, listing and login for users.</description>
-    
     <files>
         <filename plugin="users">users.php</filename>
         <folder>users</folder> 

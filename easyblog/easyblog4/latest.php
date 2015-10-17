@@ -32,7 +32,6 @@ class EasyblogApiResourceLatest extends ApiResource
 		$featured = $input->get('featured',0,'INT');
 		$tags = $input->get('tags',0,'INT');
 		$user_id = $input->get('user_id',0,'INT');
-		$limit = $input->get('limit',2,'INT');
 		$posts = array();
 		// If we have an id try to fetch the user
 		$blog 		= EasyBlogHelper::getTable( 'Blog' );
@@ -46,7 +45,6 @@ class EasyblogApiResourceLatest extends ApiResource
 			//~ }
 			//~ $this->plugin->setResponse( $blog );
 		//~ }
-
 		if($tags)
 		{		
 			$rows = $model->getTaggedBlogs( $tags );			
@@ -58,12 +56,12 @@ class EasyblogApiResourceLatest extends ApiResource
 		}//for get users blog
 		else if($user_id)
 		{	$blogs = EasyBlogHelper::getModel( 'Blog' );
-			$rows = $blogs->getBlogsBy('blogger', $user_id, 'latest',$limit);
+			$rows = $blogs->getBlogsBy('blogger', $user_id, 'latest');
 		}
 		else
 		{	//to get latest blog
 			$sorting	= $this->plugin->params->get( 'sorting' , 'latest' );
-			$rows 		= $model->getBlogsBy( $sorting , '' , $sorting , $limit, EBLOG_FILTER_PUBLISHED, $search );
+			$rows 		= $model->getBlogsBy( $sorting , '' , $sorting , 0, EBLOG_FILTER_PUBLISHED, $search );
 		}		
 		//data mapping
 		foreach ($rows as $k => $v) 

@@ -29,7 +29,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 
 	public function post()
 	{
-		//print_r($FILES);die("in post grp api");
+
 	   $this->plugin->setResponse($this->inviteGroup());
 	}
 	

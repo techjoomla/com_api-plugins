@@ -78,6 +78,25 @@ class EasysocialApiResourceComments extends ApiResource
 
 				$state = $table->store();
 
+				if ($streamid)
+				{
+					$doUpdate = true;
+					if ($element == 'photos')
+					 {
+						$sModel = FD::model('Stream');
+						$totalItem = $sModel->getStreamItemsCount($streamid);
+
+						if ($totalItem > 1) {
+								$doUpdate = false;
+							}
+					}
+
+						if ($doUpdate) {
+							$stream = FD::stream();
+							$stream->updateModified( $streamid, FD::user()->id, SOCIAL_STREAM_LAST_ACTION_COMMENT);
+						}
+				}
+
 				if($state)
 				{
 				    //create result obj    

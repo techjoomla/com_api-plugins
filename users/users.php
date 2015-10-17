@@ -19,6 +19,7 @@ class plgAPIUsers extends ApiPlugin
 		ApiResource::addIncludePath(dirname(__FILE__).'/users');
 		
 		// Set the login resource to be public
-		$this->setResourceAccess('login', 'public');
+		$this->setResourceAccess('login', 'public','get');
+		$this->setResourceAccess('users', 'public', 'post');
 	}
 }

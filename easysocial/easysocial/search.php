@@ -108,6 +108,15 @@ class EasysocialApiResourceSearch extends ApiResource
 		}
 		
 		$list['group'] = $mapp->mapItem($group,'group',$log_user->id);
+		
+		if(empty($list['group']))
+               	{
+                       $ret_arr = new stdClass;
+                       $ret_arr->status = false;
+                       $ret_arr->message = "No group found in search";
+                       $list['group']= $ret_arr;
+               	}
+
 
 		return( $list );
 		
@@ -124,6 +133,7 @@ class EasysocialApiResourceSearch extends ApiResource
 			
 			return $ret_arr;
 		}
+	
 		
 		$user = JFactory::getUser($this->plugin->get('user')->id);
 		$frnd_mod = new EasySocialModelFriends();

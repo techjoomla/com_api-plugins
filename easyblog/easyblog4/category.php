@@ -28,21 +28,13 @@ class EasyblogApiResourceCategory extends ApiResource
 		$model = EasyBlogHelper::getModel( 'Blog' );
 		$category = EasyBlogHelper::getTable( 'Category', 'Table' );
 		$id = $input->get('id', null, 'INT');
-		
-		$limitstart = $input->get('limitstart', 0, 'INT');
-		$limit = $input->get('limit', 20, 'INT');
-		
 		$search = $input->get('search', null, 'STRING');
 		$posts = array();
 		
-		//override orignal limit
-		if(!$limit)
-		$limit = EB::call('Pagination', 'getLimit', array(EBLOG_PAGINATION_CATEGORIES));
 		
 		if (!isset($id)) {
 			$categoriesmodel = EasyBlogHelper::getModel( 'Categories' );
 			$categories = $categoriesmodel->getCategoryTree('ordering');
-			$categories = array_slice( $categories,$limitstart,$limit );
 			$this->plugin->setResponse( $categories );
 			return;
 		}
@@ -63,7 +55,7 @@ class EasyblogApiResourceCategory extends ApiResource
 		EasyBlogHelper::accessNestedCategoriesId($category, $catIds);
 
 		$sorting	= $this->plugin->params->get( 'sorting' , 'latest' );
-		$rows 		= $model->getBlogsBy( 'category' , $catIds , $sorting , $limit, EBLOG_FILTER_PUBLISHED, $search );
+		$rows 		= $model->getBlogsBy( 'category' , $catIds , $sorting , 0, EBLOG_FILTER_PUBLISHED, $search );
 		
 		foreach ($rows as $k => $v) {
 			

@@ -94,7 +94,39 @@ class EasysocialApiResourceMessage extends ApiResource
 				    
 				    //create result obj    
 					$result->status  = 1;
-					$result->message = 'Message send successfully';    
+					$result->message = 'Message send successfully';
+					
+					//next process
+					// Send notification email to recipients
+					foreach ($recipients as $recipientId)
+					{
+						// We should not send a notification to ourself.
+						if ($recipientId == $log_usr) {
+							continue;
+						}
+
+						$recipient = FD::user($recipientId);
+						$log_obj = FD::user($log_usr);
+						
+						// Get the conversation table.
+						$conversation = FD::table('Conversation');
+						$conversation->load($conversion_id);
+						// Add new notification item
+						$mailParams 	= array();
+
+						$mailParams['title'] = 'COM_EASYSOCIAL_EMAILS_NEW_CONVERSATION_SUBJECT';
+						$mailparams['actor'] = $log_obj->getName();
+						$mailParams['authorName'] = $log_obj->getName();
+						$mailParams['authorAvatar']	= $log_obj->getAvatar();
+						$mailParams['authorLink'] = $log_obj->getPermalink(true, true);
+						$mailParams['message'] = $message->getContents();
+						$mailParams['messageDate'] = $message->created;
+						$mailParams['conversationLink']	= $conversation->getPermalink(true, true);
+
+						// Send a notification for all participants in this thread.
+						$state 	= FD::notify('conversations.new', array($recipientId) , $mailParams, false );
+					}
+					   
 				}
 				else
 				{
@@ -276,3 +308,4 @@ class EasysocialApiResourceMessage extends ApiResource
 	
 	
 }
+

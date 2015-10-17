@@ -15,9 +15,9 @@ jimport('joomla.application.component.model');
 jimport('joomla.user.helper');
 jimport('joomla.user.user');
 jimport('joomla.application.component.helper');
-jimport( 'simpleschema.blog.post' );
-jimport( 'simpleschema.category' );
-jimport( 'simpleschema.person' );
+jimport( 'simpleschema.easyblog.blog.post' );
+jimport( 'simpleschema.easyblog.category' );
+jimport( 'simpleschema.easyblog.person' );
 
 JModelLegacy::addIncludePath(JPATH_SITE.'components/com_api/models');
 require_once JPATH_ADMINISTRATOR.'/components/com_easyblog/models/users.php';
@@ -37,17 +37,13 @@ class EasyblogApiResourceEasyblog_users extends ApiResource
 	{
 		$app = JFactory::getApplication();
 		$limitstart = $app->input->get('limitstart',0,'INT');
-		$limit =  $app->input->get('limit',0,'INT');
-		$search =  $app->input->get('search','','STRING');
-		//order options are 
-		//latest,alphabet,featured,latestpost,postcount,active
-		$orderBy =  $app->input->get('orderby','alphabet','STRING');
-		
+		$limit =  $app->input->get('limit',0,'INT');		
+		$search =  $app->input->get('search','','STRING');		
 		$ob1  = new EasyBlogModelBlogger();
 		$ob1->setState('limitstart',$limitstart);
 		//$bloggers = $ob1->getAllBloggers('latest',$limit, $filter='showallblogger' , $search );		
-		$bloggers = $ob1->getBloggers( $orderBy,$limit, $filter='showallblogger' , $search );		
-		$blogger = EasyBlogHelper::table( 'Profile' );
+		$bloggers = $ob1->getBloggers('latest',$limit, $filter='showallblogger' , $search );		
+		$blogger = EasyBlogHelper::table( 'Profile' );		
 		foreach( $bloggers as $usr )
 		{
 			$blogger->load($usr->id);

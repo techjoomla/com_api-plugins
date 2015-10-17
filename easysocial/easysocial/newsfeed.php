@@ -26,7 +26,7 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 
 	public function post()
 	{
-	   $this->plugin->setResponse($this->getGroups());
+	   $this->plugin->setResponse("Use get method");
 	}
 	//function use for get stream data
 	function getStream()
@@ -55,75 +55,73 @@ class EasysocialApiResourceNewsfeed extends ApiResource
         $config = JFactory::getConfig();
         $sef = $config->set('sef', 0);
 	
-	//map object
-	$mapp = new EasySocialApiMappingHelper();
+		//map object
+		$mapp = new EasySocialApiMappingHelper();
 
         // If user id is not passed in, return logged in user
         if (!$target_user) {
             $target_user = $id;
         }
 
-	// Get the stream library
-	$stream 	= FD::stream();
+		// Get the stream library
+		$stream 	= FD::stream();
 
-	$options = array('userId' => $target_user, 'startlimit' => $startlimit, 'limit' => $limit);
+		$options = array('userId' => $target_user, 'startlimit' => $startlimit, 'limit' => $limit);
+			
+		$clusterType = SOCIAL_TYPE_GROUP;
 		
-	$clusterType = SOCIAL_TYPE_GROUP;
-	
-	if($event_id)
-	{
-		$group_id = $event_id;
-		$clusterType = SOCIAL_TYPE_EVENT;
-	}
-	
-	if($group_id)
-	{
-		$options = array('clusterId' => $group_id, 'clusterType' => $clusterType, 'startlimit' => $startlimit, 'limit' => $limit);
-	}
-	
-	if($target_user == $id )
-	{
-		switch($filter) {
-			case 'everyone':
-				$options['guest'] = true;
-				$options['ignoreUser'] = true;
-				break;
-
-			case 'following':
-			case 'follow':
-				$options['type'] = 'follow';
-				break;
-			case 'bookmarks':
-				$options['guest'] = true;
-				$options['type'] = 'bookmarks';
-			case 'me':
-				// nohting to set
-				break;
-			case 'hashtag':
-				//$tag = '';
-				$options['tag'] = $tag;
-				break;
-			case 'sticky':
-				//$options['guest'] = true;
-				$options['type'] = 'sticky';
-				break;
-			default:
-				$options['context'] = $filter;
-				break;
-			}
+		if($event_id)
+		{
+			$group_id = $event_id;
+			$clusterType = SOCIAL_TYPE_EVENT;
 		}
-
-		$stream->get($options);
-
-		$result 	= $stream->toArray();
-
-		$data	= array();
-
-		$data11 = $mapp->mapItem($result,'stream',$target_user);
-		//set back sef
-		$jrouter->setMode(JROUTER_MODE_SEF);
 		
-		return $data11;
+		if($group_id)
+		{
+			$options = array('clusterId' => $group_id, 'clusterType' => $clusterType, 'startlimit' => $startlimit, 'limit' => $limit);
+		}
+		
+		if($target_user == $id )
+		{
+			switch($filter) {
+				case 'everyone':
+					$options['guest'] = true;
+					$options['ignoreUser'] = true;
+					break;
+
+				case 'following':
+				case 'follow':
+					$options['type'] = 'follow';
+					break;
+				case 'bookmarks':
+					$options['guest'] = true;
+					$options['type'] = 'bookmarks';
+				case 'me':
+					// nohting to set
+					break;
+				case 'hashtag':
+					//$tag = '';
+					$options['tag'] = $tag;
+					break;
+				case 'sticky':
+					//$options['guest'] = true;
+					$options['type'] = 'sticky';
+					break;
+				default:
+					$options['context'] = $filter;
+					break;
+				}
+			}
+
+			$stream->get($options);
+
+			$result 	= $stream->toArray();
+
+			$data11 = $mapp->mapItem($result,'stream',$target_user);
+			//set back sef
+			$jrouter->setMode(JROUTER_MODE_SEF);
+			
+			return $data11;
 	}
 
 }

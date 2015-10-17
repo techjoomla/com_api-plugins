@@ -20,7 +20,6 @@ require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/message.php';
 
 require_once JPATH_SITE.'/media/com_easysocial/apps/fields/user/avatar/helper.php';
 require_once JPATH_SITE.'/media/com_easysocial/apps/fields/user/cover/helper.php';
-//require_once JPATH_SITE.'/media/com_easysocial/apps/fields/user/cover/ajax.php';
 
 class EasySocialApiUploadHelper
 {
@@ -264,13 +263,6 @@ class EasySocialApiUploadHelper
 	// to create temp group cover data
 	public function ajax_cover($file,$uname='cover_file')
 	{
-		/*
-		$cls_obj = new SocialFieldsUserCover();
-		$cover_obj = $cls_obj->createCover($file,$uname);
-		
-		return $cover_obj;
-		*/
-
 		// Load our own image library
 		$image = FD::image();
 
@@ -515,7 +507,6 @@ class EasySocialApiUploadHelper
         // If album doesn't have a cover, set the current photo as the cover.
         //~ if (!$album->hasCover()) {
             //~ $album->cover_id    = $photo->id;
-//~ 
             //~ // Store the album
             //~ $album->store();
         //~ }

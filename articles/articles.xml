@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="3.0.0" type="plugin" group="api" method="upgrade">
+    <name>Api - Articles</name>
+    <version>1.0</version>
+    <creationDate>Sept 2015</creationDate>
+    <author>AppCarvers</author>
+    <authorEmail>support@appcarvers.com</authorEmail>
+    <authorUrl>http://www.appcarvers.com</authorUrl>
+    <copyright>Appcarvers. All rights reserved.</copyright> 
+    <license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
+    <description>This plugin use for get data from joomla site.</description>
+    
+    <files>
+        <filename plugin="articles">articles.php</filename>
+        <filename >articles/category.php</filename>
+        <folder>articles</folder> 
+    </files>
+</extension>

@@ -51,11 +51,11 @@ class EasysocialApiResourceComments extends ApiResource
 		}
 
 		// Message should not be empty.
-		if(!$streamid)
+		if(empty($input))
 		{
 			$result->id = 0;
 			$result->status  = 0;
-			$result->message = 'Empty stream id not allowed';
+			$result->message = 'Empty comment not allowed';
 			$valid = 0;
 		}
 		else if($valid)
@@ -99,7 +99,15 @@ class EasysocialApiResourceComments extends ApiResource
 
 				if($state)
 				{
-				    //create result obj    
+					$dispatcher = FD::dispatcher();
+
+					$comments = array(&$table);
+					$args = array( &$comments );
+
+					// @trigger: onPrepareComments
+					$dispatcher->trigger($group, 'onPrepareComments', $args);
+				  	
+				  	//create result obj    
 					$result->status  = 1;
 					$result->message = 'comment saved successfully';    
 				}

@@ -90,7 +90,7 @@ class UsersApiResourceUsers extends ApiResource
 		$user->set('email', $data['email']);
 		$user->set('block', $data['enabled']);
 		$user->set('activation', $data['activation']);
-	
+
 		// Password encryption
 		$salt           = JUserHelper::genRandomPassword(32);
 		$crypt          = JUserHelper::getCryptedPassword($user->password, $salt);
@@ -116,6 +116,8 @@ class UsersApiResourceUsers extends ApiResource
 		$date = JFactory::getDate();
 		$user->set('registerDate', $date->toSql());
 
+//print_r($_POST);die("in api after save");
+
 		// True on success, false otherwise
 		if (!$user->save())
 		{
@@ -131,6 +133,7 @@ class UsersApiResourceUsers extends ApiResource
 		}
 		else
 		{
+	
 			/*
 			// Auto registration
 			if( $data['activation'] == 0)
@@ -333,19 +336,51 @@ class UsersApiResourceUsers extends ApiResource
 	{
 		$fld_data = array();
 		$app = JFactory::getApplication();
+		
+		require_once JPATH_SITE.'/plugins/api/easysocial/libraries/uploadHelper.php';
+		//for upload photo
+		 if(!empty($_FILES['avatar']['name']))
+               {
+                       $upload_obj = new EasySocialApiUploadHelper();
+                       //ckecking upload cover
+                       //$phto_obj = $upload_obj->uploadPhoto($log_user->id,'group');
+                       $phto_obj = $upload_obj->ajax_avatar($_FILES['avatar']);
+                       $avtar_pth = $phto_obj['temp_path'];
+                       $avtar_scr = $phto_obj['temp_uri'];
+                       $avtar_typ = 'upload';
+                       $avatar_file_name = $_FILES['avatar']['name']; 
+               }
+		//for upload cover
+               /*$cover_data = null;
+               
+               if(!empty($_FILES['cover_file']['name']))
+               {
+                       $upload_obj = new EasySocialApiUploadHelper();
+                       //ckecking upload cover
+                       $cover_data = $upload_obj->ajax_cover($_FILES['cover_file'],'cover_file');
+                       //$phtomod        = FD::model( 'Photos' );
+                       //$cover_obj = $upload_obj->uploadCover($log_user->id,'group');
+                       //$cover_data = $phtomod->getMeta($cover_obj->id, SOCIAL_PHOTOS_META_PATH);
+                       //
+               }*/
 
 		foreach($fields as $field)
 		{
 			//$fld_data[$field->id] = $field->unique_key;
 			$fobj = new stdClass();
 			$fullname = $post['TITLE']." ".$post['first_name']." ".$post['middle_name']." ".$post['last_name']; 
-			$address = $post['STREET_1'].",".$post['STREET_2'].",".$post['CITY'].",".$post['PIN_CODE'].",".$post['STATE'].",".$post['COUNTRY'];  
-			
-			$fld_data['first_name'] = $post['first_name'];
+			$address = $post['STREET_1'].",".$post['STREET_2'].",".$post['CITY'].",".$post['PIN_CODE'].",".$post['STATE'].",".$post['COUNTRY'];
+			// Hari code for address comma remove
+			if($address == ',,,,,'){
+                               $address='';
+                       	}		
+  
+
+			$fld_data['first_name'] = (!empty($post['first_name']))?$post['first_name']:$app->input->get('name', '', 'STRING');
 			$fld_data['middle_name'] = $post['middle_name'];
 			$fld_data['last_name'] = $post['last_name'];
 			
-			$fobj->first = $post['TITLE']." ".$post['first_name'];
+			$fobj->first = $post['TITLE']." ".$fld_data['first_name'];
 			$fobj->middle = $post['middle_name'];
 			$fobj->last = $post['last_name'];
 			$fobj->name = $fullname;
@@ -386,7 +421,7 @@ class UsersApiResourceUsers extends ApiResource
 									break;
 				case 'URL': $fld_data['es-fields-'.$field->id] = (isset($post['WEBSITE']))?$post['WEBSITE']:'';
 									break;
-				/*
+				
 				case 'AVATAR':	$fld_data['es-fields-'.$field->id] = Array
 										(
 											'source' =>$avtar_scr, 
@@ -396,6 +431,7 @@ class UsersApiResourceUsers extends ApiResource
 											'name' => $avatar_file_name
 										);
 								break;
+				/*
 				case 'COVER':	$fld_data['es-fields-'.$field->id] = Array
 										(
 											'data' =>$cover_data,

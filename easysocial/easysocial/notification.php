@@ -72,7 +72,8 @@ class EasysocialApiResourceNotification extends ApiResource
 		 {			  			
 			 if( $r->actor_id == $target && $r->target_id == $user)
 			 {  
-				$friend->id = $r->id;
+				//$friend->id = $r->id;
+				$friend->load($r->id);
 				break;				
 			 }
 			 else
@@ -146,7 +147,8 @@ class EasysocialApiResourceNotification extends ApiResource
 			  			
 			 if( $r->actor_id == $target && $r->target_id == $user)
 			 {  
-				$friend->id = $r->id;
+				//$friend->id = $r->id;
+				$friend->load($r->id);				
 				break;				
 			 }
 			 else

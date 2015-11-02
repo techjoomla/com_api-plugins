@@ -112,16 +112,24 @@ class EasysocialApiResourceProfile extends ApiResource
 			}
 			
 			//for change data type 
-			
+	
 			foreach($field_arr as $ky=>$fld)
 			{
 				if($fld->field_name == 'Password'||  $fld->field_name == 'Timezone' || $fld->field_name == 'Home Church')
 				{
 					unset($field_arr[$ky]);
 				}
-				elseif($fld->field_name == 'Birthday')
+				elseif(($fld->field_name == 'Birthday') && (!empty($fld->field_value)))
 				{    
-					$fld->field_value=date('Y-m-d',strtotime($fld->field_value));
+
+				       $dtchange= new DateTime($fld->field_value);
+                                       $fld->field_value=$dtchange->format('d M Y');					
+
+					/*$vals = json_decode($fld->field_value);
+		
+					$fld->field_value = implode('-',(array)$vals);	
+					
+					$fld->field_value=date('d M Y',strtotime($fld->field_value));*/
 				}				
 			}
 			

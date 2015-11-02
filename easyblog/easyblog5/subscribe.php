@@ -153,12 +153,13 @@ class EasyblogApiResourceSubscribe extends ApiResource
 		$userid = $app->input->get('userid','','STRING');
 		$name   = $app->input->get('name','','STRING');
 		$blogid = $app->input->get('blogid',0,'INT');
+		$usr = FD::user($userid);		
 		$res = new stdClass;
 		$bmodel = new EasyBlogModelBlog();
 		$status = $bmodel->isBlogSubscribedUser($blogid,$userid,$email);
 		if(!$status)
 		{
-			$result = $bmodel->addBlogSubscription($blogid,$email,$userid,$name);
+			$result = $bmodel->addBlogSubscription($blogid,$email,$userid,$usr->name);
 			$res->status = 1;	
 			$res->message='subscription successful';
 		}

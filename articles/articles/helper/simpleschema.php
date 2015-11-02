@@ -17,7 +17,7 @@ class BlogappSimpleSchema
 {
 		public function mapPost($blog, $strip_tags='', $text_length=0, $skip=array())
 	{
-//print_r($blog);die("in schema");
+
 		$creator = JFactory::getUser( $blog->created_by );
 		
 		$item = new PostSimpleSchema;
@@ -58,26 +58,58 @@ class BlogappSimpleSchema
 		
 		$item->category->categoryid = $blog->catid;
 		$item->category->title = $blog->category_title;
-		//condition for changing path - not support in app
-		if (strpos($item->text,'href="http') == false)
-		{
-			$item->introtext = str_replace('href="images','href="'.JURI::root().'images',$item->introtext);
-		    $item->text = str_replace('href="images','href="'.JURI::root().'images',$item->text);
-		}
-
-		if (strpos($item->text,'src="http') == false)
-		{    
-		    $item->introtext = str_replace('src="','src="'.JURI::root(),$item->introtext);
-			$item->text = str_replace('src="','src="'.JURI::root(),$item->text);	
-		}
+		
 		$item->url = JURI::root() . trim('index.php?option=com_content&view=article&id=' . $item->postid .':'.$blog->alias );
 		
 		//load content module and position
 		$c_obj = new BlogappContentHelper();
 		$c_obj->loadContent($item);
 		
-		//$item->text = str_replace('href="images','href="'.JURI::root().'images',$item->text);
-		//$item->text = str_replace('src="','src="'.JURI::root(),$item->text);
+		if(strpos($item->text,'src="data:image') == false)
+		{	
+		
+			if (strpos($item->text,'href="images'))
+			{
+				$item->introtext = str_replace('href="images','href="'.JURI::root().'images',$item->introtext);
+			    	$item->text = str_replace('href="images','href="'.JURI::root().'images',$item->text);
+				//$item->text = str_replace('src="','src="'.JURI::root(),$item->text);	
+			}
+
+			if ( strpos($item->text,'src="images'))
+			{		    
+			    $item->introtext = str_replace('src="','src="'.JURI::root(),$item->introtext);
+				$item->text = str_replace('src="','src="'.JURI::root(),$item->text);	
+			}
+
+			if ( strpos($item->text,'src="/'))
+			{		    
+			    $item->introtext = str_replace('src="/','src="'.'http://',$item->introtext);
+				$item->text = str_replace('src="/','src="'.'http://',$item->text);	
+			}
+			
+			if ( strpos($item->text,'href="/'))
+			{		    
+			    $item->introtext = str_replace('href="/','href="'.'http://',$item->introtext);
+				$item->text = str_replace('href="/','href="'.'http://',$item->text);	
+			}
+		}
+		
+		if(empty($item->image->url))
+		{
+			$dom = new domDocument;
+			$dom->loadHTML($item->text);
+			$dom->preserveWhiteSpace = false;
+			$images = $dom->getElementsByTagName('img');
+			
+			foreach($images as $img)
+			{
+			    	$item->image->url = $img->getAttribute('src');
+
+				if(!empty($item->image->url))
+					break;
+			}
+
+		}
 
 		return $item;
 	}

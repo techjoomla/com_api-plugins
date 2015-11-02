@@ -19,6 +19,8 @@ public $created;
 public $categoryId;
 public $start_date;
 public $end_date;
+public $start_date_unix;
+public $end_date_unix;
 public $category_name;
 public $isAttending;
 public $isOwner;
@@ -26,5 +28,7 @@ public $isMaybe;
 public $location;
 public $longitude;
 public $latitude;
-public $cover_image;	
+public $cover_image;
+public $start_date_ios;
+public $end_date_ios;	
 }

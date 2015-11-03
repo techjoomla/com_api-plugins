@@ -38,7 +38,8 @@ class EasysocialApiResourceFriends extends ApiResource
 		$limitstart = $app->input->get('limitstart',0,'INT');		
 		$options['limit']=$limit;
 		$options['limitstart']=$limitstart;
-		$mssg;
+		$mssg='';
+		$flag = 1;
 		$mapp = new EasySocialApiMappingHelper();
 		
 		if($userid == 0)
@@ -52,15 +53,15 @@ class EasysocialApiResourceFriends extends ApiResource
 		switch($filter)
 		{			
 			case 'pending': //get the total pending friends.
-							$options[ 'state' ]	= SOCIAL_FRIENDS_STATE_PENDING;
+							$options[ 'state' ]	= JText::_('SOCIAL_FRIENDS_STATE_PENDING');
 							$mssg="You have no pending request";																					
 			break;			
 			case 'all':		//getting all friends
-							$options[ 'state' ]	= SOCIAL_FRIENDS_STATE_FRIENDS;
+							$options[ 'state' ]	= JText::_('SOCIAL_FRIENDS_STATE_FRIENDS');
 							$mssg="You have no friends";
 			break;			
 			case 'request':	//getting sent requested friends.
-							$options[ 'state' ]	= SOCIAL_FRIENDS_STATE_PENDING;
+							$options[ 'state' ]	= JText::_('SOCIAL_FRIENDS_STATE_PENDING');
 							$options[ 'isRequest' ]	= true;							
 							$mssg="You have no sent request";
 			break;
@@ -87,7 +88,8 @@ class EasysocialApiResourceFriends extends ApiResource
 							  }
 							  return $invites;
 			break;		
-		}		
+		}
+	
 		// if search word present then search user as per term and given id
 		if(empty($search) && empty($ttl_list) && $flag!=1)
 		{
@@ -96,7 +98,12 @@ class EasysocialApiResourceFriends extends ApiResource
 	    else if(!empty($search) && empty($filter)) 
 	    {						
 			$ttl_list = $frnd_mod->search($userid,$search,'username');
-		}		
+		}
+		else
+		{
+			$ttl_list = $frnd_mod->getFriends($userid,$options);
+		}
+
 	    $frnd_list['data'] = $mapp->mapItem( $ttl_list,'user',$userid);
 	    $frnd_list['data'] = $mapp->frnd_nodes( $frnd_list['data'],$user);
 	    //get other data

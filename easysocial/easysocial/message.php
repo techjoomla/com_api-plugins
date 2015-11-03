@@ -34,6 +34,8 @@ class EasysocialApiResourceMessage extends ApiResource
 		$conversion_id = $app->input->get('conversion_id',0,'INT');
 		$log_usr = $this->plugin->get('user')->id;
 		$valid = 1;
+		//setting flag for sending notification to new message or existing message reply.
+		$flag=0;
 		// Normalize CRLF (\r\n) to just LF (\n)
 		$msg = str_ireplace("\r\n", "\n", $msg);
 
@@ -56,6 +58,11 @@ class EasysocialApiResourceMessage extends ApiResource
 		}
 		else if($valid)
 		{
+			if($conversion_id==0)
+			{
+				$flag=1;
+			}
+			
 			$conversion_id = ($conversion_id)?$conversion_id:$this->createConversion($recipients,$log_usr);
 
 			if($conversion_id)
@@ -96,37 +103,68 @@ class EasysocialApiResourceMessage extends ApiResource
 					$result->status  = 1;
 					$result->message = 'Message send successfully';
 					
-					//next process
-					// Send notification email to recipients
-					foreach ($recipients as $recipientId)
-					{
-						// We should not send a notification to ourself.
-						if ($recipientId == $log_usr) {
-							continue;
+					if($flag==0)
+					{			
+						foreach ($recipients as $recipientId) {
+
+							if ( $recipientId == $log_usr) {
+								// skip sending email notification to itself.
+								continue;
+							}
+							$recipient = FD::user($recipientId);
+							$log_obj = FD::user($log_usr);
+							// Add new notification item
+							$title = 'COM_EASYSOCIAL_EMAILS_NEW_REPLY_RECEIVED_SUBJECT';
+							$conversation = FD::table('Conversation');
+							$conversation->load($conversion_id);
+							$mailParams = array();
+
+							$mailParams['title'] = $title;
+							$mailParams['actor'] = $log_obj->getName();
+							$mailParams['name'] = $recipient->getName();
+							$mailParams['authorName'] = $log_obj->getName();
+							$mailParams['authorAvatar'] = $log_obj->getAvatar();
+							$mailParams['authorLink'] = $log_obj->getPermalink(true, true);
+							$mailParams['message'] = $message->message;
+							$mailParams['messageDate'] = $message->created;
+							$mailParams['conversationLink']	= $conversation->getPermalink(true, true);
+
+							// Send a notification for all participants in this thread.
+							FD::notify('conversations.reply', array($recipient), $mailParams, false);
+						}						
+					}					
+					else{
+						//next process
+						// Send notification email to recipients
+						foreach ($recipients as $recipientId)
+						{
+							// We should not send a notification to ourself.
+							if ($recipientId == $log_usr) {
+								continue;
+							}
+
+							$recipient = FD::user($recipientId);
+							$log_obj = FD::user($log_usr);
+							
+							// Get the conversation table.
+							$conversation = FD::table('Conversation');
+							$conversation->load($conversion_id);
+							// Add new notification item
+							$mailParams 	= array();
+
+							$mailParams['title'] = 'COM_EASYSOCIAL_EMAILS_NEW_CONVERSATION_SUBJECT';
+							$mailparams['actor'] = $log_obj->getName();
+							$mailParams['authorName'] = $log_obj->getName();
+							$mailParams['authorAvatar']	= $log_obj->getAvatar();
+							$mailParams['authorLink'] = $log_obj->getPermalink(true, true);
+							$mailParams['message'] = $message->getContents();
+							$mailParams['messageDate'] = $message->created;
+							$mailParams['conversationLink']	= $conversation->getPermalink(true, true);
+
+							// Send a notification for all participants in this thread.
+							$state 	= FD::notify('conversations.new', array($recipientId) , $mailParams, false );
 						}
-
-						$recipient = FD::user($recipientId);
-						$log_obj = FD::user($log_usr);
-						
-						// Get the conversation table.
-						$conversation = FD::table('Conversation');
-						$conversation->load($conversion_id);
-						// Add new notification item
-						$mailParams 	= array();
-
-						$mailParams['title'] = 'COM_EASYSOCIAL_EMAILS_NEW_CONVERSATION_SUBJECT';
-						$mailparams['actor'] = $log_obj->getName();
-						$mailParams['authorName'] = $log_obj->getName();
-						$mailParams['authorAvatar']	= $log_obj->getAvatar();
-						$mailParams['authorLink'] = $log_obj->getPermalink(true, true);
-						$mailParams['message'] = $message->getContents();
-						$mailParams['messageDate'] = $message->created;
-						$mailParams['conversationLink']	= $conversation->getPermalink(true, true);
-
-						// Send a notification for all participants in this thread.
-						$state 	= FD::notify('conversations.new', array($recipientId) , $mailParams, false );
-					}
-					   
+					}					   
 				}
 				else
 				{
@@ -239,10 +277,14 @@ class EasysocialApiResourceMessage extends ApiResource
 		
 		$conv_model = FD::model('Conversations');
 		
+		// set the startlimit
+		$conv_model->setState( 'limitstart'	, $limitstart );
+		
 		if($conversation_id)
 		{
 			$data['participant'] = $this->getParticipantUsers( $conversation_id );
-			$msg_data = $conv_model->getMessages($conversation_id,$log_user->id);
+			//$msg_data = $conv_model->getMessages($conversation_id,$log_user->id);
+			$msg_data = $conv_model->setLimit( $limit )->getMessages($conversation_id,$log_user->id);
 		
 			$data['data'] = $mapp->mapItem($msg_data,'message',$log_user->id);
 			return $data;

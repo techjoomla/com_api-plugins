@@ -17,23 +17,158 @@ jimport('joomla.application.component.model');
 jimport( 'joomla.application.component.model' );
 jimport( 'joomla.database.table.user' );
 
-require_once( JPATH_SITE .DS.'components'.DS.'com_content'.DS.'models'.DS.'article.php');
-require_once( JPATH_SITE .DS.'components'.DS.'com_content'.DS.'models'.DS.'category.php');
-require_once( JPATH_SITE .DS.'components'.DS.'com_content'.DS.'models'.DS.'article.php');
-require_once( JPATH_SITE .DS.'components'.DS.'com_content'.DS.'helpers'.DS.'query.php');
+require_once( JPATH_SITE.'/components/com_content/models/article.php');
+require_once( JPATH_SITE.'/components/com_content/models/category.php');
+require_once( JPATH_SITE.'/components/com_content/models/article.php');
+require_once( JPATH_SITE.'/components/com_content/helpers/query.php');
+
+require_once JPATH_SITE . '/components/com_content/helpers/route.php';
+
+JModelLegacy::addIncludePath(JPATH_SITE . '/components/com_content/models', 'ContentModel');
+
 
 class ArticlesApiResourceLatest extends ApiResource
 {
+	
 	public function get()
+	{
+		$this->plugin->setResponse($this->getLatest());
+	}
+	//get latest article
+	public function getLatest()
+	{
+		// Get the dbo
+		$db = JFactory::getDbo();
+		$result = new stdClass();
+
+		// Get an instance of the generic articles model
+		$model = JModelLegacy::getInstance('Articles', 'ContentModel', array('ignore_request' => true));
+		
+		$plugin = JPluginHelper::getPlugin('api', 'articles');
+
+		if ($plugin)
+		{
+		$params = new JRegistry($plugin->params);
+		
+		// Set application parameters in model
+		$app       = JFactory::getApplication();
+		$appParams = $app->getParams();
+		$model->setState('params', $appParams);
+
+		// Set the filters based on the module params
+		$model->setState('list.start', 0);
+		$model->setState('list.limit', (int) $params->get('count', 5));
+		$model->setState('filter.published', 1);
+
+		// Access filter
+		$access     = !JComponentHelper::getParams('com_content')->get('show_noauth');
+		$authorised = JAccess::getAuthorisedViewLevels(JFactory::getUser()->get('id'));
+		$model->setState('filter.access', $access);
+
+		// Category filter
+		$model->setState('filter.category_id', $params->get('catid', array()));
+
+		// User filter
+		$userId = JFactory::getUser()->get('id');
+
+		switch ($params->get('user_id'))
+		{
+			case 'by_me' :
+				$model->setState('filter.author_id', (int) $userId);
+				break;
+			case 'not_me' :
+				$model->setState('filter.author_id', $userId);
+				$model->setState('filter.author_id.include', false);
+				break;
+
+			case '0' :
+				break;
+
+			default:
+				$model->setState('filter.author_id', (int) $params->get('user_id'));
+				break;
+		}
+
+		// Filter by language
+		$model->setState('filter.language', $app->getLanguageFilter());
+
+		//  Featured switch
+		switch ($params->get('show_featured'))
+		{
+			case '1' :
+				$model->setState('filter.featured', 'only');
+				break;
+			case '0' :
+				$model->setState('filter.featured', 'hide');
+				break;
+			default :
+				$model->setState('filter.featured', 'show');
+				break;
+		}
+
+		// Set ordering
+		$order_map = array(
+			'm_dsc' => 'a.modified DESC, a.created',
+			'mc_dsc' => 'CASE WHEN (a.modified = ' . $db->quote($db->getNullDate()) . ') THEN a.created ELSE a.modified END',
+			'c_dsc' => 'a.created',
+			'p_dsc' => 'a.publish_up',
+			'random' => 'RAND()',
+		);
+		$ordering = JArrayHelper::getValue($order_map, $params->get('ordering'), 'a.publish_up');
+		$dir      = 'DESC';
+
+		$model->setState('list.ordering', $ordering);
+		$model->setState('list.direction', $dir);
+
+		$items = $model->getItems();
+		//format data
+		$obj = new BlogappSimpleSchema();
+
+		foreach ($items as &$item)
+		{
+			$item->slug    = $item->id . ':' . $item->alias;
+			$item->catslug = $item->catid . ':' . $item->category_alias;
+			
+			if ($access || in_array($item->access, $authorised))
+			{
+				// We know that user has the privilege to view the article
+				$item->link = JRoute::_(ContentHelperRoute::getArticleRoute($item->slug, $item->catid, $item->language));
+			}
+			else
+			{
+				$item->link = JRoute::_('index.php?option=com_users&view=login');
+			}
+			
+			$item = $obj->mapPost($item,'', 100, array());
+			
+		}
+		
+		$result->success = 1;
+		$result->data = $items;
+	 
+		}
+		else
+		{
+			$result->success = 0;
+			$result->data = 0;
+			$result->message = "Plugin params not found please, install and save plugin params";
+			
+		}
+		return $result;
+	}
+	/*public function get()
 	{
 		
 		$result = new stdClass();
 		//$article_id	= JRequest::getVar('id', 0, '', 'int');
-		$target_user = JRequest::getVar('target_user', 0, '', 'int');
+		
 		$ordering = JRequest::getVar('ordering', 'c_dsc', '', 'string');
 		$catid = JRequest::getVar('catid', '0', '', 'int');
 		$secid = JRequest::getVar('section_id', '0', '', 'int');
+		
 		$target_blogs = JRequest::getVar('my_blogs', '0', '', 'string');
+		$target_user = JRequest::getVar('target_user', 0, '', 'int');
+		
 		$show_front = JRequest::getVar('show_front', '0', '', 'string');
 		$search = JRequest::getVar('search', '', '', 'string');
 		
@@ -41,15 +176,6 @@ class ArticlesApiResourceLatest extends ApiResource
 		$limitstart	= JRequest::getVar('limitstart', 0, '', 'int');
 		
 		$db	= JFactory::getDBO();
-		$log_user = $this->plugin->get('user')->id;
-		$user		= JFactory::getUser($log_user);
-		/*if(!$article_id)
-		{
-			$result->success = 0;
-			$result->message = 'Please select article';
-			$this->plugin->setResponse($result);
-			return;
-		}*/
 		
 		$contentConfig = JComponentHelper::getParams( 'com_content' );
 		$access		= !$contentConfig->get('show_noauth');
@@ -57,7 +183,7 @@ class ArticlesApiResourceLatest extends ApiResource
 		$nullDate	= $db->getNullDate();
 
 		$date = JFactory::getDate();
-		$now = $date->toMySQL();
+		$now = $date->toSQL();
 
 		$where		= 'a.state = 1'
 			. ' AND ( a.publish_up = '.$db->Quote($nullDate).' OR a.publish_up <= '.$db->Quote($now).' )'
@@ -67,6 +193,9 @@ class ArticlesApiResourceLatest extends ApiResource
 		// User Filter
 		if($target_blogs)
 		{
+			$log_user = $this->plugin->get('user')->id;
+			$user		= JFactory::getUser($log_user);
+		
 			switch ($target_blogs)
 			{
 				case 'by_me':
@@ -102,13 +231,7 @@ class ArticlesApiResourceLatest extends ApiResource
 			JArrayHelper::toInteger( $ids );
 			$catCondition = ' AND (cc.id=' . implode( ' OR cc.id=', $ids ) . ')';
 		}
-		/*if ($secid)
-		{
-			$ids = explode( ',', $secid );
-			JArrayHelper::toInteger( $ids );
-			$secCondition = ' AND (s.id=' . implode( ' OR s.id=', $ids ) . ')';
-		}*/
-
+		
 		// Content Items only
 		$query = 'SELECT a.*, ' .
 			' CASE WHEN CHAR_LENGTH(a.alias) THEN CONCAT_WS(":", a.id, a.alias) ELSE a.id END as slug,'.
@@ -131,14 +254,10 @@ class ArticlesApiResourceLatest extends ApiResource
 		{
 			$query = $query." LIMIT ".$limitstart.",".$limit;
 		}
-	echo $query; 
+
 		$db->setQuery($query, 0, $count);
 		$rows = $db->loadObjectList();
 
-		/*$art_obj = new ContentModelArticle();
-		$art_obj->setId($article_id);
-		$a_data = $art_obj->getArticle();*/
-		
 		//format data
 		$obj = new BlogappSimpleSchema();
 
@@ -148,7 +267,7 @@ class ArticlesApiResourceLatest extends ApiResource
 			$items[] = $obj->mapPost($row,'', 100, array());
 		}
 		$this->plugin->setResponse($items);
-	}
+	}*/
 	
 	public function post()
 	{  

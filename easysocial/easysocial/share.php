@@ -48,6 +48,12 @@ class EasysocialApiResourceShare extends ApiResource
 		$log_usr = intval($this->plugin->get('user')->id);
 		//now take login user stream for target
 		$targetId = ( $targetId != $log_usr )?$targetId:$log_usr;
+		
+		// Set the privacy for the album
+		//public,members,friends,only_me
+		$privacy = $app->input->get('privacy', 'public', 'default');
+		//specific user id for sharing
+		$customPrivacy = $app->input->get('privacyCustom', '', 'string');
 
 		$valid = 1;
 		$result = new stdClass;
@@ -176,7 +182,7 @@ class EasysocialApiResourceShare extends ApiResource
 						} 
 					}
 				}
-//print_r( $mentions );die("in share api");
+
 			}
 			$contextIds = 0;
 			if($type == 'photos')
@@ -206,15 +212,15 @@ class EasysocialApiResourceShare extends ApiResource
 							'clusterType'	=> $clusterType,
 							'mood'			=> null,
 							'privacyRule'	=> $privacyRule,
-							'privacyValue'	=> 'public',
-							'privacyCustom'	=> ''
+							'privacyValue'	=> $privacy,
+							'privacyCustom'	=> $customPrivacy
 						);
 
 			$photo_ids = array();
 			$args['actorId'] = $log_usr;
 			$args['contextIds'] = $contextIds;
 			$args['contextType']	= $type;
-
+//print_r($args);die("in api");
 			// Create the stream item
 			$stream = $story->create($args);
 			

@@ -279,6 +279,23 @@ class EasysocialApiResourceGroup extends ApiResource
 										break;
 					}
 				}
+				//for check group excess limit
+				if( !$user->getAccess()->allowed( 'groups.create' ) && !$user->isSiteAdmin() )
+				   {
+						   $valid = 0;
+						   $result->status = 0;
+						   $result->message[] = "You are not allow to create the group";
+						   return $result;
+				   }
+				   
+				   // Ensure that the user did not exceed their group creation limit        
+				   if ($user->getAccess()->intervalExceeded('groups.limit', $user->id) && !$user->isSiteAdmin()) 
+				   {
+						   $valid = 0;
+						   $result->status = 0;
+						   $result->message[] = "Group creation limit exceeds";
+						   return $result;
+				   }
 
 				// Get current user's info
 				$session    = JFactory::getSession();

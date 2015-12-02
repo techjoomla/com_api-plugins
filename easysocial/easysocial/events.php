@@ -46,10 +46,10 @@ class EasysocialApiResourceEvents extends ApiResource
 		$mapp = new EasySocialApiMappingHelper();		
 		//if date is given then choose appropriate switch case for that.
 		if(!empty($dates)){	
-			$check = strtotime($dates);				
+			$check = strtotime($dates);
 			if($dates==date('Y-m', $check))
 			{
-				$filter = 'month';	
+				$filter = 'month';
 			}
 			else if($dates==date('Y', $check))
 			{

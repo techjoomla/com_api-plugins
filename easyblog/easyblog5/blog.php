@@ -140,8 +140,8 @@ class EasyblogApiResourceBlog extends ApiResource
 		
 		//created by vishal - for show extra images
 		//$item->text = preg_replace('/"images/i', '"'.JURI::root().'images', $item->text );
-		$item->text = str_replace('href="','href="'.JURI::root(),$item->text);
-		$item->text = str_replace('src="','src="'.JURI::root(),$item->text);
+		//$item->text = str_replace('href="','href="'.JURI::root(),$item->text);
+		//$item->text = str_replace('src="','src="'.JURI::root(),$item->text);
 				
 		$this->plugin->setResponse( $item );
 	}

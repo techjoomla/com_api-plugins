@@ -101,7 +101,7 @@ class EasysocialApiResourceMessage extends ApiResource
 				    
 				    //create result obj    
 					$result->status  = 1;
-					$result->message = 'Message send successfully';
+					$result->message = 'Message successfully sent';
 					
 					if($flag==0)
 					{			
@@ -249,7 +249,7 @@ class EasysocialApiResourceMessage extends ApiResource
 			$conv_model = FD::model('Conversations');
 			//$my 	= FD::user($this->plugin->get('user')->id);
 			$result->status = $conv_model->delete( $conversion_id , $this->plugin->get('user')->id );
-			$result->message = 'Conversations deleted successfully';
+			$result->message = 'Conversation deleted successfully';
 		}
 		
 		$this->plugin->setResponse($result);

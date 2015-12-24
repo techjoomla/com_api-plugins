@@ -33,7 +33,9 @@ class EasysocialApiResourceFriend extends ApiResource
 	 */
 	public function delete()
 	{
-		$app = JFactory::getApplication();
+		$this->plugin->setResponse($this->deletefriend());
+
+		/*$app = JFactory::getApplication();
 		$frnd_id = $app->input->get('target_userid',0,'INT');
 
 		$user 	= FD::user( $frnd_id );
@@ -53,7 +55,41 @@ class EasysocialApiResourceFriend extends ApiResource
 			//$res->message = 'Unable to delete friend';
 		}
 		
-		$this->plugin->setResponse($res);
+		$this->plugin->setResponse($res);*/
+	}
+
+	public function deletefriend()
+	{	
+		$app = JFactory::getApplication();
+		//get target user.
+		$frnd_id = $app->input->get('target_userid',0,'INT');
+		//getting log user.
+		$log_user = $this->plugin->get('user')->id;
+		$res = new stdClass();
+		// Try to load up the friend table
+		$friend_table	= FD::table( 'Friend' );
+		//load user table.
+		$state=$friend_table->loadByUser($log_user,$frnd_id);
+		
+		//API validations.
+		if( !$state )
+		{
+			$res->status = 0;
+			$res->message = 'Unable to delete friend';
+			return $res;
+		}			
+		// Throw errors when there's a problem removing the friends
+		if( !$friend_table->unfriend( $log_user ) )
+		{			
+			$res->status = 0;
+			$res->message = 'Unable to delete friend';
+		}
+		else
+		{
+			$res->status = 1;
+			$res->message = 'Friend deleted';
+			return $res;
+		}
 	}
 	
 	//function use for get friends data

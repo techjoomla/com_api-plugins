@@ -40,7 +40,7 @@ class EasysocialApiResourceGcm extends ApiResource
 		//DB Create steps
 		$db = FD::db();
 		
-		$query = "SHOW COLUMNS FROM #__social_gcm_users LIKE 'send_notify'";
+		$query = "SHOW COLUMNS FROM #__social_gcm_users LIKE 'type'";
 		$db->setQuery($query);
 		$db->query();
 		$rows = $db->loadObjectList();
@@ -51,7 +51,7 @@ class EasysocialApiResourceGcm extends ApiResource
 		}
 		else
 		{
-			$query_a = "ALTER TABLE #__social_gcm_users ADD send_notify INT(10) DEFAULT 1";
+			$query_a = "ALTER TABLE #__social_gcm_users ADD type text";
 			$db->setQuery($query_a);
 			$val = $db->query();
 			
@@ -90,7 +90,7 @@ class EasysocialApiResourceGcm extends ApiResource
 	
 	//do notification setting
 	public function send_notif()
-	{		
+	{
 		$app = JFactory::getApplication();
 		$log_user = $this->plugin->get('user')->id;
 		$user=FD::user($log_user);
@@ -98,6 +98,7 @@ class EasysocialApiResourceGcm extends ApiResource
 		$sender_id = $app->input->get('sender_id','','STRING');
 		$server_key = $app->input->get('server_key','','STRING');
 		$bundle_id = $app->input->get('bundle_id','','STRING');
+		$type = $app->input->get('type','','STRING');
 		$res = new stdClass;
 		
 		//DB Create steps
@@ -115,6 +116,7 @@ class EasysocialApiResourceGcm extends ApiResource
 		`bundle_id` text NOT NULL,
 		`sender_id` text NOT NULL,
 		`server_key` text NOT NULL,
+		`type` text NOT NULL,
 		`user_id` int(20) NOT NULL, 
 		`send_notify` int(20) DEFAULT 1, 
 		`created_date` datetime, 
@@ -125,7 +127,7 @@ class EasysocialApiResourceGcm extends ApiResource
 		
 		//Getting database values to check current user is login again or he change his device then only adding device to database
 		$checkval = $db->getQuery(true);
-		$checkval->select($db->quoteName(array('device_id', 'sender_id', 'server_key', 'user_id','bundle_id')));
+		$checkval->select($db->quoteName(array('device_id', 'sender_id', 'server_key', 'user_id','bundle_id','type')));
 		$checkval->from($db->quoteName('#__social_gcm_users'));
 		$db->setQuery($checkval);
 		$results = $db->loadObjectList();
@@ -139,9 +141,9 @@ class EasysocialApiResourceGcm extends ApiResource
 			}
 		}
 		//Insert columns now.
-		$columns = array('device_id','sender_id','server_key','user_id','bundle_id','created_date');
+		$columns = array('device_id','sender_id','server_key','user_id','bundle_id','created_date','type');
 		//Insert values.
-		$values = array($db->quote($reg_id),$db->quote($sender_id),$db->quote($server_key),$db->quote($user->id),$db->quote($bundle_id),$db->quote($currentdate));
+		$values = array($db->quote($reg_id),$db->quote($sender_id),$db->quote($server_key),$db->quote($user->id),$db->quote($bundle_id),$db->quote($currentdate),$db->quote($type));
 		//Prepare the insert query.
 		$inserquery->insert($db->quoteName('#__social_gcm_users'))->columns($db->quoteName($columns))->values(implode(',', $values));
 		$db->setQuery( $inserquery );

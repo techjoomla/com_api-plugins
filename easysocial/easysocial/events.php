@@ -36,6 +36,7 @@ class EasysocialApiResourceEvents extends ApiResource
 		$event	= FD::model( 'events' );
 		$filter = $app->input->get('filter','','STRING');	
 		$dates = $app->input->get('date','','STRING');
+		$cdates = $app->input->get('cdate','','STRING');
 		$start_date = $app->input->get('start_date','','STRING');
 		$end_date = $app->input->get('end_date','','STRING');
 		$start_before = $app->input->get('start_before','','STRING');
@@ -45,11 +46,17 @@ class EasysocialApiResourceEvents extends ApiResource
 		$categoryid = $app->input->get('categoryid',0,'INT');
 		$mapp = new EasySocialApiMappingHelper();		
 		//if date is given then choose appropriate switch case for that.
+		//for calender date
+		if(!empty($cdates))
+               	{
+                       $dates=$cdates;
+               	}
+
 		if(!empty($dates)){	
-			$check = strtotime($dates);
+			$check = strtotime($dates);				
 			if($dates==date('Y-m', $check))
 			{
-				$filter = 'month';
+				$filter = 'month';	
 			}
 			else if($dates==date('Y', $check))
 			{

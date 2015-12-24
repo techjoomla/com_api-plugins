@@ -30,5 +30,7 @@ public $longitude;
 public $latitude;
 public $cover_image;
 public $start_date_ios;
-public $end_date_ios;	
+public $end_date_ios;
+public $isoverevent;
+public $share_url;	
 }

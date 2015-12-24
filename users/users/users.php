@@ -159,10 +159,16 @@ class UsersApiResourceUsers extends ApiResource
 			if( JFile::exists( $easysocial ) )
 			{
 				$pobj = $this->createEsprofile($user->id);
-				$message = "created of username-" . $user->username .",send mail of details please check";
+				//$message = "created of username-" . $user->username .",send mail of details please check";
+				$message = "Congratulations! Your account has been created successfully";
 			}
 			else
-			$message = "created of username-" . $user->username .",send mail of details please check and ".$pobj->message;
+			$message = "Congratulations! Your account has been created successfully";
+			
+			// Assign badge for the person.
+			$badge = FD::badges();
+			$badge->log( 'com_easysocial' , 'registration.create' , $user->id , JText::_( 'COM_EASYSOCIAL_REGISTRATION_BADGE_REGISTERED' ) );			
+
 		}
 
 		// #$this->plugin->setResponse($user->id);
@@ -452,7 +458,7 @@ class UsersApiResourceUsers extends ApiResource
 		$sendpassword = $params->get('sendpassword', 1);
 		
 		$lang = JFactory::getLanguage();
-		$lang->load('com_users', JPATH_SITE, 'en-GB', true);
+		$lang->load('com_users', JPATH_SITE, '', true);
         //$tit=JText::_($emailOptions['title']);
 		
 		$data['fromname'] = $config->get('fromname');
@@ -478,12 +484,9 @@ class UsersApiResourceUsers extends ApiResource
 
 			if ($sendpassword)
 			{
-				$emailBody = JText::sprintf(
-					'Hello %s,\n\nThank you for registering at %s. Your account is created and activated. 
-					\nYou can login to %s using the following username and password:\n\nUsername: %s\nPassword: %s',
+				$emailBody = JText::sprintf('COM_USERS_EMAIL_REGISTERED_BODY',
 					$base_dt['name'],
 					$data['sitename'],
-					$base_dt['app'],
 					$base_dt['username'],
 					$base_dt['password']
 				);
@@ -510,7 +513,6 @@ class UsersApiResourceUsers extends ApiResource
 					$base_dt['name'],
 					$data['sitename'],
 					$data['activate'],
-					$base_dt['app'],
 					$base_dt['username'],
 					$base_dt['password']
 				);

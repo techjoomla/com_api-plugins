@@ -44,20 +44,20 @@ class EasysocialApiResourceShare extends ApiResource
 		$clusterType = $app->input->get('cluster_type',null,'STRING');
 		
 		$friends_tags = $app->input->get('friends_tags',null,'ARRAY');
-		
-		$log_usr = intval($this->plugin->get('user')->id);
-		//now take login user stream for target
-		$targetId = ( $targetId != $log_usr )?$targetId:$log_usr;
-		
+
 		// Set the privacy for the album
 		//public,members,friends,only_me
 		$privacy = $app->input->get('privacy', 'public', 'default');
 		//specific user id for sharing
 		$customPrivacy = $app->input->get('privacyCustom', '', 'string');
+		
+		$log_usr = intval($this->plugin->get('user')->id);
+		//now take login user stream for target
+		$targetId = ( $targetId != $log_usr )?$targetId:$log_usr;
 
 		$valid = 1;
 		$result = new stdClass;
-		
+	
 		$story = FD::story(SOCIAL_TYPE_USER);
 		
 		// Check whether the user can really post something on the target
@@ -220,7 +220,7 @@ class EasysocialApiResourceShare extends ApiResource
 			$args['actorId'] = $log_usr;
 			$args['contextIds'] = $contextIds;
 			$args['contextType']	= $type;
-//print_r($args);die("in api");
+
 			// Create the stream item
 			$stream = $story->create($args);
 			
@@ -233,10 +233,10 @@ class EasysocialApiResourceShare extends ApiResource
 					$photoIds = FD::makeArray($contextIds);
 
 					foreach ($photoIds as $photoId) {
-						$privacyLib->add($privacyRule, $photoId, $type, 'public', null, '');
+						$privacyLib->add($privacyRule, $photoId, $type, $privacy, null, $customPrivacy);
 					}
 				} else {
-					$privacyLib->add($privacyRule, $stream->uid, $type, 'public', null, '');
+					$privacyLib->add($privacyRule, $stream->uid, $type, $privacy, null, $customPrivacy);
 				}
 
 			}

@@ -53,21 +53,22 @@ class EasysocialApiResourceFriends extends ApiResource
 		switch($filter)
 		{			
 			case 'pending': //get the total pending friends.
-							$options[ 'state' ]	= JText::_('SOCIAL_FRIENDS_STATE_PENDING');
+							$options[ 'state' ]	= SOCIAL_FRIENDS_STATE_PENDING;
 							$mssg="You have no pending request";																					
 			break;			
 			case 'all':		//getting all friends
-							$options[ 'state' ]	= JText::_('SOCIAL_FRIENDS_STATE_FRIENDS');
+							$options[ 'state' ]	= SOCIAL_FRIENDS_STATE_FRIENDS;
 							$mssg="You have no friends";
 			break;			
 			case 'request':	//getting sent requested friends.
-							$options[ 'state' ]	= JText::_('SOCIAL_FRIENDS_STATE_PENDING');
+							$options[ 'state' ]	= SOCIAL_FRIENDS_STATE_PENDING;
 							$options[ 'isRequest' ]	= true;							
-							$mssg="You have no sent request";
+							$mssg="You have not sent request";
 			break;
 			
 			case 'suggest': //getting suggested friends							
 							$sugg_list = $frnd_mod->getSuggestedFriends($userid);
+							$sugg_list = array_slice($sugg_list,$limitstart,$limit);
 							foreach($sugg_list as $sfnd)
 							{
 								$ttl_list[] = $sfnd->friend;
@@ -76,7 +77,7 @@ class EasysocialApiResourceFriends extends ApiResource
 								$flag=1;
 							else 
 								$flag=0;
-							$mssg="You have no suggetions";  							
+							$mssg="You have no suggestions";  							
 			break;						
 			case 'invites': //getiing invited friends
 							  $invites['data'] = $frnd_mod->getInvitedUsers($userid);
@@ -88,8 +89,7 @@ class EasysocialApiResourceFriends extends ApiResource
 							  }
 							  return $invites;
 			break;		
-		}
-	
+		}		
 		// if search word present then search user as per term and given id
 		if(empty($search) && empty($ttl_list) && $flag!=1)
 		{
@@ -98,12 +98,7 @@ class EasysocialApiResourceFriends extends ApiResource
 	    else if(!empty($search) && empty($filter)) 
 	    {						
 			$ttl_list = $frnd_mod->search($userid,$search,'username');
-		}
-		else
-		{
-			$ttl_list = $frnd_mod->getFriends($userid,$options);
-		}
-
+		}		
 	    $frnd_list['data'] = $mapp->mapItem( $ttl_list,'user',$userid);
 	    $frnd_list['data'] = $mapp->frnd_nodes( $frnd_list['data'],$user);
 	    //get other data

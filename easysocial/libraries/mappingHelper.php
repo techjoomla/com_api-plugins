@@ -91,7 +91,7 @@ class EasySocialApiMappingHelper
 	public function photosSchema($rows,$userid)
 	{
 		$lang = JFactory::getLanguage();
-		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, 'en-GB', true);
+		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, '', true);
 		$result = array();		
 		foreach($rows as $ky=>$row)
 		{
@@ -649,8 +649,12 @@ class EasySocialApiMappingHelper
 					$item->details->ios_end = $this->listDate($item->details->end);
 				}								
 				
-				$item->start_date = gmdate('D M j Y G:i:s a',strtotime($row->meta->start));
-				$item->end_date = gmdate('D M j Y G:i:s a',strtotime($row->meta->end));
+				//$item->start_date = gmdate('D M j Y G:i:s a',strtotime($row->meta->start));
+				//$item->end_date = gmdate('D M j Y G:i:s a',strtotime($row->meta->end));
+				
+				$item->start_date = date('D M j Y h:i a',strtotime($row->meta->start));
+                $item->end_date = date('D M j Y h:i a ',strtotime($row->meta->end));
+				
 				//ios format date					
 				//$item->start_date_ios = $this->listDate($row->meta->start);
 				//$item->end_date_ios = $this->listDate($row->meta->end);
@@ -683,7 +687,8 @@ class EasySocialApiMappingHelper
 				
 				$item->isMaybe=in_array($userid,$row->maybe);
 				$item->total_guest=$eventobj->getTotalGuests();
-				
+				// this node is for past events
+                $item->isoverevent=$eventobj->isOver();
 				
 				$item->location=$row->address;
 				$item->longitude=$row->longitude;
@@ -692,7 +697,7 @@ class EasySocialApiMappingHelper
 				$item->event_map_url_andr  =  "geo:".$item->latitude.",".$item->longitude."?q=".$NameLocationLabel;
                 		//$item->event_map_url_ios = "geo:".$item->latitude.",".$item->longitude."?q=".$NameLocationLabel;
 				$item->event_map_url_ios = "http://maps.apple.com/?q=".$NameLocationLabel."&sll=".$item->latitude.",".$item->longitude;				
-
+				$item->share_url = JURI::root().$eventobj->getPermalink(true, false, 'item', false);
 				//getting cover image of event
 				$eve = FD::table( 'Cover' );
 				$eve->type='event';

@@ -138,6 +138,19 @@ class EasysocialApiResourceSearch extends ApiResource
 		$user = JFactory::getUser($this->plugin->get('user')->id);
 		$frnd_mod = new EasySocialModelFriends();
 		$list = array();
+
+		$options[ 'state' ]	= SOCIAL_FRIENDS_STATE_PENDING;
+		$options[ 'isRequest' ]	= true;		
+		$req=$frnd_mod->getFriends( $user->id,$options );	
+		$myarr=array();
+		if(!empty($req))
+		{
+			foreach($req as $ky=>$row)	
+			{
+				$myarr[]= $row->id;
+			}
+		}
+
 		foreach($data as $k=>$node)
 		{
 			if($node->id != $user->id)
@@ -146,6 +159,14 @@ class EasysocialApiResourceSearch extends ApiResource
 				$node->mutual = $frnd_mod->getMutualFriendCount($user->id,$node->id);
 				$node->isFriend = $frnd_mod->isFriends($user->id,$node->id);
 				$node->approval_pending = $frnd_mod->isPendingFriends($user->id,$node->id);
+				if(in_array($node->id,$myarr))
+				{
+					$node->isinitiator=true;
+				}
+				else
+				{
+					$node->isinitiator=false;
+				}
 				
 				$list[] = $node;
 			}

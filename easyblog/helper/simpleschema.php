@@ -98,6 +98,42 @@ class EasyBlogSimpleSchema_plg
 		foreach ($skip as $v) {
 			unset($item->$v);
 		}
+		//handle image path	
+		if(strpos($item->text,'src="data:image') == false)
+		{	
+			
+			if (strpos($item->text,'href="index'))
+			{
+				$item->introtext = str_replace('href="index','href="'.JURI::root().'index',$item->introtext);
+			    $item->text = str_replace('href="index','href="'.JURI::root().'index',$item->text);
+				//$item->text = str_replace('src="','src="'.JURI::root(),$item->text);	
+			}
+			
+			if (strpos($item->text,'href="images'))
+			{
+				$item->introtext = str_replace('href="images','href="'.JURI::root().'images',$item->introtext);
+			    $item->text = str_replace('href="images','href="'.JURI::root().'images',$item->text);
+				//$item->text = str_replace('src="','src="'.JURI::root(),$item->text);	
+			}
+
+			if ( strpos($item->text,'src="images') || strpos($item->introtext,'src="images') )
+			{		    
+			    $item->introtext = str_replace('src="','src="'.JURI::root(),$item->introtext);
+				$item->text = str_replace('src="','src="'.JURI::root(),$item->text);	
+			}
+
+			if ( strpos($item->text,'src="/'))
+			{		    
+			    $item->introtext = str_replace('src="/','src="'.'http://',$item->introtext);
+				$item->text = str_replace('src="/','src="'.'http://',$item->text);	
+			}
+			
+			if ( strpos($item->text,'href="/'))
+			{		    
+			    $item->introtext = str_replace('href="/','href="'.'http://',$item->introtext);
+				$item->text = str_replace('href="/','href="'.'http://',$item->text);	
+			}
+		}
 
 		return $item;
 	}

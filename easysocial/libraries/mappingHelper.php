@@ -204,6 +204,7 @@ class EasySocialApiMappingHelper
 				
 				//$fobj->id = $row->id;
 				$fobj->field_id = $row->id;
+				$fobj->unique_key = $row->unique_key;
 				//$fobj->title = JText($row->title);
 				$fobj->title = JText::_($row->title);
 				$fobj->field_name = JText::_($row->title);
@@ -221,6 +222,19 @@ class EasySocialApiMappingHelper
 				{
 					//$fobj->field_value = $row->data['address'];
 					$fobj->field_value = $row->data['state'].','.$row->data['country'];
+				}
+				
+				//to manage relationship
+				if( $fobj->unique_key == 'RELATIONSHIP' )
+				{
+					$rs_vl = json_decode($fobj->field_value);
+					$fobj->field_value = $rs_vl->type;
+				}
+				
+				//vishal - runtime solution for issue, need rework
+				if (preg_match('/[\'^[]/', $fobj->field_value))
+				{
+					$fobj->field_value = implode(" ",json_decode($fobj->field_value));
 				}
 				
 				$fobj->params = json_decode($row->params);
@@ -303,6 +317,17 @@ class EasySocialApiMappingHelper
 				{
 					$item->raw_content_url = $row->content;
 				}
+				
+				//code for easyblog / easydisucss share , img path not proper 
+				if ( strpos($item->raw_content_url,'src="//'))
+				{		    
+					$item->raw_content_url = str_replace('src="//','src="'.'http://',$item->raw_content_url);
+				}
+				if ( strpos($item->content,'src="//'))
+				{		    
+					$item->content = str_replace('src="//','src="'.'http://',$item->content);
+				}
+				
 				
 				if($row->type != 'links')
 				{				

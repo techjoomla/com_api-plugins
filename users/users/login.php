@@ -166,23 +166,16 @@ class UsersApiResourceLogin extends ApiResource
 		
 		if( $cname == 'com_easyblog' )
 		{
-		$xml = JFactory::getXML(JPATH_ADMINISTRATOR .'/components/com_easyblog/easyblog.xml');
-		$version = (string)$xml->version;
-
-		if($version<5)
-		{	
-			require_once( JPATH_ROOT . '/components/com_easyblog/helpers/helper.php' );
-			$eb_params = EasyBlogHelper::getConfig();
-		}
-		else
-		{	
-			
-			require_once JPATH_ADMINISTRATOR.'/components/com_easyblog/includes/easyblog.php';
-			$eb_params = EB::config();
-		}
-			
-			//require_once JPATH_ADMINISTRATOR.'/components/com_easyblog/includes/easyblog.php';
-			
+			if($cdata['version']<5)
+		   {        
+			  require_once( JPATH_ROOT . '/components/com_easyblog/helpers/helper.php' );
+				   $eb_params        = EasyBlogHelper::getConfig();
+		   }
+		   else
+		   {        
+			  require_once JPATH_ADMINISTRATOR.'/components/com_easyblog/includes/easyblog.php';
+				   $eb_params = EB::config();
+		   }
 			$cdata['main_max_relatedpost'] = $eb_params->get('main_max_relatedpost');
 			$cdata['layout_pagination_bloggers'] = $eb_params->get('layout_pagination_bloggers');
 			$cdata['layout_pagination_categories'] = $eb_params->get('layout_pagination_categories');

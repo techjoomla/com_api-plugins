@@ -68,6 +68,7 @@ class EasysocialApiResourceNotification extends ApiResource
 		$friendmodel = FD::model( 'Friends' );
 		$result = $friendmodel->getPendingRequests($user); 
 		$state = SOCIAL_FRIENDS_STATE_FRIENDS;	
+		
 		 foreach($result as $r)
 		 {			  			
 			 if( $r->actor_id == $target && $r->target_id == $user)
@@ -80,6 +81,7 @@ class EasysocialApiResourceNotification extends ApiResource
 			 continue;			  
 		}		
 		$status = $friendmodel->isFriends($user,$target,$state);
+	
 		if(!$status)
 		{
 		//final call to reject friend request.	
@@ -89,7 +91,7 @@ class EasysocialApiResourceNotification extends ApiResource
 		{
 			return false;
 		}
-		return $final;		
+		return true;
 	}
 	//reject friend request
 	public function removefriend()
@@ -106,27 +108,40 @@ class EasysocialApiResourceNotification extends ApiResource
 		$friendmodel = FD::model( 'Friends' );
 		$result = $friendmodel->getPendingRequests($user); 
 		$state = SOCIAL_FRIENDS_STATE_FRIENDS;	
-		 foreach($result as $r)
-		 {
+		$res = new stdClass;
+		foreach($result as $r)
+		{
 			  			
-			 if( $r->actor_id == $target && $r->target_id == $user)
-			 {  
+			if( $r->actor_id == $target && $r->target_id == $user)
+			{  
 				$friend->id = $r->id;
 				break;				
-			 }
-			 else
-			 continue;			  
-		 }					
+			}
+			else
+			continue;			  
+		}					
 		$status = $friendmodel->isFriends($user,$target,$state);
+		$addstate=$friend->loadByUser($user,$target);
+		if(!$addstate)
+		{
+			$res->message = JText::_( 'PLG_API_EASYSOCIAL_UNABLE_REJECT_FRIEND_REQ' );
+			$res->status = false;
+			return $res;
+		}
 		if(!$status)
 		{//final call to reject friend request.	
-		$final = $friend->reject();
+			$final = $friend->reject();
 		}
 		else
 		{
-			return false;
+			$res->message = JText::_( 'PLG_API_EASYSOCIAL_UNABLE_REJECT_FRIEND_REQ' );
+			$res->status = false;
+			return $res;
 		}
-		return $final;		
+		
+		$res->message = JText::_( 'PLG_API_EASYSOCIAL_FRIEND_REQ_CANCEL' );
+		$res->status = true;
+		return $res;	
 	 } 
 		 	
 	public function addfriend()
@@ -135,6 +150,7 @@ class EasysocialApiResourceNotification extends ApiResource
 		$user = $app->input->get('user_id',0,'INT');
 		$target = $app->input->get('target_id',0,'INT');		
 		$friend	= FD::table( 'Friend' );		
+		$res = new stdClass;
 		// Set the state and ensure that the state is both friends.
 		//$friend->state = 'SOCIAL_FRIENDS_STATE_FRIENDS';		
 		$friend->actor_id = $user;
@@ -155,15 +171,26 @@ class EasysocialApiResourceNotification extends ApiResource
 			 continue;			  
 		 }		
 		$status = $friendmodel->isFriends($user,$target,$state);
-		if(!$status)
+		$addstate=$friend->loadByUser($user,$target);
+		if(!$addstate)
+		{
+			$res->message = JText::_( 'PLG_API_EASYSOCIAL_UNBALE_ADD_FRIEND_REQ' );
+			$res->status = false;
+			return $res;
+		}
+		if(!$status )
 		{						
 		$final=$friend->approve();					
 		}
 		else
 		{
-			return false;
+			$res->message = JText::_( 'PLG_API_EASYSOCIAL_UNBALE_ADD_FRIEND_REQ' );
+			$res->status = false;
+			return $res;
 		}	
-		return $final;	
+		$res->message = JText::_( 'PLG_API_EASYSOCIAL_FRIEND_REQ_ACCEPT' );
+		$res->status = true;
+		return $res;	
 	}
 	//common function for forking other functions	
 	public function get_data()
@@ -230,3 +257,4 @@ class EasysocialApiResourceNotification extends ApiResource
 			return $items;		
 	}		
 }
+

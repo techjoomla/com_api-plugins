@@ -36,11 +36,12 @@ class EasysocialApiResourceGcm extends ApiResource
 		$dev_id = $app->input->get('device_id','','STRING');
 		$nval = $app->input->get('notify_val',1,'INT');
 		
-		
 		//DB Create steps
 		$db = FD::db();
 		
-		$query = "SHOW COLUMNS FROM #__social_gcm_users LIKE 'type'";
+		$state = $this->tnotify($log_user, $dev_id, $nval);
+		
+		/*$query = "SHOW COLUMNS FROM #__social_gcm_users LIKE 'type'";
 		$db->setQuery($query);
 		$db->query();
 		$rows = $db->loadObjectList();
@@ -65,7 +66,8 @@ class EasysocialApiResourceGcm extends ApiResource
 				$result->message = 'old package, please update api package';
 				return $result;
 			}
-		}
+		}*/
+		
 		$result->success= $state;
 		$result->message = ( $state && $nval )?'Notification on':'Notification off';
 		
@@ -77,12 +79,12 @@ class EasysocialApiResourceGcm extends ApiResource
 		//DB Create steps
 		$db = FD::db();
 		
-		$query1 = "SELECT id  FROM #__social_gcm_users WHERE device_id LIKE '%".$dev_id."%'";
+		$query1 = "SELECT id  FROM #__acpush_users WHERE device_id LIKE '%".$dev_id."%'";
 		$db->setQuery($query1);
 		$db->query();
 		$id = $db->loadResult();
 		
-		$query_a = "UPDATE #__social_gcm_users SET send_notify = '".$val."' WHERE id = ".$id;
+		$query_a = "UPDATE #__acpush_users SET active = '".$val."' WHERE id = ".$id;
 
 		$db->setQuery($query_a);
 		return $val = $db->query();
@@ -94,10 +96,10 @@ class EasysocialApiResourceGcm extends ApiResource
 		$app = JFactory::getApplication();
 		$log_user = $this->plugin->get('user')->id;
 		$user=FD::user($log_user);
-		$reg_id = $app->input->get('reg_id','','STRING');
-		$sender_id = $app->input->get('sender_id','','STRING');
-		$server_key = $app->input->get('server_key','','STRING');
-		$bundle_id = $app->input->get('bundle_id','','STRING');
+		$reg_id = $app->input->get('device_id','','STRING');
+		//$sender_id = $app->input->get('sender_id','','STRING');
+		//$server_key = $app->input->get('server_key','','STRING');
+		//$bundle_id = $app->input->get('bundle_id','','STRING');
 		$type = $app->input->get('type','','STRING');
 		$res = new stdClass;
 		
@@ -110,7 +112,7 @@ class EasysocialApiResourceGcm extends ApiResource
 		$now = new DateTime();
 		$currentdate=$now->format('Y-m-d H:i:s'); 
 		
-		$query = "CREATE TABLE IF NOT EXISTS `#__social_gcm_users` (
+		/*$query = "CREATE TABLE IF NOT EXISTS `#__social_gcm_users` (
 		`id` int(10) NOT NULL AUTO_INCREMENT,
 		`device_id` text NOT NULL,
 		`bundle_id` text NOT NULL,
@@ -124,11 +126,12 @@ class EasysocialApiResourceGcm extends ApiResource
 		) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1";		
 		$db->setQuery($query);
 		$db->query();
+		*/
 		
 		//Getting database values to check current user is login again or he change his device then only adding device to database
 		$checkval = $db->getQuery(true);
-		$checkval->select($db->quoteName(array('device_id', 'sender_id', 'server_key', 'user_id','bundle_id','type')));
-		$checkval->from($db->quoteName('#__social_gcm_users'));
+		$checkval->select($db->quoteName(array('device_id','user_id','type')));
+		$checkval->from($db->quoteName('#__acpush_users'));
 		$db->setQuery($checkval);
 		$results = $db->loadObjectList();
 		foreach($results as $notfn)
@@ -141,11 +144,12 @@ class EasysocialApiResourceGcm extends ApiResource
 			}
 		}
 		//Insert columns now.
-		$columns = array('device_id','sender_id','server_key','user_id','bundle_id','created_date','type');
+		$columns = array('device_id','user_id','created_on','type');
 		//Insert values.
-		$values = array($db->quote($reg_id),$db->quote($sender_id),$db->quote($server_key),$db->quote($user->id),$db->quote($bundle_id),$db->quote($currentdate),$db->quote($type));
+		$values = array($db->quote($reg_id),$db->quote($user->id),$db->quote($currentdate),$db->quote($type));
 		//Prepare the insert query.
-		$inserquery->insert($db->quoteName('#__social_gcm_users'))->columns($db->quoteName($columns))->values(implode(',', $values));
+		$inserquery->insert($db->quoteName('#__acpush_users'))->columns($db->quoteName($columns))->values(implode(',', $values));
+//echo($inserquery);die("in api");
 		$db->setQuery( $inserquery );
 		$result = $db->query();
 		$res->message = "Your device is register to server.";
@@ -162,13 +166,13 @@ class EasysocialApiResourceGcm extends ApiResource
 		$query = $db->getQuery(true);
 		// delete all custom keys for user 1001.
 		$conditions = " ".$db->quoteName('device_id') ." LIKE '%".$reg_id."%' "; 
-		$query->delete($db->quoteName('#__social_gcm_users'));
+		$query->delete($db->quoteName('#__acpush_users'));
 		$query->where($conditions); 
 		$db->setQuery($query);
 		//~ echo $query;
 		//~ die();		 
 		$result = $db->execute();
-		return $result;			
+		return $result;
 	}
 }
 

@@ -46,7 +46,7 @@ class EasysocialApiResourceManage_friends extends ApiResource
 		
 		if(!$frnd_id)
 		{
-			return 'Friend id not found';
+			return JText::_( 'PLG_API_EASYSOCIAL_FRIEND_ID_NOT_FOUND' );
 		}
 		
 		if( $choice )
@@ -59,7 +59,7 @@ class EasysocialApiResourceManage_friends extends ApiResource
 			{
 				$res->frnd_id = $frnd_id;
 				$res->code = 200;
-				$res->message = 'Request send';
+				$res->message = JText::_( 'PLG_API_EASYSOCIAL_REQUEST_SENT_SUCCESS_MESSAGE' );
 			}
 			else
 			{
@@ -79,12 +79,12 @@ class EasysocialApiResourceManage_friends extends ApiResource
 			if( $res->result == true )
 			{
 				 $res->code = 200;
-				 $res->message = 'Freind deleted';
+				 $res->message = JText::_( 'PLG_API_EASYSOCIAL_FRIEND_DELETED_MESSAGE' );
 			}
 			else
 			{
 				$res->code = 403;
-				$res->message = 'Unable to delete friend';
+				$res->message = JText::_( 'PLG_API_EASYSOCIAL_UNABLE_DELETE_FRIEND_MESSAGE' );
 			}
 			
 		}

@@ -40,6 +40,7 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 	$log_user = JFactory::getUser($this->plugin->get('user')->id);
 	$group_id = $app->input->get('group_id', 0, 'INT');
 	$event_id = $app->input->get('event_id', 0, 'INT');
+	$view = $app->input->get('view', 'dashboard', 'STRING');	
 
         $id = $this->plugin->get('user')->id;
         
@@ -87,6 +88,7 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 			case 'everyone':
 				$options['guest'] = true;
 				$options['ignoreUser'] = true;
+				$options['view'] = $view;				
 				break;
 
 			case 'following':
@@ -97,6 +99,8 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 				$options['guest'] = true;
 				$options['type'] = 'bookmarks';
 			case 'me':
+				$options['view'] = $view;
+				//$options['userId'] = 0;
 				// nohting to set
 				break;
 			case 'hashtag':

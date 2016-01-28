@@ -46,7 +46,7 @@ class EasysocialApiResourceGroup extends ApiResource
 		if( !$group->id || !$group_id )
 		{
 			$result->status = 0;
-			$result->message = 'Invalid Group';
+			$result->message = JText::_( 'PLG_API_EASYSOCIAL_INVALID_GROUP_MESSAGE' );
 			$valid = 0;
 		}
 
@@ -56,7 +56,7 @@ class EasysocialApiResourceGroup extends ApiResource
 		if( !$my->isSiteAdmin() && !$group->isOwner())
 		{
 			$result->status = 0;
-			$result->message = 'You are not admin / Owner of group to delete group';
+			$result->message = JText::_( 'PLG_API_EASYSOCIAL_ACCESS_DENIED_MESSAGE' );
 			$valid = 0;
 		}
 		
@@ -66,7 +66,7 @@ class EasysocialApiResourceGroup extends ApiResource
 			$group->delete();
 			
 			$result->status = 1;
-			$result->message = 'Group deleted successfully';
+			$result->message = JText::_( 'PLG_API_EASYSOCIAL_GROUP_DELETED_MESSAGE' );
 		}
 		
 		$this->plugin->setResponse($result);
@@ -158,7 +158,7 @@ class EasysocialApiResourceGroup extends ApiResource
 		{
 			$valid = 0;
 			$result->status = 0;
-			$result->message[] = "Invalid group name";
+			$result->message[] = JText::_( 'PLG_API_EASYSOCIAL_INVALID_GROUP_NAME' );
 			
 		}
 		
@@ -167,7 +167,7 @@ class EasysocialApiResourceGroup extends ApiResource
 		{
 			$valid = 0;
 			$result->status = 0;
-			$result->message[] = "Invalid parmalink";
+			$result->message[] = JText::_( 'PLG_API_EASYSOCIAL_INVALID_PARMALINK' );
 		}
 		
 		//check description
@@ -175,7 +175,7 @@ class EasysocialApiResourceGroup extends ApiResource
 		{
 			$valid = 0;
 			$result->status = 0;
-			$result->message[] = "Empty description not allowed";
+			$result->message[] = JText::_( 'PLG_API_EASYSOCIAL_EMPTY_DESCRIPTION' );
 		}
 		
 		//check group type
@@ -183,7 +183,7 @@ class EasysocialApiResourceGroup extends ApiResource
 		{
 			$valid = 0;
 			$result->status = 0;
-			$result->message[] = "Please Add group type";
+			$result->message[] = JText::_( 'PLG_API_EASYSOCIAL_ADD_GROUP_TYPE_MESSAGE' );
 		}
 		
 		if(!$valid)
@@ -285,7 +285,7 @@ class EasysocialApiResourceGroup extends ApiResource
                                {
                                        $valid = 0;
                                        $result->status = 0;
-                                       $result->message[] = "You are not allow to create the group";
+                                       $result->message[] = JText::_( 'PLG_API_EASYSOCIAL_CREATE_GROUP_ACCESS_DENIED' );
                                        return $result;
                                }
                                
@@ -294,7 +294,7 @@ class EasysocialApiResourceGroup extends ApiResource
                                {
                                        $valid = 0;
                                        $result->status = 0;
-                                       $result->message[] = "Group creation limit exceeds";
+                                       $result->message[] = JText::_( 'PLG_API_EASYSOCIAL_GROUP_CREATION_LIMIT_EXCEEDS' );
                                        return $result;
                                }
 
@@ -375,20 +375,30 @@ class EasysocialApiResourceGroup extends ApiResource
 				{
 					$result->status = 1;
 					$result->id = $group->id;
-					$this->addTostream($user,$group);
+					
+					// @points: groups.create
+					// Assign points to the user when a group is created
+					$points = FD::points();
+					$points->assign( 'groups.create' , 'com_easysocial' , $log_user );
+
+					// If the group is published, we need to perform other activities
+					if( $group->state == SOCIAL_STATE_PUBLISHED )
+					{
+						$this->addTostream($user,$group,$config);
+					}
 				}
 				else
 				{
 					$result->status = 0;
 					$result->id = 0;
-					$result->message = 'unable to create group';
+					$result->message = JText::_( 'PLG_API_EASYSOCIAL_UNABLE_CREATE_GROUP_MESSAGE' );
 				}
 				
 				return $result;
 		}
 	}
 	
-	public function addTostream($my,$group,$registry)
+	public function addTostream($my,$group,$config)
 	{
 			$stream				= FD::stream();
 			$streamTemplate		= $stream->getTemplate();

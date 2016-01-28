@@ -135,7 +135,7 @@ class EasySocialApiMappingHelper
 	{	
 		//To load easysocial language constant
 		$lang = JFactory::getLanguage();
-		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, 'en-GB', true);
+		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, '', true);
 		$result = array();
 		
 		foreach($rows as $ky=>$row)
@@ -191,7 +191,7 @@ class EasySocialApiMappingHelper
 	{
 		
 		$lang = JFactory::getLanguage();
-		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, 'en-GB', true);
+		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, '', true);
 		//$str = JText::_('COM_EASYSOCIAL_FIELDS_PROFILE_DEFAULT_DESIRED_USERNAME');
 		
 		if(count($rows)>0)
@@ -218,24 +218,24 @@ class EasySocialApiMappingHelper
 				}
 				
 				//to manage address as per site
-				if( $fobj->unique_key == 'ADDRESS' )
+				/*if( $fobj->unique_key == 'ADDRESS' )
 				{
 					//$fobj->field_value = $row->data['address'];
 					$fobj->field_value = $row->data['state'].','.$row->data['country'];
-				}
-				
+				}*/
+
 				//to manage relationship
 				if( $fobj->unique_key == 'RELATIONSHIP' )
 				{
 					$rs_vl = json_decode($fobj->field_value);
 					$fobj->field_value = $rs_vl->type;
 				}
-				
 				//vishal - runtime solution for issue, need rework
 				if (preg_match('/[\'^[]/', $fobj->field_value))
 				{
 					$fobj->field_value = implode(" ",json_decode($fobj->field_value));
-				}
+				}				
+		
 				
 				$fobj->params = json_decode($row->params);
 				
@@ -317,17 +317,6 @@ class EasySocialApiMappingHelper
 				{
 					$item->raw_content_url = $row->content;
 				}
-				
-				//code for easyblog / easydisucss share , img path not proper 
-				if ( strpos($item->raw_content_url,'src="//'))
-				{		    
-					$item->raw_content_url = str_replace('src="//','src="'.'http://',$item->raw_content_url);
-				}
-				if ( strpos($item->content,'src="//'))
-				{		    
-					$item->content = str_replace('src="//','src="'.'http://',$item->content);
-				}
-				
 				
 				if($row->type != 'links')
 				{				
@@ -541,7 +530,11 @@ class EasySocialApiMappingHelper
 				$item->likes->hasLiked = $likesModel->hasLiked($item->uid,'comments.' . 'user' . '.like',$cdt->created_by);
 				$data['data'][] = $item;
 			}
-			$data['total'] = count($data['data']);
+			
+			//$data['total'] = count($data['data']);
+			$comcount = $model->getCommentCount($options);        
+                    
+                       	$data['total']=$comcount;
 			return $data;
 		}
 		
@@ -639,7 +632,7 @@ class EasySocialApiMappingHelper
 	public function eventsSchema($rows,$userid)
 	{
 		$lang = JFactory::getLanguage();
-		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, 'en-GB', true);
+		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, '', true);
 		$result = array();		
 		foreach($rows as $ky=>$row)
 		{
@@ -664,7 +657,7 @@ class EasySocialApiMappingHelper
 				}
 				//end
 			
-				$item->params=$row->params;
+				$item->params=json_decode($row->params);
 
 				$item->details=$row->meta;
 				//ios format date
@@ -678,7 +671,7 @@ class EasySocialApiMappingHelper
 				//$item->end_date = gmdate('D M j Y G:i:s a',strtotime($row->meta->end));
 				
 				$item->start_date = date('D M j Y h:i a',strtotime($row->meta->start));
-                $item->end_date = date('D M j Y h:i a ',strtotime($row->meta->end));
+                               	$item->end_date = date('D M j Y h:i a ',strtotime($row->meta->end));
 				
 				//ios format date					
 				//$item->start_date_ios = $this->listDate($row->meta->start);
@@ -704,7 +697,11 @@ class EasySocialApiMappingHelper
 				$eventobj=FD::event($row->id);	
 				$item->isAttending=$eventobj->isAttending($userid);
 				$item->isNotAttending=$eventobj->isNotAttending($userid);
-				$item->isOwner=$eventobj->isOwner($userid);				
+				$item->isOwner=$eventobj->isOwner($userid);
+				$item->isPendingMember = $eventobj->isPendingMember($userid);
+				$item->isMember=$eventobj->isMember($userid);	
+				$item->isRecurring=$eventobj->isRecurringEvent();                                
+                               	$item->hasRecurring=$eventobj->hasRecurringEvents();				
 				
 				$event_owner=reset($row->admins);                               
                 		$item->owner = FD::user($event_owner)->username;
@@ -713,7 +710,7 @@ class EasySocialApiMappingHelper
 				$item->isMaybe=in_array($userid,$row->maybe);
 				$item->total_guest=$eventobj->getTotalGuests();
 				// this node is for past events
-                $item->isoverevent=$eventobj->isOver();
+                                $item->isoverevent=$eventobj->isOver();
 				
 				$item->location=$row->address;
 				$item->longitude=$row->longitude;

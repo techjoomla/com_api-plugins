@@ -30,7 +30,7 @@ class EasysocialApiResourceSlogin extends ApiResource
 {
 	public function get()
 	{
-		$this->plugin->setResponse("unsupported method,please use post method");
+		$this->plugin->setResponse(JText::_( 'PLG_API_EASYSOCIAL_UNSUPPORTED_METHOD_MESSAGE' ));
 	}
 
 	public function post()
@@ -92,7 +92,7 @@ class EasysocialApiResourceSlogin extends ApiResource
 		if(!$user->id)
 		{
 			$obj->code = 403;
-			$obj->message = 'Invalid User';
+			$obj->message = JText::_( 'PLG_API_EASYSOCIAL_INVALID_USER' );
 			return $obj;
 		}
 		
@@ -143,7 +143,7 @@ class EasysocialApiResourceSlogin extends ApiResource
 			else
 			{
 				$obj->code = 403;
-				$obj->message = 'Bad request';
+				$obj->message = JText::_( 'PLG_API_EASYSOCIAL_BAD_REQUEST' );
 			}
 			return( $obj );
 	
@@ -237,13 +237,13 @@ class EasysocialApiResourceSlogin extends ApiResource
 		// True on success, false otherwise
 		if (!$user->save())
 		{
-			$message = "not created because of " . $user->getError();
+			$message = JText::_( 'PLG_API_EASYSOCIAL_NOT_CREATED' ); . $user->getError();
 
 			return false;
 		}
 		else
 		{
-			$message = "created of username-" . $user->username . " and send mail of details please check";
+			$message = JText::_( 'PLG_API_EASYSOCIAL_CREATED_USERNAME' ) . $user->username .JText::_( 'PLG_API_EASYSOCIAL_SEND_MAIL_DETAILS' );
 		}
 
 		// #$this->plugin->setResponse($user->id);

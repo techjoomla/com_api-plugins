@@ -15,6 +15,10 @@ class plgAPIEasyblog extends ApiPlugin
 	public function __construct(&$subject, $config = array())
 	{
 		parent::__construct($subject, $config = array());
+		
+				/*load language file for plugin frontend*/ 
+		$lang = JFactory::getLanguage(); 
+		$lang->load('plg_api_easyblog', JPATH_ADMINISTRATOR,'',true);
 
 		$easyblog = JPATH_ROOT . '/administrator/components/com_easyblog/easyblog.php';
 		if (!JFile::exists($easyblog) || !JComponentHelper::isEnabled('com_easyblog', true)) {

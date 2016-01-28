@@ -160,13 +160,13 @@ class EasyblogApiResourceSubscribe extends ApiResource
 		{
 			$result = $bmodel->addBlogSubscription($blogid,$email,$userid,$name);
 			$res->status = 1;	
-			$res->message='subscription successful';		
+			$res->message=JText::_( 'PLG_API_EASYBLOG_SUBSCRIPTION_SUCCESS' );		
 		
 		}
 		else
 		{
 			$res->status = 0;	
-			$res->message='You are already subscribed for this blog';
+			$res->message=JText::_( 'PLG_API_EASYBLOG_ALREADY_SUBSCRIBED' );
 			return $res;			 
 		}		
 		return $res;	

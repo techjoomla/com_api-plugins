@@ -61,10 +61,13 @@ class EasysocialApiResourceGroups extends ApiResource
 		$filters['mygroups'] = $app->input->get('mygroups',false,'BOOLEAN');
 		$filters['invited'] = $app->input->get('invited',false,'BOOLEAN');
 		
-		$filters['limit'] = $app->input->get('limit',0,'INT');
+		//$filters['limit'] = $app->input->get('limit',0,'INT');
+		$limit = $app->input->get('limit',10,'INT');
+		$limitstart = $app->input->get('limitstart',0,'INT');
 
 		$model = FD::model('Groups');
-		$options = array('state' => SOCIAL_STATE_PUBLISHED,'ordering' => 'latest','limit'=>$filters['limit']);
+		$userObj = FD::user($userid);	
+		$options = array('state' => SOCIAL_STATE_PUBLISHED,'ordering' => 'latest','types' => $userObj->isSiteAdmin() ? 'all' : 'user');
 		$groups = array();
 
 		if($filters['featured'])
@@ -86,7 +89,7 @@ class EasysocialApiResourceGroups extends ApiResource
 		{
 			if($filters['mygroups'])
 			{
-				$options['uid'] = $userid;
+				$options['uid'] = $log_user->id;
 				$options['types'] = 'all';
 			}
 			
@@ -105,12 +108,24 @@ class EasysocialApiResourceGroups extends ApiResource
 			{
 				$groups = $model->getGroups($options);
 			}
+			elseif($search)
+			{
+				// Get exclusion list
+				$exclusion = $app->input->get('exclusion', array(), 'array');
+				$options = array('unpublished' => false, 'exclusion' => $exclusion);
+				$groups = $model->getGroups($search,$options);
+			}
 			else
 			{
 				$groups = $model->getUserGroups($filters['uid']);
 			}
 
 			//$groups = $this->baseGrpObj($groups);
+			if($limitstart)
+			{
+				$groups = array_slice($groups,$limitstart,$limit);	
+			}
+				
 			$groups = $mapp->mapItem($groups,'group',$log_user->id);
 		}
 

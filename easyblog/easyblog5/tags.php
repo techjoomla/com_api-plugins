@@ -35,21 +35,33 @@ class EasyblogApiResourceTags extends ApiResource
 	//get tags
 	public function getTags()
 	{
+		$app = JFactory::getApplication();
+		$limitstart = $app->input->get('limitstart',0,'INT');
+		$limit =  $app->input->get('limit',20,'INT');
 		$Tagmodel = EasyBlogHelper::getModel( 'Tags' );
-		//$allTags = $Tagmodel->getTags();
-		$allTags = $Tagmodel->getTagCloud();
+		$input = JFactory::getApplication()->input;
+		$keyword = $input->get('title','', 'STRING');
+		//check EB config for this
+		$wordSearch = true;          
+
+		$Tagmodel = EasyBlogHelper::getModel( 'Tags' );
+		//$allTags = $Tagmodel->getTagCloud();
+
+		if(!empty($keyword))
+		{
+			$allTags = $Tagmodel->search($keyword,$wordSearch);
+		}
+		else
+		{
+			$allTags = $Tagmodel->getTagCloud('', $order='title', $sort='asc', $checkAccess = true);
+		}
+
+		$allTags = array_slice($allTags, $limitstart, $limit);
+		
 		return $allTags;	
 	}
-	//future requirement.
-	//~ public function searchTag()
-	//~ {
-		//~ $Tagmodel = EasyBlogHelper::getModel( 'Tags' );
-		//~ $input = JFactory::getApplication()->input;
-		//~ $title = $input->get('title', null, 'STRING');
-		//~ $result = $Tagmodel->searchTag($title);
-		//~ return $result;
-	//~ }
-	public function searchTag()
+	
+	/*public function searchTag()
 	{
 	   $app = JFactory::getApplication();
 	   $limitstart = $app->input->get('limitstart',0,'INT');
@@ -71,5 +83,5 @@ class EasyblogApiResourceTags extends ApiResource
 
 	   $output = array_slice($result, $limitstart, $limit);
 	   return $output;
-	}
+	}*/
 }

@@ -46,7 +46,7 @@ class EasyblogApiResourceCategory extends ApiResource
 		
 		if(!$category->id || ! $privacy->allowed )
 		{
-			$this->plugin->setResponse( $this->getErrorResponse(404, 'Category not found') );
+			$this->plugin->setResponse( $this->getErrorResponse(404, JText::_( 'PLG_API_EASYBLOG_CATEGORY_NOT_FOUND_MESSAGE' )) );
 			return;
 		}
 		

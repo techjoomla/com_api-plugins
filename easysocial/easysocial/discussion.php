@@ -69,7 +69,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 		if(!$group_id)
 		{
 			$wres->status = 0;
-			$wres->message[] = 'Group id is empty';
+			$wres->message[] = JText::_( 'PLG_API_EASYSOCIAL_EMPTY_GROUP_ID_MESSAGE' );
 			return $wres;
 		}
 		else
@@ -137,7 +137,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 		if( !$group->isMember() )
 		{
 			$wres->status = 0;
-			$wres->message[] = 'Not allowed to create group discussion';
+			$wres->message[] = JText::_( 'PLG_API_EASYSOCIAL_CREATE_GD_NOT_ALLOWED_MESSAGE' );
 			return $wres;
 		}
 
@@ -166,7 +166,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 		if (!$discussion->title) {
 			
 			$wres->status = 0;
-			$wres->message[] = 'Discussion title is empty';
+			$wres->message[] = JText::_( 'PLG_API_EASYSOCIAL_EMPTY_DISCUSSION_TITLE_MESSAGE' );
 			return $wres;
 		}
 
@@ -176,7 +176,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 		if( !$state )
 		{
 			$wres->status = 0;
-			$wres->message[] = 'Unable to create discussion,check params';
+			$wres->message[] = JText::_( 'PLG_API_EASYSOCIAL_UNABLE_CREATE_DISCUSSION_MESSAGE' );
 			return $wres;
 
 		}
@@ -240,7 +240,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 		}
 		
 		$wres->id = $discussion->id;
-		$wres->message[] = 'Group discussion created';
+		$wres->message[] = JText::_( 'PLG_API_EASYSOCIAL_GROUP_DISCUSSION_CREATED_MESSAGE' );
 		return $wres;
 		
 	}

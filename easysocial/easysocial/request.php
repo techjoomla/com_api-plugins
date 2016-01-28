@@ -60,7 +60,7 @@ class EasysocialApiResourceRequest extends ApiResource
 		if(!$group_id || !$other_user_id )
 		{
 			$res->success = 0;
-			$res->message = "Insufficient inputs";
+			$res->message = JText::_( 'PLG_API_EASYSOCIAL_INSUFFICIENT_INPUTS_MESSAGE' );
 			return $res;
 		}
 		else
@@ -70,7 +70,7 @@ class EasysocialApiResourceRequest extends ApiResource
 			if($group->isAdmin() != $log_user && ($req_val != 'withdraw'))
 			{
 				$res->success = 0;
-				$res->message = "Unauthorised user to approve request";
+				$res->message = JText::_( 'PLG_API_EASYSOCIAL_UNAUTHORISED_USER_MESSAGE' );
 				return $res;
 			}
 			
@@ -78,15 +78,15 @@ class EasysocialApiResourceRequest extends ApiResource
 			{
 				case 'Approve':
 				case 'approve': $res->success = $group->approveUser( $other_user_id );
-								$res->message = ($res->success)?"User request to join the group has been approved successfully":"User request to join the group has been approved unsuccessfully";
+								$res->message = ($res->success)?JText::_( 'PLG_API_EASYSOCIAL_USER_REQ_GRANTED' ):JText::_( 'PLG_API_EASYSOCIAL_USER_REQ_UNSUCCESS' );
 								break;
 				case 'Reject':
 				case 'reject' : $res->success =  $group->rejectUser( $other_user_id );
-								$res->message = ($res->success)?"User application rejected successfully":"Unable to reject application";
+								$res->message = ($res->success)?JText::_( 'PLG_API_EASYSOCIAL_USER_APPLICATION_REJECTED' ):JText::_( 'PLG_API_EASYSOCIAL_UNABLE_REJECT_APPLICATION' );
 								break;
 				case 'Withdraw':
 				case 'withdraw' :	$res->success = $group->deleteMember( $other_user_id );
-									$res->message = ($res->success)?"You have successfully withdrawn your request to join the group":"Unable to withdrawn your request to join the group";
+									$res->message = ($res->success)?JText::_( 'PLG_API_EASYSOCIAL_REQUEST_WITHDRAWN' ):JText::_( 'PLG_API_EASYSOCIAL_UNABLE_WITHDRAWN_REQ' );
 									break;
 			}
 			

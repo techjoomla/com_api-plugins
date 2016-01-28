@@ -37,7 +37,7 @@ class UsersApiResourceUsers extends ApiResource
 	 */
 	public function delete()
 	{
-		$this->plugin->setResponse('in delete function');
+		$this->plugin->setResponse( JText::_( 'PLG_API_USERS_IN_DELETE_FUNCTION_MESSAGE' ));
 	}
 
 	/**
@@ -74,7 +74,7 @@ class UsersApiResourceUsers extends ApiResource
 			$eobj->status = false;
 			$eobj->id = 0;
 			$eobj->code = '403';
-			$eobj->message = 'Required data is empty';	
+			$eobj->message = JText::_( 'PLG_API_USERS_REQUIRED_DATA_EMPTY_MESSAGE' );	
 			
 			$this->plugin->setResponse($eobj);
 			return;
@@ -160,10 +160,10 @@ class UsersApiResourceUsers extends ApiResource
 			{
 				$pobj = $this->createEsprofile($user->id);
 				//$message = "created of username-" . $user->username .",send mail of details please check";
-				$message = "Congratulations! Your account has been created successfully";
+				$message = JText::_('PLG_API_USERS_ACCOUNT_CREATED_SUCCESSFULLY_MESSAGE');
 			}
 			else
-			$message = "Congratulations! Your account has been created successfully";
+			$message = JText::_('PLG_API_USERS_ACCOUNT_CREATED_SUCCESSFULLY_MESSAGE');
 			
 			// Assign badge for the person.
 			$badge = FD::badges();
@@ -203,7 +203,7 @@ class UsersApiResourceUsers extends ApiResource
 
 			if (!$user->id)
 			{
-				$this->plugin->setResponse($this->getErrorResponse(404, 'User not found'));
+				$this->plugin->setResponse($this->getErrorResponse(JText::_( 'PLG_API_USERS_USER_NOT_FOUND_MESSAGE' )));
 
 				return;
 			}
@@ -318,19 +318,19 @@ class UsersApiResourceUsers extends ApiResource
 			if($sval)
 			{
 				$obj->success = 1;
-				$obj->message = "profile created successfully";
+				$obj->message = JText::_('PLG_API_USERS_PROFILE_CREATED_SUCCESSFULLY_MESSAGE');
 			}
 			else
 			{
 				$obj->success = 0;
-				$obj->message = "Unable to create profile";
+				$obj->message = JText::_( 'PLG_API_USERS_UNABLE_CREATE_PROFILE_MESSAGE' );
 			}
 			
 		}
 		else
 		{
 			$obj->success = 0;
-			$obj->message = 'Easysocial not installed';	
+			$obj->message = JText::_( 'PLG_API_USERS_EASYSOCIAL_NOT_INSTALL_MESSAGE');	
 		}
 		
 		return $obj;
@@ -484,9 +484,12 @@ class UsersApiResourceUsers extends ApiResource
 
 			if ($sendpassword)
 			{
-				$emailBody = JText::sprintf('COM_USERS_EMAIL_REGISTERED_BODY',
+				$emailBody = JText::sprintf(
+					'Hello %s,\n\nThank you for registering at %s. Your account is created and activated. 
+					\nYou can login to %s using the following username and password:\n\nUsername: %s\nPassword: %s',
 					$base_dt['name'],
 					$data['sitename'],
+					$base_dt['app'],
 					$base_dt['username'],
 					$base_dt['password']
 				);
@@ -513,6 +516,7 @@ class UsersApiResourceUsers extends ApiResource
 					$base_dt['name'],
 					$data['sitename'],
 					$data['activate'],
+					$base_dt['app'],
 					$base_dt['username'],
 					$base_dt['password']
 				);

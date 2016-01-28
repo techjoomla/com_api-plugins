@@ -44,7 +44,7 @@ class UsersApiResourceLogin extends ApiResource
 		}
 
 		$this->plugin->setResponse($cdata);*/
-		$this->plugin->setResponse("Get method not allowed, Use post method");	
+		$this->plugin->setResponse( JText::_( 'PLG_API_USERS_GET_METHOD_NOT_ALLOWED_MESSAGE' ));	
 	}
 
 	public function post()
@@ -111,7 +111,6 @@ class UsersApiResourceLogin extends ApiResource
 			//get version of easysocial and easyblog
 			$easyblog = JPATH_ADMINISTRATOR .'/components/com_easyblog/easyblog.php';
 			$easysocial = JPATH_ADMINISTRATOR .'/components/com_easysocial/easysocial.php';
-			$article_api = JPATH_SITE .'/plugins/api/articles/articles.php';
 			//eb version
 			if( JFile::exists( $easyblog ) )
 			{
@@ -124,31 +123,14 @@ class UsersApiResourceLogin extends ApiResource
 				$obj->easysocial_version = (string)$xml->version;*/
 				$obj->easysocial = $this->getCompParams( 'com_easysocial','easysocial' );
 			}
-	
-			//article api
-			if( JFile::exists( $article_api ) )
-			{
-	
-				$plugin = JPluginHelper::getPlugin('api', 'articles');
-				$params = new JRegistry($plugin->params);
-				
-				$pl_dt = array();
-				$pl_dt['take_action_menu'] = $params->get('take_action');
-				$pl_dt['opportunities_menu'] = $params->get('opportunities');
-
-				$obj->article = $pl_dt;
-
-			}
-			
 			//
 		
 		}
 		else
 		{
 			$obj->code = 403;
-			$obj->message = 'Bad request';
+			$obj->message = JText::_('PLG_API_USERS_BAD_REQUEST_MESSAGE');
 		}
-
 		return( $obj );
 	
 	}
@@ -166,16 +148,20 @@ class UsersApiResourceLogin extends ApiResource
 		
 		if( $cname == 'com_easyblog' )
 		{
-			if($cdata['version']<5)
-		   {        
-			  require_once( JPATH_ROOT . '/components/com_easyblog/helpers/helper.php' );
-				   $eb_params        = EasyBlogHelper::getConfig();
-		   }
-		   else
-		   {        
-			  require_once JPATH_ADMINISTRATOR.'/components/com_easyblog/includes/easyblog.php';
-				   $eb_params = EB::config();
-		   }
+		       /*$xml = JFactory::getXML(JPATH_ADMINISTRATOR .'/components/com_easyblog/easyblog.xml');
+                       $version = (string)$xml->version;*/  
+
+                       if($cdata['version']<5)
+                       {        
+                          require_once( JPATH_ROOT . '/components/com_easyblog/helpers/helper.php' );
+                               $eb_params        = EasyBlogHelper::getConfig();
+                       }
+                       else
+                       {        
+                          require_once JPATH_ADMINISTRATOR.'/components/com_easyblog/includes/easyblog.php';
+                               $eb_params = EB::config();
+                       }
+
 			$cdata['main_max_relatedpost'] = $eb_params->get('main_max_relatedpost');
 			$cdata['layout_pagination_bloggers'] = $eb_params->get('layout_pagination_bloggers');
 			$cdata['layout_pagination_categories'] = $eb_params->get('layout_pagination_categories');
@@ -199,7 +185,6 @@ class UsersApiResourceLogin extends ApiResource
 			
 		
 		}
-
 		return $cdata;
 	}
 	

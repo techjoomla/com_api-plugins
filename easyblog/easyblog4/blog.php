@@ -93,13 +93,13 @@ class EasyblogApiResourceBlog extends ApiResource
 		
 		if (!$id) 
 		{
-			$this->plugin->setResponse( $this->getErrorResponse(404, 'Blog id cannot be blank') );
+			$this->plugin->setResponse( $this->getErrorResponse(404, JText::_( 'PLG_API_EASYBLOG_BLOG_ID_MESSAGE' )) );
 			return;
 		}
 				
 		if (!$blog->id) 
 		{
-			$this->plugin->setResponse( $this->getErrorResponse(404, 'Blog not found') );
+			$this->plugin->setResponse( $this->getErrorResponse(404, JText::_( 'PLG_API_EASYBLOG_BLOG_NOT_FOUND_MESSAGE' )) );
 			return;
 		}
 
@@ -132,14 +132,14 @@ class EasyblogApiResourceBlog extends ApiResource
 		if(!$blog->id || !$id)
 		{
 			$res->status =0;	
-			$res->message='blog not exists';
+			$res->message=JText::_( 'PLG_API_EASYBLOG_BLOG_NOT_EXISTS_MESSAGE' );
 			return $res;	
 		}
 		else
 		{
 			$val = $blog->delete($id);
 			$re->status = $val;
-			$res->message='blog deleted successfully';
+			$res->message=JText::_( 'PLG_API_EASYBLOG_DELETE_MESSAGE' );
 			return $res;
 		}	
 	}	

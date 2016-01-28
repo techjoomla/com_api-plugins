@@ -42,9 +42,11 @@ class EasysocialApiResourceEvents extends ApiResource
 		$start_before = $app->input->get('start_before','','STRING');
 		$includePast = $app->input->get('includePast',0,'INT');
 		$limitstart = $app->input->get('limitstart',0,'INT');
-		$limit = $app->input->get('limit',20,'INT');
+		$limit = $app->input->get('limit',0,'INT');
 		$categoryid = $app->input->get('categoryid',0,'INT');
 		$mapp = new EasySocialApiMappingHelper();		
+		$userObj = FD::user($log_user);
+		$options = array('state' => SOCIAL_STATE_PUBLISHED, 'ordering' => $ordering,'type' => $userObj->isSiteAdmin() ? 'all' : 'user');	
 		//if date is given then choose appropriate switch case for that.
 		//for calender date
 		if(!empty($cdates))
@@ -68,7 +70,7 @@ class EasysocialApiResourceEvents extends ApiResource
 			}
 			else
 			{
-				$res->message="Date format is invalid";
+				$res->message=JText::_( 'PLG_API_EASYSOCIAL_INVALID_DATE_FORMAT_MESSAGE' );
 				$res->status=0;
 				return $res;
 			}						
@@ -149,14 +151,21 @@ class EasysocialApiResourceEvents extends ApiResource
 									$activeCategory = $category;
 									$options['category'] = $category->id;
 				break;
-		}	
+		}
+		
+		if($limit)
+		{
+			$options['limitstart'] = $limitstart;
+			$options['limit'] = $limit;
+		}
+			
 		$eventResult = $event->getEvents($options);
 		if(empty($eventResult)){
-			$res->message="No events found.";
+			$res->message=JText::_( 'PLG_API_EASYSOCIAL_EVENT_NOT_FOUND_MESSAGE' );
 			$res->status=0;
 			return $res;
 		}
-		$eventResult = array_slice($eventResult, $limitstart, $limit);
+		//$eventResult = array_slice($eventResult, $limitstart, $limit);
 		$event_list=$mapp->mapItem( $eventResult,'event',$log_user);		
 		return $event_list;
 	}
@@ -217,13 +226,13 @@ class EasysocialApiResourceEvents extends ApiResource
         
         if( empty($event) || empty($event->id) || !$event->isPublished() )
         {
-			$res->message="Event not found";
+			$res->message=JText::_( 'PLG_API_EASYSOCIAL_EVENT_NOT_FOUND_MESSAGE' );
 			$res->status=0;
 			return $res;
 		}
         if ( ($event->isClosed() && ((!$guest->isParticipant() && $state !== 'request') || ($guest->isPending() && $state !== 'withdraw') ) ) || ($event->isInviteOnly() && !$guest->isParticipant()))
 		{
-			$res->message="Error";
+			$res->message=JText::_( 'PLG_API_EASYSOCIAL_ERROR_MESSAGE' );
 			$res->status=0;
 			return $res;
 		}
@@ -232,7 +241,7 @@ class EasysocialApiResourceEvents extends ApiResource
         $total = $user->getTotalEvents();
 		if (in_array($state, array('going', 'maybe', 'request')) && $access->exceeded('events.join', $total))
 		{
-			$res->message="Limit Exceeds";
+			$res->message=JText::_( 'PLG_API_EASYSOCIAL_LIMIT_EXCEEDS_MESSAGE' );
 			$res->status=0;
 			return $res;
 		}
@@ -267,7 +276,7 @@ class EasysocialApiResourceEvents extends ApiResource
             break;
             
             default: 		
-							$final="Please select valid option.";				
+							$final=JText::_( 'PLG_API_EASYSOCIAL_SELECT_VALID_OPTION_MESSAGE' );				
             break;
         }
         //$res->message="success";

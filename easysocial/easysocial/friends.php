@@ -38,8 +38,7 @@ class EasysocialApiResourceFriends extends ApiResource
 		$limitstart = $app->input->get('limitstart',0,'INT');		
 		$options['limit']=$limit;
 		$options['limitstart']=$limitstart;
-		$mssg='';
-		$flag = 1;
+		$mssg;
 		$mapp = new EasySocialApiMappingHelper();
 		
 		if($userid == 0)
@@ -54,16 +53,19 @@ class EasysocialApiResourceFriends extends ApiResource
 		{			
 			case 'pending': //get the total pending friends.
 							$options[ 'state' ]	= SOCIAL_FRIENDS_STATE_PENDING;
-							$mssg="You have no pending request";																					
+							$mssg = JText::_( 'PLG_API_EASYSOCIAL_NO_PENDING_REQUESTS' );	
+							$flag=0;															
 			break;			
 			case 'all':		//getting all friends
 							$options[ 'state' ]	= SOCIAL_FRIENDS_STATE_FRIENDS;
-							$mssg="You have no friends";
+							$mssg=JText::_( 'PLG_API_EASYSOCIAL_NO_FRIENDS' );	
+							$flag=0;
 			break;			
 			case 'request':	//getting sent requested friends.
 							$options[ 'state' ]	= SOCIAL_FRIENDS_STATE_PENDING;
-							$options[ 'isRequest' ]	= true;							
-							$mssg="You have not sent request";
+							$options[ 'isRequest' ]	= true;	
+							$flag=0;						
+							$mssg=JText::_( 'PLG_API_EASYSOCIAL_NOT_SENT_REQUEST' );	
 			break;
 			
 			case 'suggest': //getting suggested friends							
@@ -77,11 +79,11 @@ class EasysocialApiResourceFriends extends ApiResource
 								$flag=1;
 							else 
 								$flag=0;
-							$mssg="You have no suggestions";  							
+							$mssg=JText::_( 'PLG_API_EASYSOCIAL_NO_SUGGESTIONS' );							
 			break;						
 			case 'invites': //getiing invited friends
 							  $invites['data'] = $frnd_mod->getInvitedUsers($userid);
-							  $mssg="You have no invitations";
+							  $mssg=JText::_( 'PLG_API_EASYSOCIAL_NO_INVITATION' );
 							  if(empty($invites['data']))
 							  {
 								$invites['data']['message']=$mssg;
@@ -98,9 +100,22 @@ class EasysocialApiResourceFriends extends ApiResource
 	    else if(!empty($search) && empty($filter)) 
 	    {						
 			$ttl_list = $frnd_mod->search($userid,$search,'username');
-		}		
+	    }		
 	    $frnd_list['data'] = $mapp->mapItem( $ttl_list,'user',$userid);
 	    $frnd_list['data'] = $mapp->frnd_nodes( $frnd_list['data'],$user);
+	    
+	    $myoptions[ 'state' ]	= SOCIAL_FRIENDS_STATE_PENDING;
+	    $myoptions[ 'isRequest' ]	= true;		
+	    $req=$frnd_mod->getFriends( $user->id,$myoptions );	
+	    $myarr=array();
+	    if(!empty($req))
+	    {
+			foreach($req as $ky=>$row)	
+			{
+				$myarr[]= $row->id;
+			}
+	     }	 
+	   			
 	    //get other data
 	    foreach($frnd_list['data'] as $ky=>$lval)
 	    {	
@@ -112,6 +127,17 @@ class EasysocialApiResourceFriends extends ApiResource
 				//if( $user->id != $lval->id )
 				$lval->isFriend = $frnd_mod->isFriends( $user->id,$lval->id );
 				$lval->isself = false;
+
+
+				if(in_array($lval->id,$myarr))
+				{
+					$lval->isinitiator=true;
+				}
+				else
+				{
+					$lval->isinitiator=false;
+				}
+				//$lval->approval_pending=false;	
 				//$lval->mutual_frnds = $frnd_mod->getMutualFriends($userid,$lval->id);
 			}
 			else
@@ -128,18 +154,24 @@ class EasysocialApiResourceFriends extends ApiResource
 		if(empty($frnd_list['data']))
 		{				
 			$frnd_list['data']['message'] = $mssg;
-			$frnd_list['data']['status'] = false;    
+			//$frnd_list['data']['status'] = false;
+			$frnd_list['data_status'] = false;    
+		}
+		else
+		{
+			//as per front developer requirement
+                        $frnd_list['data_status'] = true;    
 		}
 		//pending
-		 $frnd_list['status']['pendings'] = $frnd_mod->getTotalPendingFriends( $userid );
+		 $frnd_list['status']['pending'] = $frnd_mod->getTotalPendingFriends( $userid );
 		 //all frined
-		 $frnd_list['status']['allfriend'] = $frnd_mod->getTotalFriends( $userid , array( 'state' => SOCIAL_FRIENDS_STATE_FRIENDS ) );
+		 $frnd_list['status']['all'] = $frnd_mod->getTotalFriends( $userid , array( 'state' => SOCIAL_FRIENDS_STATE_FRIENDS ) );
 			//suggested
-		 $frnd_list['status']['suggested'] = $frnd_mod->getSuggestedFriends( $userid, null, true );
+		 $frnd_list['status']['suggest'] = $frnd_mod->getSuggestedFriends( $userid, null, true );
 		 //request sent		 
-		 $frnd_list['status']['sentreq']   = $frnd_mod->getTotalRequestSent( $userid );
+		 $frnd_list['status']['request']   = $frnd_mod->getTotalRequestSent( $userid );
 		 //invited
-		 $frnd_list['status']['invite']    = $frnd_mod->getTotalInvites( $userid );
+		 $frnd_list['status']['invites']    = $frnd_mod->getTotalInvites( $userid );
 		return( $frnd_list );
 	}
 }

@@ -8,7 +8,7 @@
     <authorUrl>www.techjoomla.com</authorUrl> 
     <copyright>Techjoomla. All rights reserved.</copyright> 
     <license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
-    <description>This plugin use for get data from easysocial.</description>
+    <description>PLG_API_EASYSOCIAL_DESCRIPTION</description>
 
     <files>
         <filename plugin="easysocial">easysocial.php</filename>
@@ -16,6 +16,11 @@
         <folder>libraries</folder>
         <folder>easysocial</folder>
     </files>
+    
+    <languages folder="language">
+		<language tag="en-GB">en-GB/en-GB.plg_api_easysocial.ini</language>
+		<language tag="en-GB">en-GB/en-GB.plg_api_easysocial.sys.ini</language>
+	</languages>
 	
 	<config>
 		<fields name="params">

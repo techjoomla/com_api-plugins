@@ -46,7 +46,7 @@ class EasysocialApiResourceComments extends ApiResource
 		{
 			$result->id = 0;
 			$result->status  = 0;
-			$result->message = 'Empty element id not allowed';
+			$result->message = JText::_( 'PLG_API_EASYSOCIAL_EMPTY_ELEMENT_NOT_ALLOWED_MESSAGE' );
 			$valid = 0;
 		}
 
@@ -55,7 +55,7 @@ class EasysocialApiResourceComments extends ApiResource
 		{
 			$result->id = 0;
 			$result->status  = 0;
-			$result->message = 'Empty comment not allowed';
+			$result->message = JText::_( 'PLG_API_EASYSOCIAL_EMPTY_COMMENT_NOT_ALLOWED_MESSAGE' );
 			$valid = 0;
 		}
 		else if($valid)
@@ -109,13 +109,13 @@ class EasysocialApiResourceComments extends ApiResource
 				  	
 				  	//create result obj    
 					$result->status  = 1;
-					$result->message = 'comment saved successfully';    
+					$result->message = JText::_( 'PLG_API_EASYSOCIAL_COMMENT_SAVE_SUCCESS_MESSAGE' );    
 				}
 				else
 				{
 					//create result obj    
 					$result->status  = 0;
-					$result->message = 'Unable to save comment'; 
+					$result->message = JText::_( 'PLG_API_EASYSOCIAL_COMMENT_SAVE_UNSUCCESS_MESSAGE' ); 
 				}
 			
 		}
@@ -159,7 +159,7 @@ class EasysocialApiResourceComments extends ApiResource
 		{
 			
 			$result->status = 0;
-			$result->message = 'Invalid Conversations';
+			$result->message = JText::_( 'PLG_API_EASYSOCIAL_INVALID_CONVERSATION_MESSAGE' );
 			$valid = 0;
 		}
 		
@@ -169,7 +169,7 @@ class EasysocialApiResourceComments extends ApiResource
 			$conv_model = FD::model('Conversations');
 			//$my 	= FD::user($this->plugin->get('user')->id);
 			$result->status = $conv_model->delete( $conversion_id , $this->plugin->get('user')->id );
-			$result->message = 'Conversations deleted successfully';
+			$result->message = JText::_( 'PLG_API_EASYSOCIAL_CONVERSATION_DELETED_MESSAGE' );
 		}
 		
 		$this->plugin->setResponse($result);

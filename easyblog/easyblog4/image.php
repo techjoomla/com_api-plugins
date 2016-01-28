@@ -58,7 +58,7 @@ class EasyblogApiResourceImage extends ApiResource
 			if( $allowed !== true )
 			{
 				$res->status= 0;
-				$res->message = 'Upload is not allowed';
+				$res->message = JText::_( 'PLG_API_EASYBLOG_UPLOAD_DENIED_MESSAGE' );
 				return $res;
 			}
 
@@ -78,12 +78,12 @@ class EasyblogApiResourceImage extends ApiResource
 			}
 			else
 			{
-				$this->plugin->setResponse( $this->getErrorResponse(404, __FUNCTION__ . ' Upload unsuccessfull.' ) );
+				$this->plugin->setResponse( $this->getErrorResponse(404, __FUNCTION__ . JText::_( 'PLG_API_EASYBLOG_UPLOAD_UNSUCCESSFULL' ) ) );
 			}
 	}
 	
 	public function get() {
-		$this->plugin->setResponse( $this->getErrorResponse(404, __FUNCTION__ . ' not supported' ) );
+		$this->plugin->setResponse( $this->getErrorResponse(404, __FUNCTION__ . JText::_( 'PLG_API_EASYBLOG_NOT_SUPPORTED' ) ) );
 	}
 	
 }

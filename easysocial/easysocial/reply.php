@@ -70,7 +70,7 @@ class EasysocialApiResourceReply extends ApiResource
 		if(!$group_id)
 		{
 			$wres->status = 0;
-			$wres->message[] = 'Group id is empty';
+			$wres->message[] = JText::_( 'PLG_API_EASYSOCIAL_EMPTY_GROUP_ID_MESSAGE' );
 			return $wres;
 		}
 		else
@@ -160,7 +160,7 @@ class EasysocialApiResourceReply extends ApiResource
 		{	
 			$this->createStream($discussion,$group,$reply,$log_user);
 			$wres->id = $discussion->id;
-			$wres->message[] = 'Discussion reply posted successfuly';
+			$wres->message[] = JText::_( 'PLG_API_EASYSOCIAL_DISCUSSION_REPLY_MESSAGE' );
 			return $wres;
 		}
 		

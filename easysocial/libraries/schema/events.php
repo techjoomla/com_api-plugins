@@ -32,5 +32,8 @@ public $cover_image;
 public $start_date_ios;
 public $end_date_ios;
 public $isoverevent;
-public $share_url;	
+public $share_url;
+public $isPendingMember;	
+public $isRecurring;                                
+public $hasRecurring;
 }

@@ -45,7 +45,7 @@ class EasysocialApiResourceFollower extends ApiResource
 		if( $target_user == $log_user )
 		{
 			$res->success = 0;
-			$res->message = "You can not follow yourself";
+			$res->message = JText::_( 'PLG_API_EASYSOCIAL_CANT_FOLLOW_YOURSELF_MESSAGE' );
 		}
 		
 		// Load subscription table.
@@ -69,14 +69,14 @@ class EasysocialApiResourceFollower extends ApiResource
 				$state = $this->addbadges( $target,$log_user,$subscription->id );
 		
 				$res->success = 1;
-				$res->message = "Following ".$target->username;
+				$res->message = JText::_( 'PLG_API_EASYSOCIAL_FOLLOWING_MESSAGE' ).$target->username;
 				
 				return $res;
 			}
 			else
 			{
 				$res->success = 0;
-				$res->message = "unable to follow ".$target->username;
+				$res->message = JText::_( 'PLG_API_EASYSOCIAL_UNABLE_TO_FOLLOW_MESSAGE' ).$target->username;
 				return $res;
 			}
 			
@@ -94,14 +94,14 @@ class EasysocialApiResourceFollower extends ApiResource
 				// Assign points when user starts new conversation
 				$points->assign( 'profile.unfollowed' , 'com_easysocial' , $user->id );
 				$res->success = 1;
-				$res->message = "successfully unfollow ".$target->username;
+				$res->message = JText::_( 'PLG_API_EASYSOCIAL_SUCCESSFULLY_UNFOLLW_MESSAGE' ).$target->username;
 				
 				return $res;
 			}
 			else
 			{
 				$res->success = 0;
-				$res->message = "unable to unfollow ".$target->username;
+				$res->message = JText::_( 'PLG_API_EASYSOCIAL_UNABLE_TO_UNFOLLW_MESSAGE' ).$target->username;
 				
 				return $res;
 			}
@@ -195,12 +195,12 @@ class EasysocialApiResourceFollower extends ApiResource
 		if( $res->result == true )
 		{
 			 $res->status = 1;
-			 $res->message = 'User remove from followers';
+			 $res->message = JText::_( 'PLG_API_EASYSOCIAL_USER_REMOVE_MESSAGE' );
 		}
 		else
 		{
 			$res->status = 0;
-			$res->message = 'Unable to remove user from follower list';
+			$res->message = JText::_( 'PLG_API_EASYSOCIAL_UNABLE_TO_REMOVE_USER_MESSAGE' );
 		}
 		
 		$this->plugin->setResponse($res);

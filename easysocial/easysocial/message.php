@@ -44,7 +44,7 @@ class EasysocialApiResourceMessage extends ApiResource
 		{
 			$result->id = 0;
 			$result->status  = 0;
-			$result->message = 'Empty message not allowed';
+			$result->message = JText::_( 'PLG_API_EASYSOCIAL_EMPTY_MESSAGE_MESSAGE' );
 			$valid = 0;
 		}
 		
@@ -53,11 +53,12 @@ class EasysocialApiResourceMessage extends ApiResource
 		{
 			$result->id = 0;
 			$result->status  = 0;
-			$result->message = 'Empty message not allowed';
+			$result->message =  JText::_( 'PLG_API_EASYSOCIAL_EMPTY_MESSAGE_MESSAGE' );
 			$valid = 0;
 		}
 		else if($valid)
 		{
+
 			if($conversion_id==0)
 			{
 				$flag=1;
@@ -101,7 +102,7 @@ class EasysocialApiResourceMessage extends ApiResource
 				    
 				    //create result obj    
 					$result->status  = 1;
-					$result->message = 'Message successfully sent';
+					$result->message = JText::_( 'PLG_API_EASYSOCIAL_MESSAGE_SENT_MESSAGE' );
 					
 					if($flag==0)
 					{			
@@ -170,7 +171,7 @@ class EasysocialApiResourceMessage extends ApiResource
 				{
 					//create result obj    
 					$result->status  = 0;
-					$result->message = 'Unable to send message'; 
+					$result->message = JText::_( 'PLG_API_EASYSOCIAL_UNABLE_SEND_MESSAGE' ); 
 				}
 			}
 		}
@@ -239,7 +240,7 @@ class EasysocialApiResourceMessage extends ApiResource
 		{
 			
 			$result->status = 0;
-			$result->message = 'Invalid Conversations';
+			$result->message = JText::_( 'PLG_API_EASYSOCIAL_INVALID_CONVERSATION_MESSAGE' );
 			$valid = 0;
 		}
 		
@@ -249,7 +250,7 @@ class EasysocialApiResourceMessage extends ApiResource
 			$conv_model = FD::model('Conversations');
 			//$my 	= FD::user($this->plugin->get('user')->id);
 			$result->status = $conv_model->delete( $conversion_id , $this->plugin->get('user')->id );
-			$result->message = 'Conversation deleted successfully';
+			$result->message = JText::_( 'PLG_API_EASYSOCIAL_INVALID_CONVERSATION_MESSAGE' );
 		}
 		
 		$this->plugin->setResponse($result);

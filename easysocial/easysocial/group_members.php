@@ -13,6 +13,7 @@ jimport('joomla.html.html');
 
 
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/groupmembers.php';
+require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/model.php';
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/mappingHelper.php';
 
 class EasysocialApiResourceGroup_members extends ApiResource
@@ -55,6 +56,9 @@ class EasysocialApiResourceGroup_members extends ApiResource
 		{		
 			$options = array( 'groupid' => $group_id );
 			$gruserob   = new EasySocialModelGroupMembers();
+
+			$gruserob->setState('limit',$limit);
+
 			$data = $gruserob->getItems($options);
 
 			foreach($data as $val ) 
@@ -96,7 +100,7 @@ class EasysocialApiResourceGroup_members extends ApiResource
                 {
                     $ret_arr = new stdClass;
                     $ret_arr->status = false;
-                    $ret_arr->message = "No member found";
+                    $ret_arr->message = JText::_( 'PLG_API_EASYSOCIAL_MEMBER_NOT_FOUND_MESSAGE' );
                     return $ret_arr;
                 }		
 
@@ -133,7 +137,7 @@ class EasysocialApiResourceGroup_members extends ApiResource
 
 		if ($access->exceeded('groups.join', $total)) {
 			$obj->success = 0;
-			$obj->message = 'group joining limit exceeded';
+			$obj->message = JText::_( 'PLG_API_EASYSOCIAL_GROUP_JOIN_LIMIT_EXCEEDS_MESSAGE' );
 			return $obj;
 		}
 		
@@ -144,13 +148,22 @@ class EasysocialApiResourceGroup_members extends ApiResource
 		
 		$obj->success = 1;
 		$obj->state = $members->state;
-		$obj->message = 'Great! Your request has been sent successfully and it is pending approval from the site administrator.';
+		//$obj->message = 'Great! Your request has been sent successfully and it is pending approval from the site administrator.';
+		 if($group->type==1)
+               {                        
+                       $obj->message = 'Welcome to the group, since this is an open group, you are automatically a member of the group now.';
+               }
+               else
+               {
+                       $obj->message = 'Great! Your request has been sent successfully and it is pending approval from the  group administrator.';
+               }
+
 		}
 		else
 		{
 		$obj->success = 0;
 		$obj->state = $members->state;
-		$obj->message = 'Already joined to group';
+		$obj->message = JText::_( 'PLG_API_EASYSOCIAL_GROUP_ALREADY_JOINED_MESSAGE' );
 		}
 		
 		return $obj;

@@ -17,7 +17,7 @@ class EasysocialApiResourceReport extends ApiResource
 {
 	public function get()
 	{
-	$this->plugin->setResponse("Use method post");			
+	$this->plugin->setResponse(JText::_( 'PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE' ));			
 	}	
 	public function post()
 	{
@@ -48,7 +48,7 @@ class EasysocialApiResourceReport extends ApiResource
 		// Determine if this user has exceeded the number of reports that they can submit
 		$total 		= $model->getCount( array( 'created_by' => $log_user ) );
 		if ($access->exceeded( 'reports.limit' , $total)) {
-			$final_result['message'] =  "Limit exceeds";
+			$final_result['message'] =  JText::_( 'PLG_API_EASYSOCIAL_LIMIT_EXCEEDS_MESSAGE' );
 			$final_result['status'] = true;
 			return $final_result;
 		}
@@ -63,7 +63,7 @@ class EasysocialApiResourceReport extends ApiResource
 		$state 	= $report->store();
 		// If there's an error, throw it
 		if (!$state) {
-			$final_result['message'] =  "Can't save report";
+			$final_result['message'] =  JText::_( 'PLG_API_EASYSOCIAL_CANT_SAVE_REPORT' );;
 			$final_result['status'] = true;
 			return $final_result;
 		}
@@ -83,7 +83,7 @@ class EasysocialApiResourceReport extends ApiResource
 		if ($config->get('reports.notifications.moderators')) {
 			$report->notify();
 		}
-		$final_result['message'] = "Report logged successfully!";
+		$final_result['message'] = JText::_( 'PLG_API_EASYSOCIAL_REPORT_LOGGED' );;
 		$final_result['status'] = true;
 		return $final_result;
 	}	

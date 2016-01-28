@@ -47,7 +47,7 @@ class EasysocialApiResourceSocial_share extends ApiResource
 	if(!$stream_id)
 	{
 		$res->success = 0;
-		$res->message = "Empty stream id not allowed";
+		$res->message = JText::_( 'PLG_API_EASYSOCIAL_EMPTY_STREAM_ID' );
 	}
 	
 	//create sharing url
@@ -127,7 +127,7 @@ class EasysocialApiResourceSocial_share extends ApiResource
 		$result = $library->sendLink( $recep, $tok, $msg );
 		
 		$res->success = 1;
-		$res->message = "share successful";
+		$res->message = JText::_( 'PLG_API_EASYSOCIAL_SHARE_SUCCESS_MESSAGE' );
 		$res->result = $result;
 		
 		return $res;

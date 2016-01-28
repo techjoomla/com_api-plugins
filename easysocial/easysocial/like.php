@@ -24,7 +24,7 @@ class EasysocialApiResourceLike extends ApiResource
 {
 	public function get()
 	{
-		$this->plugin->setResponse("Use post or delete method.");
+		$this->plugin->setResponse(JText::_( 'PLG_API_EASYSOCIAL_USE_POST_OR_DELETE_MESSAGE' ));
 	}
 
 	public function post()
@@ -34,7 +34,7 @@ class EasysocialApiResourceLike extends ApiResource
 	}	
 	public function delete()
 	{
-		$this->plugin->setResponse("not supported to this api");
+		$this->plugin->setResponse(JText::_( 'PLG_API_EASYSOCIAL_NOT_SUPPORTED_MESSAGE' ));
 	}
 	//function use for get friends data
 	function toggleLike()
@@ -95,11 +95,11 @@ class EasysocialApiResourceLike extends ApiResource
 		}
 
 		// The current action
-		$verb 	= $hasLiked ? 'Unlike' : 'Like';
+		$verb 	= $hasLiked ? JText::_( 'PLG_API_EASYSOCIAL_UNLIKE' ) : JText::_( 'PLG_API_EASYSOCIAL_LIKE' );
 		
 		$result->status = $state;
 		$result->data = ($state && $verb == 'like')?$model->getLikesCount($id,$type):0;
-		$result->message = ($state)? $verb." successful": $verb." unsuccessful";
+		$result->message = ($state)? $verb.JText::_( 'PLG_API_EASYSOCIAL_SUCCESSFULL' ): $verb.JText::_( 'PLG_API_EASYSOCIAL_UNSUCCESSFULL' );
 			
 		return( $result );
 	}

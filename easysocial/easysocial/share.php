@@ -24,7 +24,7 @@ class EasysocialApiResourceShare extends ApiResource
 {
 	public function get()
 	{
-		$this->plugin->setResponse('Use post method to share');
+		$this->plugin->setResponse(JText::_( 'PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE' ));
 	}
 
 	public function post()
@@ -69,7 +69,7 @@ class EasysocialApiResourceShare extends ApiResource
 
 				$result->id = 0;
 				$result->status  = 0;
-				$result->message = 'User not allowed any post in share';
+				$result->message = JText::_( 'PLG_API_EASYSOCIAL_POST_NOT_ALLOW_MESSAGE' );
 				$valid = 0;
 			}
 		}
@@ -78,7 +78,7 @@ class EasysocialApiResourceShare extends ApiResource
 		{
 			$result->id = 0;
 			$result->status  = 0;
-			$result->message = 'Empty type not allowed';
+			$result->message = JText::_( 'PLG_API_EASYSOCIAL_EMPTY_TYPE' );
 			$valid = 0;
 		}
 		else if($valid)
@@ -97,12 +97,12 @@ class EasysocialApiResourceShare extends ApiResource
 				{
 					// If the user is not an admin, ensure that permissions has member
 					if ($group->isMember() && !in_array('member', $permissions) && !$group->isOwner() && !$group->isAdmin()) {
-						$result->message = 'This group memder do not have share data permission';
+						$result->message = JText::_( 'PLG_API_EASYSOCIAL_MEMBER_ACCESS_DENIED_MESSAGE' );
 					}
 
 					// If the user is an admin, ensure that permissions has admin
 					if ($group->isAdmin() && !in_array('admin', $permissions) && !$group->isOwner()) {
-						$result->message = 'This group admin do not have share data permission';
+						$result->message = JText::_( 'PLG_API_EASYSOCIAL_ADMIN_ACCESS_DENIED_MESSAGE' );
 					}
 					
 					$result->id = 0;
@@ -182,8 +182,9 @@ class EasysocialApiResourceShare extends ApiResource
 						} 
 					}
 				}
-
+//print_r( $mentions );die("in share api");
 			}
+
 			$contextIds = 0;
 			if($type == 'photos')
 			{
@@ -253,7 +254,7 @@ class EasysocialApiResourceShare extends ApiResource
 			{
 				$result->id = $stream->id;
 				$result->status  =1;
-				$result->message = 'data share successfully';
+				$result->message = JText::_( 'PLG_API_EASYSOCIAL_DATA_SHARE_SUCCESS' );
 			}
 
 		}
@@ -286,7 +287,7 @@ class EasysocialApiResourceShare extends ApiResource
 		// Detect if this is a really valid image file.
 		if( !$image->isValid() )
 		{
-			return "invalid image";
+			return JText::_( 'PLG_API_EASYSOCIAL_INVALID_IMAGE' );
 		}
 		
 		// Load up the album's model.

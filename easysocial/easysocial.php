@@ -18,6 +18,10 @@ class plgAPIEasysocial extends ApiPlugin
 
 		ApiResource::addIncludePath(dirname(__FILE__).'/easysocial');
 		
+				/*load language file for plugin frontend*/ 
+		$lang = JFactory::getLanguage(); 
+		$lang->load('plg_api_easysocial', JPATH_ADMINISTRATOR,'',true);
+		
 		$this->setResourceAccess('slogin', 'public', 'post');
 		
 	}

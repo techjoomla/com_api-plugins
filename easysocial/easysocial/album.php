@@ -124,14 +124,14 @@ class EasysocialApiResourceAlbum extends ApiResource
 		if(!$album->id || !$id)
 		{
 			$result->status=0;
-			$result->message='album not exists';
+			$result->message=JText::_( 'PLG_API_EASYSOCIAL_ALBUM_NOT_EXISTS' );
 			return $result;			
 		}
 		else
 		{
 			$val =$album->delete();	
 			$album->assignPoints( 'photos.albums.delete' , $album->uid );
-			$val->message = 'album deleted successfully';		
+			$val->message = JText::_( 'PLG_API_EASYSOCIAL_ALBUM_DELETE_SUCCESS_MESSAGE' );		
 			return $val;
 		}
 	}	

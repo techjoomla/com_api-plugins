@@ -36,10 +36,18 @@ class EasysocialApiResourceSearch extends ApiResource
 		$app = JFactory::getApplication();
 		$log_user = JFactory::getUser($this->plugin->get('user')->id);
 	
-		$nxt_lim = 20;
-	
 		$search = $app->input->get('search','','STRING');
 		$nxt_lim = $app->input->get('next_limit',0,'INT');
+
+		$limitstart = $app->input->get('limitstart',0,'INT');
+		$limit = $app->input->get('limit',10,'INT');
+		$list = array();
+		$list['data_status'] = true;
+		if($limitstart)
+		{
+			$limit = $limit + $limitstart;
+		}
+		
 		$mapp = new EasySocialApiMappingHelper();
 		
 		$res = new stdClass;
@@ -47,7 +55,7 @@ class EasysocialApiResourceSearch extends ApiResource
 		if(empty($search))
 		{
 			$res->status = 0;
-			$res->message = 'Empty searchtext';
+			$res->message = JText::_( 'PLG_API_EASYSOCIAL_EMPTY_SEARCHTEXT_MESSAGE' );
 			return $res;
 		}
 		
@@ -79,10 +87,21 @@ class EasysocialApiResourceSearch extends ApiResource
 		{		
 			$susers[]   = FD::user($val->user_id);
 		}
-		
+				
+		//manual pagination code
+		$susers = array_slice( $susers, $limitstart, $limit );		
+
 		$base_obj = $mapp->mapItem($susers,'user',$log_user->id);
 
 		$list['user'] = $this->createSearchObj( $base_obj );
+
+		if(empty($list['user']))
+               	{
+                       $ret_arr = new stdClass;
+                       $ret_arr->status = false;
+                       $ret_arr->message = JText::_( 'PLG_API_EASYSOCIAL_USER_NOT_FOUND' );
+                       $list['user']= $ret_arr;
+               	}
 		
 		//for group
 		$query1 = $db->getQuery(true);
@@ -93,6 +112,7 @@ class EasysocialApiResourceSearch extends ApiResource
 		{
 			$query1->where("(cl.title LIKE '%".$search."%' )");
 		}
+		$query1->where('cl.state = 1');
 		
 		$query1->order($db->quoteName('cl.id') .'ASC');
 
@@ -104,22 +124,44 @@ class EasysocialApiResourceSearch extends ApiResource
 		$group = array();
 		foreach($gdata as $grp)
 		{
-			$group[] = FD::group($grp->id);
+			$group_load = FD::group($grp->id);                        
+			$is_inviteonly = $group_load->isInviteOnly();
+			$is_member = $group_load->isMember($log_user);
+			if($is_inviteonly && !$is_member)
+			{
+			       if($group_load->creator_uid == $log_user->id)
+			       {
+				       $group[] = FD::group($grp->id);
+			       }
+			       else
+			       {                                        
+				continue;
+			       }                                
+			}
+			else
+			{                                
+			       $group[] = FD::group($grp->id);        
+			}
 		}
 		
+		//manual pagination code
+		$group = array_slice( $group, $limitstart, $limit );
 		$list['group'] = $mapp->mapItem($group,'group',$log_user->id);
 		
 		if(empty($list['group']))
                	{
                        $ret_arr = new stdClass;
                        $ret_arr->status = false;
-                       $ret_arr->message = "No group found in search";
+                       $ret_arr->message = JText::_( 'PLG_API_EASYSOCIAL_GROUP_NOT_FOUND' );
                        $list['group']= $ret_arr;
                	}
-
-
+			
+		//give status as per front end requirement
+		if(empty($list['group']) && empty($list['user']))	
+		{
+			$list['data_status'] = false;
+		}
 		return( $list );
-		
 	}
 	
 	//format friends object into required object
@@ -129,7 +171,7 @@ class EasysocialApiResourceSearch extends ApiResource
 		{
 			$ret_arr = new stdClass;
 			$ret_arr->status = false;
-			$ret_arr->message = "No user found in search";
+			$ret_arr->message = JText::_( 'PLG_API_EASYSOCIAL_USER_NOT_FOUND' );
 			
 			return $ret_arr;
 		}

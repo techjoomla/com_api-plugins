@@ -75,19 +75,19 @@ class EasysocialApiResourceFriend extends ApiResource
 		if( !$state )
 		{
 			$res->status = 0;
-			$res->message = 'Unable to delete friend';
+			$res->message = JText::_( 'PLG_API_EASYSOCIAL_UNABLE_DELETE_FRIEND_MESSAGE' );
 			return $res;
 		}			
 		// Throw errors when there's a problem removing the friends
 		if( !$friend_table->unfriend( $log_user ) )
 		{			
 			$res->status = 0;
-			$res->message = 'Unable to delete friend';
+			$res->message = JText::_( 'PLG_API_EASYSOCIAL_UNABLE_DELETE_FRIEND_MESSAGE' );
 		}
 		else
 		{
 			$res->status = 1;
-			$res->message = 'Friend deleted';
+			$res->message = JText::_( 'PLG_API_EASYSOCIAL_FRIEND_DELETED_MESSAGE' );
 			return $res;
 		}
 	}

@@ -30,7 +30,7 @@ class EasysocialApiResourceProfile extends ApiResource
 	public function post()
 	{
 		//print_r($FILES);die("in post grp api");
-	   $this->plugin->setResponse("please use get method");
+	   $this->plugin->setResponse(JText::_( 'PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE' ));
 	}
 	
 	//function use for get friends data

@@ -20,7 +20,7 @@ class EasysocialApiResourceEvent_guest extends ApiResource
 	}
 	public function post()
 	{
-		$this->plugin->setResponse("Use get method.");	
+		$this->plugin->setResponse(JText::_( 'PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE' ));	
 	}
 	public function get_guests()
 	{

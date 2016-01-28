@@ -21,7 +21,7 @@ class EasysocialApiResourceLeaderboard extends ApiResource
 	}
 	public function post()
 	{
-		$this->plugin->setResponse("Use get method");
+		$this->plugin->setResponse(JText::_( 'PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE' ));
 	}
 	//Get leaderboards.
 	public function get_leaderboard()
@@ -41,7 +41,7 @@ class EasysocialApiResourceLeaderboard extends ApiResource
         {
             $res = new stdClass;
             $res->status = 0;
-            $res->message = 'No Leaders';
+            $res->message = JText::_( 'PLG_API_EASYSOCIAL_NO_LEADERS' );
             return $res;
         }
 		

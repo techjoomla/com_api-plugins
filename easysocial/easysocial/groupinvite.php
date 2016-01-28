@@ -24,7 +24,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 {
 	public function get()
 	{
-		$this->plugin->setResponse("Use post or delete method.");
+		$this->plugin->setResponse(JText::_( 'PLG_API_EASYSOCIAL_USE_POST_OR_DELETE_MESSAGE' ));
 	}
 
 	public function post()
@@ -49,24 +49,25 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 		if( !$group->id || !$group_id )
 		{
 			$result->status = 0;
-			$result->message = 'Invalid Group';
+			$result->message = JText::_( 'PLG_API_EASYSOCIAL_INVALID_GROUP_MESSAGE' );
 			$valid = 0;
 		}
 		
 		if( !$target_user )
 		{
 			$result->status = 0;
-			$result->message = 'Target user not valid';
+			$result->message = JText::_( 'PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE' );
 			$valid = 0;
 		}
 
 		// Only allow super admins to delete groups
 		$my 	= FD::user($this->plugin->get('user')->id);
 
-		if($target_user == $my->id && $operation == 'leave')
+
+		if($target_user == $my->id && $operation == 'leave' && $group->creator_uid == $my->id )
 		{
 			$result->status = 0;
-			$result->message = 'Group owner not leave group';
+			$result->message = JText::_( 'PLG_API_EASYSOCIAL_GROUP_OWNER_NOT_LEAVE_MESSAGE' );
 			$valid = 0;
 		}
 		
@@ -81,13 +82,13 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 								$group->leave( $user->id );
 								// Notify group members
 								$group->notifyMembers( 'leave' , array( 'userId' => $my->id ) );
-								$result->message = 'leave group successfully';
+								$result->message = JText::_( 'PLG_API_EASYSOCIAL_LEAVE_GROUP_MESSAGE' );
 								break;
 				case 'remove':	// Remove the user from the group.
 								$group->deleteMember( $user->id );
 								// Notify group member
 								$group->notifyMembers('user.remove', array('userId' => $user->id));
-								$result->message = 'Remove user successfully';
+								$result->message = JText::_( 'PLG_API_EASYSOCIAL_USER_REMOVE_SUCCESS_MESSAGE' );
 								break;
 			}
 			
@@ -121,7 +122,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 			foreach ($target_users as $id) {
 
 				// Ensure that the user is not a member or has been invited already
-				if (!$group->isMember( $id ) && !$group->isInvited($id))
+				if (!$group->isMember( $id ) && !$grp_model->isInvited($id,$group_id))
 				{
 					$state = $group->invite( $id, $log_user->id );
 					$invited[] = JFactory::getUser($id)->username;

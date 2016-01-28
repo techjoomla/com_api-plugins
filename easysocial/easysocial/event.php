@@ -64,8 +64,8 @@ class EasysocialApiResourceEvent extends ApiResource
 		$post['parmalink']  = $app->input->post->get('parmalink',null,'STRING');
 		$post['description']  = $app->input->post->get('description',null,'STRING');
 		$post['event_type']  = $app->input->post->get('event_type',0,'INT');
-		$post['startDatetime']  = $app->input->post->get('startDatetime',null,'string');
-		$post['endDatetime']  = $app->input->post->get('endDatetime',null,'string');
+		$post['startDatetime']  = $app->input->post->get('startDatetime','','string');
+		$post['endDatetime']  = $app->input->post->get('endDatetime','','string');
 		$post['event_allday']  = $app->input->post->get('event_allday',0,'INT');
 		$post['repeat']  = $app->input->post->get('repeat',array('type'=>'none','end'=>null),'ARRAY');
 		$post['website']  = $app->input->post->get('website',0,'INT');
@@ -79,23 +79,36 @@ class EasysocialApiResourceEvent extends ApiResource
 
 		$post['categoryId'] = $categoryId  = $app->input->post->get('category_id',0,'INT');
 		$post['group_id'] = $app->input->post->get('group_id',null,'INT');
-
+		
+		/*$date = new DateTime($post['startDatetime']);
+		$config = JFactory::getConfig();
+		$date->setTimezone(new DateTimeZone($config->get('offset')));
+		$post['startDatetime'] =  $date->format('Y-m-d H:i:s a');*/
+		//format date as per server
+		$post['startDatetime'] = $this->getOffsetServer($post['startDatetime']);
+		
+		if(!empty($post['endDatetime']))
+		{
+			$post['endDatetime'] = $this->getOffsetServer($post['endDatetime']);
+		}
+//print_r($post['endDatetime']);die("in api");
+//var_dump($post);die("in event api");
 		$category = FD::table('EventCategory');
-        $category->load($categoryId);
+		$category->load($categoryId);
 
-        $session = JFactory::getSession();
-        $session->set('category_id', $category->id, SOCIAL_SESSION_NAMESPACE);
+		$session = JFactory::getSession();
+		$session->set('category_id', $category->id, SOCIAL_SESSION_NAMESPACE);
 
-        $stepSession = FD::table('StepSession');
-        $stepSession->load(array('session_id' => $session->getId(), 'type' => SOCIAL_TYPE_EVENT));
+		$stepSession = FD::table('StepSession');
+		$stepSession->load(array('session_id' => $session->getId(), 'type' => SOCIAL_TYPE_EVENT));
 
-        $stepSession->session_id = $session->getId();
-        $stepSession->uid = $category->id;
-        $stepSession->type = SOCIAL_TYPE_EVENT;
+		$stepSession->session_id = $session->getId();
+		$stepSession->uid = $category->id;
+		$stepSession->type = SOCIAL_TYPE_EVENT;
 
-        $stepSession->set('step', 1);
+		$stepSession->set('step', 1);
 
-        $stepSession->addStepAccess(1);
+		$stepSession->addStepAccess(1);
 
 		// Check the group access for event creation
         if (!empty($post['group_id'])) {
@@ -252,10 +265,18 @@ class EasysocialApiResourceEvent extends ApiResource
 		{
 			$result->success = 1;
 			$result->event_id = $event->id;
-            $result->message = "Event created successfully";
+            $result->message = JText::_( 'PLG_API_EASYSOCIAL_EVENT_CREATE_SUCCESS_MESSAGE' );
 		}
        
        return $result;
+	}
+	
+	public function getOffsetServer($date)
+	{
+		$date = new DateTime($date);
+		$config = JFactory::getConfig();
+		$date->setTimezone(new DateTimeZone($config->get('offset')));
+		return $date =  $date->format('Y-m-d H:i:s a');
 	}
 	
 	public function createData($field_ids, $post)
@@ -363,3 +384,4 @@ class EasysocialApiResourceEvent extends ApiResource
 	}
 	
 }
+

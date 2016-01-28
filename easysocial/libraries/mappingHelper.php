@@ -1006,12 +1006,21 @@ class EasySocialApiMappingHelper
 		
 		return $actor;
 		*/
-		
+		$es_params = FD::config();
 		$actor = new userSimpleSchema();
 		$image = new stdClass;
 		
 		$actor->id = $id;
-		$actor->username = $user->username;
+		//for manage ES config at name showing
+		if($es_params->get('users')->displayName == 'username')
+		{
+			$actor->username = $user->username;
+		}
+		else
+		{
+			$actor->username = $user->name;
+		}
+		
 		$actor->name = $user->name;
 		
 		$image->image_small = $user->getAvatar('small');

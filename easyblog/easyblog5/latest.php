@@ -40,6 +40,8 @@ class EasyblogApiResourceLatest extends ApiResource
 		$featured = $input->get('featured',0,'INT');
 		$tags = $input->get('tags',0,'INT');
 		$user_id = $input->get('user_id',0,'INT');
+		$limitstart = $input->get('limitstart',0,'INT');
+		$limit = $input->get('limit',10,'INT');
 		$posts = array();
 		// If we have an id try to fetch the user
 		$blog 		= EasyBlogHelper::table( 'Blog' );
@@ -63,7 +65,7 @@ class EasyblogApiResourceLatest extends ApiResource
 		{	//to get latest blog
 			//$sorting	= $this->plugin->params->get( 'sorting' , 'latest' );
 			//$rows 	= $model->getBlogsBy( $sorting , '' , $sorting , 0, EBLOG_FILTER_PUBLISHED, $search );
-			$rows = $model->getBlogsBy('', '', 'latest', 0, EBLOG_FILTER_PUBLISHED, null, true, array(), false, false, true, '', '', null, 'listlength', false);
+			$rows = $model->getBlogsBy('', '', 'latest', 0, EBLOG_FILTER_PUBLISHED, $search, true, array(), false, false, true, '', '', null, 'listlength', false);
 			//$rows = EB::formatter('list', $rows, false);
 		}
 		$rows = EB::formatter('list', $rows, false);
@@ -98,6 +100,7 @@ class EasyblogApiResourceLatest extends ApiResource
 				
 			$posts[] = $item;
 		}
+		$posts = array_slice($posts, $limitstart,$limit);	
 		$this->plugin->setResponse( $posts );
 	}
 	// get feature blog function.

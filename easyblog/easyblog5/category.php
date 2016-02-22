@@ -30,12 +30,19 @@ class EasyblogApiResourceCategory extends ApiResource
 		$category = EasyBlogHelper::table( 'Category', 'Table' );
 		$id = $input->get('id', null, 'INT');
 		$search = $input->get('search', null, 'STRING');
+		
+		$limitstart = $input->get('limitstart', 0, 'INT');
+		$limit = $input->get('limit', 10, 'INT');
+
 		$posts = array();
 		
 		
 		if (!isset($id)) {
 			$categoriesmodel = EasyBlogHelper::getModel( 'Categories' );
 			$categories = $categoriesmodel->getCategoryTree('ordering');
+			
+			$categories = array_slice($categories,$limitstart,$limit);			
+			
 			$this->plugin->setResponse( $categories );
 			return;
 		}
@@ -73,12 +80,13 @@ class EasyblogApiResourceCategory extends ApiResource
 		// Get teamblog posts count
 		// $teamBlogCount = $model->getTeamBlogCount($category->id);
 
-		$limit = EB::call('Pagination', 'getLimit', array(EBLOG_PAGINATION_CATEGORIES));
+		//$limit = EB::call('Pagination', 'getLimit', array(EBLOG_PAGINATION_CATEGORIES));
 
 		// Get the posts in the category
-		$data = $model->getPosts($catIds, $limit);
+		$data = $model->getPosts($catIds);
 		$rows = EB::formatter('list', $data);
-
+	
+		$rows = array_slice($rows,$limitstart,$limit);
 		//end
 		
 		foreach ($rows as $k => $v) {

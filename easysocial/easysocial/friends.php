@@ -70,16 +70,24 @@ class EasysocialApiResourceFriends extends ApiResource
 			
 			case 'suggest': //getting suggested friends							
 							$sugg_list = $frnd_mod->getSuggestedFriends($userid);
+
 							$sugg_list = array_slice($sugg_list,$limitstart,$limit);
 							foreach($sugg_list as $sfnd)
 							{
 								$ttl_list[] = $sfnd->friend;
 							}
-							if(empty($ttl_list))
+
+							if(!empty($ttl_list))
+							{	
 								$flag=1;
-							else 
+							}
+							else
+							{
 								$flag=0;
-							$mssg=JText::_( 'PLG_API_EASYSOCIAL_NO_SUGGESTIONS' );							
+								$mssg=JText::_( 'PLG_API_EASYSOCIAL_NO_SUGGESTIONS' );
+							}
+
+
 			break;						
 			case 'invites': //getiing invited friends
 							  $invites['data'] = $frnd_mod->getInvitedUsers($userid);
@@ -93,16 +101,25 @@ class EasysocialApiResourceFriends extends ApiResource
 			break;		
 		}		
 		// if search word present then search user as per term and given id
+
 		if(empty($search) && empty($ttl_list) && $flag!=1)
 		{
 			$ttl_list = $frnd_mod->getFriends($userid,$options); 
-	    }
-	    else if(!empty($search) && empty($filter)) 
-	    {						
+		}
+		else if(!empty($search) && empty($filter)) 
+		{						
 			$ttl_list = $frnd_mod->search($userid,$search,'username');
-	    }		
+		}		
+
+
+	if($frnd_mod->get('total')>$limitstart)
+	{	
+
 	    $frnd_list['data'] = $mapp->mapItem( $ttl_list,'user',$userid);
+
 	    $frnd_list['data'] = $mapp->frnd_nodes( $frnd_list['data'],$user);
+
+
 	    
 	    $myoptions[ 'state' ]	= SOCIAL_FRIENDS_STATE_PENDING;
 	    $myoptions[ 'isRequest' ]	= true;		
@@ -150,6 +167,11 @@ class EasysocialApiResourceFriends extends ApiResource
 			//$lval->mutual = $frnd_mod->getMutualFriendCount($user->id,$lval->id);
 			//$lval->isFriend = $frnd_mod->isFriends($user->id,$lval->id);
 		}
+	}
+	else
+	{
+		$frnd_list['data'] = $ttl_list;
+	}	
 		//if data is empty givin respective message and status.
 		if(empty($frnd_list['data']))
 		{				
@@ -159,7 +181,8 @@ class EasysocialApiResourceFriends extends ApiResource
 		}
 		else
 		{
-			//as per front developer requirement
+			//as per front developer requirement manage list
+			$frnd_list['data'] = array_slice($frnd_list['data'],$limitstart,$limit);
                         $frnd_list['data_status'] = true;    
 		}
 		//pending

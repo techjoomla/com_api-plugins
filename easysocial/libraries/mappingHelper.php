@@ -254,6 +254,7 @@ class EasySocialApiMappingHelper
 		{
 			if(isset($row->uid))
 			{
+
 				$item = new streamSimpleSchema();
 
 				//new code
@@ -267,6 +268,12 @@ class EasySocialApiMappingHelper
 				{
 					$item->title = str_replace('href="','href="'.JURI::root(),$item->title);
 				}
+
+				if($row->type == 'polls')
+				{
+					continue;	
+				}
+		
 				$item->type = $row->type;
 				$item->group = $row->cluster_type;
 				$item->element_id = $row->contextId;
@@ -484,6 +491,30 @@ class EasySocialApiMappingHelper
 		return null;
 	}
 	
+	//server date offset setting
+	public function getOffsetServer($date,$userid)
+	{
+			
+		/*$date = new DateTime($date);
+		$config = JFactory::getConfig();
+		$date->setTimezone(new DateTimeZone($config->get('offset')));
+		$date =  $date->format('Y-m-d H:i:s a');*/
+		
+		$config = JFactory::getConfig();
+		$user   = JFactory::getUser($userid);
+               	$offset = $user->getParam('timezone', $config->get('offset'));
+
+		if (!empty($date) && $date != '0000-00-00 00:00:00')
+		{
+		       $udate = JFactory::getDate($date, $offset);
+		       //$date = $udate->toSQL();
+			$date =  $udate->format('Y-m-d H:i:s a');
+		}
+
+               return $date;
+
+	}			
+
 	//create comments object
 	public function createCommentsObj($row,$limitstart=0,$limit=10)
 	{
@@ -564,6 +595,7 @@ class EasySocialApiMappingHelper
 				$item->hits = $row->hits;
 				$item->replies_count = $row->total_replies;
 				$item->last_replied = $this->calLaps($row->last_replied);
+				
 				//$item->replies = 0;
 				$last_repl = (isset($row->lastreply))?array(0=>$row->lastreply):array();
 				
@@ -664,15 +696,30 @@ class EasySocialApiMappingHelper
 				if(!empty($item->details->start))
 				{					
 					$item->details->ios_start = $this->listDate($item->details->start);
-					$item->details->ios_end = $this->listDate($item->details->end);
+					$item->start_date = date('D M j Y h:i a',strtotime($row->meta->start));					
+					$item->start_date_unix = strtotime($row->meta->start);
 				}								
 				
-				//$item->start_date = gmdate('D M j Y G:i:s a',strtotime($row->meta->start));
-				//$item->end_date = gmdate('D M j Y G:i:s a',strtotime($row->meta->end));
+
+				if( $item->details->end == "0000-00-00 00:00:00")
+				{
+					$item->details->ios_end = null;
+                    		$item->end_date = null;
+					$item->end_date_unix = null;
 				
-				$item->start_date = date('D M j Y h:i a',strtotime($row->meta->start));
-                               	$item->end_date = date('D M j Y h:i a ',strtotime($row->meta->end));
+				/*	
+					$item->details->ios_end = $this->listDate($item->details->start);
+					$item->end_date = date('D M j Y h:i a',strtotime($row->meta->start));					
+					$item->end_date_unix = strtotime($row->meta->start);
+				*/
 				
+				}
+				else				
+				{
+					$item->details->ios_end = $this->listDate($item->details->end);
+                               		$item->end_date = date('D M j Y h:i a ',strtotime($row->meta->end));
+					$item->end_date_unix = strtotime($row->meta->end);
+				}
 				//ios format date					
 				//$item->start_date_ios = $this->listDate($row->meta->start);
 				//$item->end_date_ios = $this->listDate($row->meta->end);
@@ -975,11 +1022,12 @@ class EasySocialApiMappingHelper
 	//calculate laps time
 	function calLaps($date)
 	{
-		if(strtotime($date) == 0)
+
+		if( (strtotime($date) == 0) || ($date == NULL) || $date == '0000-00-00 00:00:00' )
 		{
 			return 0;
 		}
-		
+	
 		return $lap_date = FD::date($date)->toLapsed();
 		
 	}
@@ -1011,7 +1059,8 @@ class EasySocialApiMappingHelper
 		$image = new stdClass;
 		
 		$actor->id = $id;
-		//for manage ES config at name showing
+		
+		//ES config dependent username
 		if($es_params->get('users')->displayName == 'username')
 		{
 			$actor->username = $user->username;
@@ -1020,7 +1069,7 @@ class EasySocialApiMappingHelper
 		{
 			$actor->username = $user->name;
 		}
-		
+
 		$actor->name = $user->name;
 		
 		$image->image_small = $user->getAvatar('small');

@@ -130,11 +130,18 @@ class EasysocialApiResourceGcm extends ApiResource
 		
 		//Getting database values to check current user is login again or he change his device then only adding device to database
 		$checkval = $db->getQuery(true);
-		$checkval->select($db->quoteName(array('device_id','user_id','type')));
+		/*$checkval->select($db->quoteName(array('device_id','user_id','type')));
+		$checkval->from($db->quoteName('#__acpush_users'));*/
+
+		$checkval->select($db->quoteName('id'));
 		$checkval->from($db->quoteName('#__acpush_users'));
+		$checkval->where("device_id LIKE '%".$reg_id."%' AND type = "."'".$type."'");
+
 		$db->setQuery($checkval);
-		$results = $db->loadObjectList();
-		foreach($results as $notfn)
+
+		$ids_dev = $db->loadResult();
+
+		/*foreach($results as $notfn)
 		{
 			if($notfn->user_id==$log_user && $notfn->device_id==$reg_id)
 			{
@@ -142,11 +149,21 @@ class EasysocialApiResourceGcm extends ApiResource
 				$res->status=false;
 				return $res;
 			}
+		}*/
+		
+		if($ids_dev && $ids_dev == null )
+		{
+			$res->message = "Your device is already register to server.";
+			$res->status=false;
+			return $res;
 		}
+		else
+		{
+		
 		//Insert columns now.
-		$columns = array('device_id','user_id','created_on','type');
+		$columns = array('device_id','user_id','created_on','type','active');
 		//Insert values.
-		$values = array($db->quote($reg_id),$db->quote($user->id),$db->quote($currentdate),$db->quote($type));
+		$values = array($db->quote($reg_id),$db->quote($user->id),$db->quote($currentdate),$db->quote($type),1);
 		//Prepare the insert query.
 		$inserquery->insert($db->quoteName('#__acpush_users'))->columns($db->quoteName($columns))->values(implode(',', $values));
 //echo($inserquery);die("in api");
@@ -155,6 +172,7 @@ class EasysocialApiResourceGcm extends ApiResource
 		$res->message = "Your device is register to server.";
 		$res->status=$result;
 		return $res;
+		}
 	}
 	public function delete_notif()
 	{

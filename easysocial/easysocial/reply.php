@@ -64,6 +64,8 @@ class EasysocialApiResourceReply extends ApiResource
 		
 		$group_id = $mainframe->input->get('group_id',0,'INT');
 		$discussId = $mainframe->input->get('discussion_id',0,'INT');
+		$limit = $mainframe->input->get('limit',10,'INT');
+		$limitstart = $mainframe->input->get('limitstart',0,'INT');	
 		$wres = new stdClass;
 		$valid = 0;
 
@@ -97,7 +99,7 @@ class EasysocialApiResourceReply extends ApiResource
 				$options[ 'resolved' ]	= true;
 			}
 			
-			$options[ 'limit' ]	= $mainframe->input->get('limit',10,'INT');
+			//$options[ 'limit' ]	= $mainframe->input->get('limit',10,'INT');
 			
 			$options[ 'ordering' ] = 'created';
 			
@@ -116,8 +118,14 @@ class EasysocialApiResourceReply extends ApiResource
 				$data['discussion'] = $mapp->mapItem($data_node,'discussion',$this->plugin->get('user')->id);
 			}
 			
+			if($limitstart)
+			{
+				$reply_rows = array_slice($reply_rows,$limitstart,$limit);
+			}			
+						
 			$data['data'] = $mapp->mapItem($reply_rows,'reply',$this->plugin->get('user')->id);
-			
+					
+
 			//
 			return( $data );
 		}

@@ -40,6 +40,14 @@ class EasyblogApiResourceBlog extends ApiResource
 		$createTag = array();
 		$res = new stdClass;
 
+		//format date as per easyblog
+		$date = EB::date($data['created'], true);
+		$data['created'] = $date->toSQL(true);
+		
+		$date = EB::date($data['publish_up'], true);
+		$data['publish_up'] = $date->toSQL(true);
+		//
+
 		//to create revision and uid
 		$post = EB::post(NULL);
 		$post->create();

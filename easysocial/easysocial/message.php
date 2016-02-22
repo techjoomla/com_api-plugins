@@ -235,24 +235,24 @@ class EasysocialApiResourceMessage extends ApiResource
 		$conversion_id = $app->input->get('conversation_id',0,'INT');
 		$valid = 1;
 		$result = new stdClass;
-	
+
 		if( !$conversion_id )
 		{
 			
 			$result->status = 0;
 			$result->message = JText::_( 'PLG_API_EASYSOCIAL_INVALID_CONVERSATION_MESSAGE' );
 			$valid = 0;
+
 		}
-		
-		if($valid)
+		else
 		{
 			// Try to delete the group
 			$conv_model = FD::model('Conversations');
 			//$my 	= FD::user($this->plugin->get('user')->id);
 			$result->status = $conv_model->delete( $conversion_id , $this->plugin->get('user')->id );
-			$result->message = JText::_( 'PLG_API_EASYSOCIAL_INVALID_CONVERSATION_MESSAGE' );
+			$result->message = JText::_( 'PLG_API_EASYSOCIAL_CONVERSATION_DELETED_MESSAGE' );
 		}
-		
+	
 		$this->plugin->setResponse($result);
 	}
 	//function use for get friends data

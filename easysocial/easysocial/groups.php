@@ -121,7 +121,7 @@ class EasysocialApiResourceGroups extends ApiResource
 			}
 
 			//$groups = $this->baseGrpObj($groups);
-			if($limitstart)
+			if($limit)
 			{
 				$groups = array_slice($groups,$limitstart,$limit);	
 			}

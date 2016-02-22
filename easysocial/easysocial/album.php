@@ -146,6 +146,7 @@ class EasysocialApiResourceAlbum extends ApiResource
 		// Load the album
 		$album	= FD::table( 'Album' );
 		$album->load();
+		$res = new stdClass();
 		// Determine if this item is a new item
 		$isNew 	= true;			
 		if( $album->id )
@@ -157,7 +158,9 @@ class EasysocialApiResourceAlbum extends ApiResource
 		// Check if the person is allowed to create albums
 		if( $isNew && !$lib->canCreateAlbums() )
 		{
-			return false;
+			$res->success = 0;
+			$res->message = JText::_( 'COM_EASYSOCIAL_ALBUMS_ACCESS_NOT_ALLOWED' );
+			return $res;
 		}
 		// Set the album uid and type
 		$album->uid  = $uid;
@@ -166,7 +169,9 @@ class EasysocialApiResourceAlbum extends ApiResource
 		// Determine if the user has already exceeded the album creation
 		if( $isNew && $lib->exceededLimits() )
 		{	
-			return false;
+			$res->success = 0;
+			$res->message = JText::_( 'COM_EASYSOCIAL_ALBUMS_EXCEEDED' );
+			return $res;
 		}
 		// Set the album creation alias
 		$album->assigned_date 	= FD::date()->toMySQL();
@@ -182,8 +187,10 @@ class EasysocialApiResourceAlbum extends ApiResource
 		$state = $album->store();
 		// Throw error when there's an error saving album
 		if( !$state )
-		{			
-			return false;
+		{
+			$res->success = 0;
+			$res->message = JText::_( 'COM_EASYSOCIAL_ALBUMS_EXCEEDED' );
+			return $res;
 		}
 		$photo_obj = new EasySocialApiUploadHelper();
 		$photodata = $photo_obj->albumPhotoUpload($uid,$type,$album->id);				

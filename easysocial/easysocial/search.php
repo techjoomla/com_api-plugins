@@ -74,7 +74,7 @@ class EasysocialApiResourceSearch extends ApiResource
 
 		if(!empty($search))
 		{
-			$query->where("(u.username LIKE '%".$search."%' ) OR ( u.name LIKE '%".$search."%') OR ( u.email LIKE '%".$search."%')");
+			$query->where("(u.username LIKE '%".$search."%' ) OR ( u.name LIKE '%".$search."%')");
 		}
 		
 		$query->order($db->quoteName('u.id') .'ASC');

@@ -42,22 +42,25 @@ class EasyblogApiResourceTags extends ApiResource
 		$input = JFactory::getApplication()->input;
 		$keyword = $input->get('title','', 'STRING');
 		//check EB config for this
-		$wordSearch = true;          
+		$wordSearch = true;
+
+		$res = new stdClass;
 
 		$Tagmodel = EasyBlogHelper::getModel( 'Tags' );
 		//$allTags = $Tagmodel->getTagCloud();
-
+		$res->count = $Tagmodel->getTotalTags();	
 		if(!empty($keyword))
 		{
 			$allTags = $Tagmodel->search($keyword,$wordSearch);
 		}
 		else
 		{
-			$allTags = $Tagmodel->getTagCloud('', $order='title', $sort='asc', $checkAccess = true);
+			$allTags = $Tagmodel->getTagCloud('', $order='title', $sort='asc', $checkAccess = false);
 		}
 
 		$allTags = array_slice($allTags, $limitstart, $limit);
-		
+		//if need count uncomment this
+		//$res->data = $allTags; 		
 		return $allTags;	
 	}
 	

@@ -160,11 +160,14 @@ class EasysocialApiResourceShare extends ApiResource
 				//
 				//$pos = strpos(($content),'#',$start);
 				
+				$has_hash = "#";
+				
 				$cont_arr = explode(' ',$content);
 				$indx= 0;
 				foreach($cont_arr as $val)
 				{
-					if(preg_match('/[\'^#,|=_+¬-]/', $val))
+					//if(preg_match('/[\'^#,|=_+¬-]/', $val))
+					if(strpbrk($val, $has_hash))	
 					{
 						//$vsl = substr_count($val,'#');
 						$val_arr = array_filter(explode('#',$val));
@@ -182,7 +185,7 @@ class EasysocialApiResourceShare extends ApiResource
 						} 
 					}
 				}
-//print_r( $mentions );die("in share api");
+
 			}
 
 			$contextIds = 0;

@@ -59,6 +59,8 @@ class EasysocialApiResourceEvent extends ApiResource
 		$ev_data = array();
 		$result = new stdClass;
 		$valid = 1;
+		$mapp = new EasySocialApiMappingHelper();
+		
 
 		$post['title']  = $app->input->post->get('title',null,'STRING');
 		$post['parmalink']  = $app->input->post->get('parmalink',null,'STRING');
@@ -67,7 +69,8 @@ class EasysocialApiResourceEvent extends ApiResource
 		$post['startDatetime']  = $app->input->post->get('startDatetime','','string');
 		$post['endDatetime']  = $app->input->post->get('endDatetime','','string');
 		$post['event_allday']  = $app->input->post->get('event_allday',0,'INT');
-		$post['repeat']  = $app->input->post->get('repeat',array('type'=>'none','end'=>null),'ARRAY');
+		$post['repeat']  = $app->input->post->get('repeat',null,'RAW');
+		//$post['repeat']  = $app->input->post->get('repeat',array('type'=>'none','end'=>null),'ARRAY');
 		$post['website']  = $app->input->post->get('website',0,'INT');
 		$post['allowmaybe']  = $app->input->post->get('allowmaybe',0,'INT');
 		$post['allownotgoingguest']  = $app->input->post->get('allownotgoingguest',0,'INT');
@@ -84,15 +87,15 @@ class EasysocialApiResourceEvent extends ApiResource
 		$config = JFactory::getConfig();
 		$date->setTimezone(new DateTimeZone($config->get('offset')));
 		$post['startDatetime'] =  $date->format('Y-m-d H:i:s a');*/
-		//format date as per server
-		$post['startDatetime'] = $this->getOffsetServer($post['startDatetime']);
 		
-		if(!empty($post['endDatetime']))
+		//format date as per server
+		/*$post['startDatetime'] = $mapp->getOffsetServer($post['startDatetime'],$log_user->id);
+
+		if((!empty($post['endDatetime'])) && ($post['endDatetime'] != null) && ($post['endDatetime'] != 'null') )
 		{
-			$post['endDatetime'] = $this->getOffsetServer($post['endDatetime']);
-		}
-//print_r($post['endDatetime']);die("in api");
-//var_dump($post);die("in event api");
+			$post['endDatetime'] = $mapp->getOffsetServer($post['endDatetime'],$log_user->id);
+		}*/
+
 		$category = FD::table('EventCategory');
 		$category->load($categoryId);
 
@@ -168,9 +171,10 @@ class EasysocialApiResourceEvent extends ApiResource
         //$post  = JRequest::get('POST');
         $token = FD::token();
         $json  = FD::json();
-		
+  		
 		$data = $this->createData($customFields,$post);
-		//add post data in registry
+
+	//add post data in registry
 
         foreach ($data as $key => $value) {
             if ($key == $token) {
@@ -271,13 +275,13 @@ class EasysocialApiResourceEvent extends ApiResource
        return $result;
 	}
 	
-	public function getOffsetServer($date)
+	/*public function getOffsetServer($date)
 	{
 		$date = new DateTime($date);
 		$config = JFactory::getConfig();
 		$date->setTimezone(new DateTimeZone($config->get('offset')));
 		return $date =  $date->format('Y-m-d H:i:s a');
-	}
+	}*/
 	
 	public function createData($field_ids, $post)
 	{
@@ -356,7 +360,8 @@ class EasysocialApiResourceEvent extends ApiResource
 					case 'ADDRESS':	$ev_data['es-fields-'.$field->id] = $post['location'];
 									unset($post['location']);
 									break;
-					case 'RECURRING':	$ev_data['es-fields-'.$field->id] = $post['repeat'];
+					case 'RECURRING':$post['repeat'] = (array)json_decode($post['repeat']);	
+							$ev_data['es-fields-'.$field->id] = $post['repeat'];
 									unset($post['repeat']);
 									break;
 					case 'AVATAR':	$ev_data['es-fields-'.$field->id] = Array

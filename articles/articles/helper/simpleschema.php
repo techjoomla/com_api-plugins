@@ -13,21 +13,27 @@ require_once JPATH_SITE.'/plugins/api/articles/articles/blogs/blog/post.php';
 require_once JPATH_SITE.'/plugins/api/articles/articles/blogs/category.php';
 require_once JPATH_SITE.'/plugins/api/articles/articles/helper/contenthelper.php';
 
+//for world merit development
+//require_once JPATH_SITE.'/components/com_content/models/media.php';
+
 class BlogappSimpleSchema 
 {
-		public function mapPost($blog, $strip_tags='', $text_length=0, $skip=array())
+	public function mapPost($blog, $strip_tags='', $text_length=0, $skip=array())
 	{
 
 		$creator = JFactory::getUser( $blog->created_by );
 		
 		$item = new PostSimpleSchema;
-
-		$item->textplain = $blog->fulltext;
-		
+	
 		$item->postid = $blog->id;
 		$item->title = $blog->title;
 		$item->introtext = $this->sanitize($blog->introtext);
 
+		if(!isset($blog->fulltext))
+		{
+			$blog->fulltext = '';
+		}
+		$item->textplain = $blog->fulltext;
 		$item->text = $this->sanitize($blog->fulltext);
 		
 		if(empty($item->text))
@@ -43,21 +49,29 @@ class BlogappSimpleSchema
 		$img_obj = json_decode($blog->images);
 		if(isset($img_obj->image_intro))
 		{
-			$item->image->intro_url = (string)JURI::root().$img_obj->image_intro;
-			$item->image->full_image_url = JURI::root().$img_obj->image_fulltext;
+			$item->image = (string)JURI::root().$img_obj->image_intro;
+			//$item->image->full_image_url = JURI::root().$img_obj->image_fulltext;
 		}
 		else
 		{
-			$item->image->intro_url = null;
-			$item->image->full_image_url = null;
+			//get media from custom component
+			$media_obj = new TZ_PortfolioModelMedia();
+			$med = $media_obj->getMedia($blog->id);
+
+			//$item->image->url = (string)JURI::root().$med[count($med) - count($med)]->images;
+			//$item->image->full_image_url = (string)JURI::root().$med[count($med) - count($med)]->images;
+			$item->image = JURI::root().str_replace('.'.JFile::getExt($med[0] -> images),'_'
+                                          .'S'.'.'.JFile::getExt($med[0] -> images),$med[0] -> images);
+			/*$item->image->full_image_url = JURI::root().str_replace('.'.JFile::getExt($med[0] -> images),'_'
+                                          .'L'.'.'.JFile::getExt($med[0] -> images),$med[0] -> images);*/
 		}
 		$item->created_date = JHTML::_('date', $blog->created, JText::_('DATE_FORMAT_LC2'));
 
 		$item->author->name = $creator->username;
 		$item->author->photo = null;
 		
-		$item->category->categoryid = $blog->catid;
-		$item->category->title = $blog->category_title;
+		$item->categoryid = $blog->catid;
+		$item->category = $blog->category_title;
 		
 		$item->url = JURI::root() . trim('index.php?option=com_content&view=article&id=' . $item->postid .':'.$blog->alias );
 		
@@ -67,15 +81,22 @@ class BlogappSimpleSchema
 		
 		if(strpos($item->text,'src="data:image') == false)
 		{	
-		
+			
+			if (strpos($item->text,'href="index'))
+			{
+				$item->introtext = str_replace('href="index','href="'.JURI::root().'index',$item->introtext);
+			    $item->text = str_replace('href="index','href="'.JURI::root().'index',$item->text);
+				//$item->text = str_replace('src="','src="'.JURI::root(),$item->text);	
+			}
+			
 			if (strpos($item->text,'href="images'))
 			{
 				$item->introtext = str_replace('href="images','href="'.JURI::root().'images',$item->introtext);
-			    	$item->text = str_replace('href="images','href="'.JURI::root().'images',$item->text);
+			    $item->text = str_replace('href="images','href="'.JURI::root().'images',$item->text);
 				//$item->text = str_replace('src="','src="'.JURI::root(),$item->text);	
 			}
 
-			if ( strpos($item->text,'src="images'))
+			if ( strpos($item->text,'src="images') || strpos($item->introtext,'src="images') )
 			{		    
 			    $item->introtext = str_replace('src="','src="'.JURI::root(),$item->introtext);
 				$item->text = str_replace('src="','src="'.JURI::root(),$item->text);	
@@ -93,8 +114,8 @@ class BlogappSimpleSchema
 				$item->text = str_replace('href="/','href="'.'http://',$item->text);	
 			}
 		}
-		
-		if(empty($item->image->url))
+		//code for set image to blog if it absent
+		/*if(empty($item->image->url))
 		{
 			$dom = new domDocument;
 			$dom->loadHTML($item->text);
@@ -109,7 +130,7 @@ class BlogappSimpleSchema
 					break;
 			}
 
-		}
+		}*/
 
 		return $item;
 	}
@@ -118,7 +139,7 @@ class BlogappSimpleSchema
 	{
 		$item = new CategorySimpleSchema();
 		
-		$item->categoryid = $cat->id;
+		$item->id = $cat->id;
 		$item->title = $cat->title;;
 		//$item->description = $this->sanitize($cat->introtext);
 		//$item->created_date = $cat->created;

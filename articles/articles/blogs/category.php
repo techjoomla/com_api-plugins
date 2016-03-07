@@ -2,7 +2,7 @@
 
 class CategorySimpleSchema {
 
-	public $categoryid;
+	public $id;
 	
 	public $title;
 	

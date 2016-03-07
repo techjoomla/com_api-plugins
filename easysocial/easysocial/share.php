@@ -47,9 +47,9 @@ class EasysocialApiResourceShare extends ApiResource
 
 		// Set the privacy for the album
 		//public,members,friends,only_me
-		$privacy = $app->input->get('privacy', 'public', 'default');
+		$privacy = $app->input->get('privacy', 'public', 'STRING');
 		//specific user id for sharing
-		$customPrivacy = $app->input->get('privacyCustom', '', 'string');
+		$customPrivacy = $app->input->get('privacyCustom', '', 'STRING');
 		
 		$log_usr = intval($this->plugin->get('user')->id);
 		//now take login user stream for target

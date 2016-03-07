@@ -19,7 +19,7 @@
     <config>
 		<fields name="params">
 			<fieldset name="basic">
-				<field
+<!--				<field
 					name="catid"
 					type="category"
 					extension="com_content"
@@ -31,6 +31,7 @@
 				>
 					<option value="">JOPTION_ALL_CATEGORIES</option>
 				</field>
+-->
 
 				<field
 					name="count"
@@ -38,7 +39,21 @@
 					default="5"
 					label="Count"
 					description="Number of article show in api" />
-
+				
+				<field
+					name="take_action"
+					type="text"
+					default="132"
+					label="Take action menu id"
+					description="This menu id use for fetch categories assign to this menu" />
+					
+				<field
+					name="opportunities"
+					type="text"
+					default="357"
+					label="Opportunites menu id"
+					description="This menu id use for fetch categories assign to this menu" />
+<!--
 				<field
 					name="show_featured"
 					type="list"
@@ -76,6 +91,7 @@
 					<option value="by_me">Added or modified by me</option>
 					<option value="not_me">Not added or modified by me</option>
 				</field>
+-->
 			</fieldset>
 		<!--
 			<fieldset name="advanced">

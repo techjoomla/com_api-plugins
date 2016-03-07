@@ -20,10 +20,16 @@ jimport( 'joomla.database.table.user' );
 use Joomla\Registry\Registry;
 
 require_once JPATH_SITE .'/components/com_content/models/article.php';
-//require_once JPATH_SITE .'/components/com_content/models/categories.php';
+require_once JPATH_SITE .'/components/com_content/models/category.php';
+require_once JPATH_SITE .'/components/com_tz_portfolio/models/category.php';
 require_once JPATH_ADMINISTRATOR .'/components/com_categories/models/categories.php';
+require_once JPATH_ADMINISTRATOR .'/components/com_tz_portfolio/models/categories.php';
 require_once JPATH_SITE .'/libraries/legacy/model/list.php';
+require_once JPATH_SITE .'/libraries/cms/menu/menu.php';
 require_once JPATH_SITE .'/components/com_content/helpers/query.php';
+
+JModelLegacy::addIncludePath(JPATH_SITE . '/components/com_tz_portfolio/models', 'TZ_PortfolioModel');
+
 
 class ArticlesApiResourceCategory extends ApiResource
 {
@@ -35,27 +41,70 @@ class ArticlesApiResourceCategory extends ApiResource
 		$catid		= $app->input->get('id', 0, 'INT');
 		$limitstart	= $app->input->get('limitstart', 0, 'INT');
 		$limit	= $app->input->get('limit', 10, 'INT');
+		$menu_id	= $app->input->get('menu_id', 0, 'INT');
+		$mcats = array();
+		//get category by custom menu
+		if($menu_id)
+		{
+			$menu      = $app->getMenu('site');
+			$val = $menu->getItem($menu_id);
+			$menu_cat = json_decode($val->params)->tz_catid;
+			$db = JFactory::getDbo();
 		
-		$cat_obj = new CategoriesModelCategories();
+			foreach($menu_cat as $ky => $cid )
+			{
+				/*if($ky != 0)
+				{			
+					$db->setQuery("SELECT * FROM #__categories cat WHERE cat.id='$cid'");
+					$mcats[] = $db->loadObject();
+				}*/
+				$db->setQuery("SELECT * FROM #__categories cat WHERE cat.published = 1 AND cat.id='$cid'");
+					$mcats[] = $db->loadObject();
+				
+			}
+	
+		}
+		//$cat_obj = new CategoriesModelCategories();
+		$cat_obj = new TZ_PortfolioModelCategories();
 		$jlist = new JModelList();
-		
+
 		$config = JFactory::getConfig();
 		$old_limit = $config->get('list_limit');
         $config->set('list_limit', 0);
 		
 		//$jlist->setState('list.start', 0);
 		//$jlist->setState('list.limit', 10);
-//print_r($config);die("in api");
-		$rows = $cat_obj->getItems();
 
 		$items = array();
-		
 		//format data
 		$obj = new BlogappSimpleSchema();
-
-		foreach( $rows as $row )
+		
+		if($catid)
 		{
-			$items[] = $obj->mapCategory($row);
+			$rows = $this->getCatArticle($catid,$limit,$limitstart);
+			
+			if($rows != null)
+			{
+				foreach( $rows as $row )
+				{
+					$items[] = $obj->mapPost($row,'', 100, array());
+				}
+			}
+		}
+		else
+		{
+			if(empty($mcats))
+			{
+				$rows = $cat_obj->getItems();
+			}
+			else
+			{
+				$rows = $mcats;
+			}
+			foreach( $rows as $row )
+			{
+				$items[] = $obj->mapCategory($row);
+			}
 		}
 		
 		$config->set('list_limit', $old_limit);
@@ -65,103 +114,47 @@ class ArticlesApiResourceCategory extends ApiResource
 		$this->plugin->setResponse($items);
 	}
 	
+	//get catgory article
+	public function getCatArticle($catid,$limit,$limitstart)
+	{
+		//init variable
+		$app = JFactory::getApplication();
+		// Get the dbo
+		$db = JFactory::getDbo();
+		//get data
+		$catid		= $app->input->get('id', 0, 'INT');
+		$featured		= $app->input->get('featured', 0, 'INT');
+		$direction		= $app->input->get('direction', 'ASC', 'STRING');
+		
+		//$cat_obj = new ContentModelCategory();
+		//$cat_obj = new TZ_PortfolioModelCategory();
+
+		$model = JModelLegacy::getInstance('Articles', 'TZ_PortfolioModel', array('ignore_request' => true));
+
+		$model->setState('params', JFactory::getApplication()->getParams());
+		$model->setState('filter.category_id', $catid);
+		$model->setState('filter.published', 1);
+		
+		$model->setState('filter.featured', $featured);
+		//$model->setState('list.ordering', $cat_obj->_buildContentOrderBy());
+		$model->setState('list.start', $limitstart);
+		$model->setState('list.limit', $limit);
+		$model->setState('list.direction', $direction);
+		//$model->setState('list.filter', $this->getState('list.filter'));
+
+		// Filter.subcategories indicates whether to include articles from subcategories in the list or blog
+		$model->setState('filter.subcategories', 1);
+		$model->setState('filter.max_category_levels', 3);
+		//$model->setState('list.links', $this->getState('list.links'));
+		
+		$data = $model->getItems();
+
+		return $data;
+	}
+	
 	public function post()
 	{  
 		$this->plugin->setResponse("use post method");
-		//~ 
-		//~ $error_messages         = array();
-		//~ $fieldname		= array();
-		//~ $response               = NULL;
-		//~ $validated              = true;
-		//~ $userid = NULL;
-		//~ $data	= JRequest::get('post');
-		//~ //for rest api only
-		//~ unset($data['format']);
-		//~ unset($data['resource']);
-		//~ unset($data['app']);
-		//~ unset($data['key']);
-		//~ //assign userid to update
-		//~ $userid = $data['id'];
-		//~ //chk data
-		//~ if($data['email']=="" ) 
-		//~ {
-			//~ $validated  = false;
-			//~ $error_messages[] = array("id"=>1,"fieldname"=>"email","message"=>"Email cannot be blank");  
-		//~ } elseif( false == $this->isValidEmail( $data['email'] ) ) {
-			//~ $validated  = false;
-		  //~ $error_messages[] = array("id"=>1,"fieldname"=>"email","message"=>"Please set valid email id eg.(example@gmail.com). Check 'email' field in request");
-	//~ 
-		//~ }
-	        //~ 
-		//~ if( $data['password']=="" ) 
-		//~ {
-			//~ $validated  = false;
-			//~ $error_messages[] = array("id"=>1,"fieldname"=>"password","message"=>"Password cannot be blank");
-		//~ }
-	        //~ 
-		//~ if( $data['name']=="" or $data['username']=="" ) 
-		//~ {
-			//~ $validated  = false;
-			//~ $error_messages[] = array("id"=>1,"fieldname"=>"name","message"=>"Name cannot be blank");
-		//~ }	        
-	//~ 
-		//~ if( true == $validated)
-		//~ {	
-			//~ //to update user for joomla
-			//~ global $message;
-			//~ jimport('joomla.user.helper');
-			//~ $authorize 	= & JFactory::getACL();
-			//~ $user 		= clone(JFactory::getUser());
-			//~ 
-			//~ $user->set('id', $data['id']);
-			//~ $user->set('username', $data['username']);
-			//~ $user->set('password', $data['password'] );
-			//~ $user->set('name', $data['name']);
-			//~ $user->set('email', $data['email']);
- //~ 
-			//~ // password encryption
-			//~ $salt  = JUserHelper::genRandomPassword(32); 
-			//~ $crypt = JUserHelper::getCryptedPassword($user->password, $salt);
-			//~ $user->password = "$crypt:$salt";
-			//~ 
-			//~ // true on success, false otherwise
-			//~ if(!$user->save()) 
-			//~ {
-				//~ $message="not created because of ".$user->getError();
-				//~ return false;
-			//~ }
-			//~ else
-			//~ {
-				//~ $message="username-".$user->username." is updated";
-		//~ 
-			//~ }	
-			//~ 
-			//~ if(isset($data['field']))
-		    //~ { 	
-			//~ $fields = $data['field'];
-		    //~ //to access model function
-		    //~ $profileModel =& CFactory::getModel('profile');
-	    	//~ //using update function
-			//~ foreach($fields as $id=>$value)
-			//~ {
-				//~ //to get fieldcode 
-				//~ $fieldcode = $profileModel->getFieldCode($id);
-				//~ $profileModel->updateUserData( $fieldcode , $userid , $value );
-			//~ 
-			//~ }
-			//~ 
-			//~ }
-			//~ $result = array('user id '=>$userid,'message'=>$message);
-			//~ $result =($userid) ? $result : $message; 
-		//~ 
-			//~ $this->plugin->setResponse($result);
-		//~ 
-		//~ }
-		//~ else
-		//~ {			
-			//~ $this->plugin->setResponse($error_messages);//print_r($error_messages);	die("validate mail2222"); 
-		//~ }
-		   
 	}
 	
 }

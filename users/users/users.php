@@ -524,19 +524,7 @@ class UsersApiResourceUsers extends ApiResource
 		}
 
 		// Send the registration email.
-		//return $return = JFactory::getMailer()->sendMail($data['mailfrom'], $data['fromname'], $base_dt['email'], $emailSubject, $emailBody);
-		// Send the registration email.
-		$ml_obj = JFactory::getMailer();		
-		$sender = array( 
-    				$data['mailfrom'],
-    				$data['fromname'] 
-				);
-		$ml_obj = JFactory::getMailer();
-		$ml_obj->addRecipient($base_dt['email']);
-		$ml_obj->setSubject($emailSubject);	
-		$ml_obj->setBody($emailBody);
-
-		return $return = $ml_obj->send();
+		return $return = JFactory::getMailer()->sendMail($data['mailfrom'], $data['fromname'], $base_dt['email'], $emailSubject, $emailBody);
 		
 	}
 }

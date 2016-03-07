@@ -54,20 +54,25 @@ class EasysocialApiResourceAlbum extends ApiResource
 	{		
 		$user = JFactory::getUser($this->plugin->get('user')->id);
 		$app = JFactory::getApplication();
-		$id = $app->input->get('id',0,'INT');		       
+		$id = $app->input->get('id',0,'INT');
+		$res = new stdClass();	       
         // Load the photo table
         $photo  = FD::table( 'Photo' );
         $photo->load( $id );		
-		$lib = FD::photo( $photo->uid , $photo->type , $photo );		
+	$lib = FD::photo( $photo->uid , $photo->type , $photo );		
         if( !$id && !$photo->id )
         {
-            return false;
+		$res->state = false;
+		$res->message = JText::_( 'COM_EASYSOCIAL_PHOTOS_INVALID_ID_PROVIDED' );	
+            	return $res;
         }
         // Load the photo library
         // Test if the user is allowed to delete the photo
         if( !$lib->deleteable() )
         {
-            return false;
+            $res->state = false;
+	    $res->message = JText::_( 'COM_EASYSOCIAL_PHOTOS_NO_PERMISSION_TO_DELETE_PHOTO' );	
+            return $res;
         }
         // Try to delete the photo
         $state      = $photo->delete();
@@ -95,6 +100,7 @@ class EasysocialApiResourceAlbum extends ApiResource
 		$mydata['uid']=$uid;
 		$mydata['start']=$limitstart;
 		$mydata['limit']=$limit;	
+
 		
 		$ob = new EasySocialModelPhotos();		
 		$photos = $ob->getPhotos($mydata);				
@@ -103,10 +109,15 @@ class EasysocialApiResourceAlbum extends ApiResource
 		foreach($photos as $pnode )
 		{		 
          $photo->load($pnode->id);
+
+	$pht_lib = FD::photo($pnode->id,'event',$album_id);
+
+	 $photo->cluser_user = $pht_lib->creator()->id;	
          $pnode->image_large = $photo->getSource('large');
          $pnode->image_square = $photo->getSource('square');
          $pnode->image_thumbnail = $photo->getSource('thumbnail');
          $pnode->image_featured = $photo->getSource('featured');		
+
 		}
 		//mapping function
 		$all_photos = $mapp->mapItem($photos,'photos',$log_user);		

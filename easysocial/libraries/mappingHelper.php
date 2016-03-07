@@ -97,8 +97,10 @@ class EasySocialApiMappingHelper
 		{
 			if(isset($row->id))
 			{					
-				$item = new PhotosSimpleSchema();	
-				$item->isowner= ($row->uid == $userid)?true:false;			
+				$item = new PhotosSimpleSchema();
+				$pht_lib = FD::photo($row->id,$row->type,$row->album_id);
+				$item->isowner= ( $pht_lib->creator()->id == $userid )?true:false;
+
 				$item->id = $row->id;
 				$item->album_id = $row->album_id;
 				$item->cover_id = $row->cover_id;
@@ -266,7 +268,8 @@ class EasySocialApiMappingHelper
 				$item->title = $row->title;
 				if($row->type != 'links')
 				{
-					$item->title = str_replace('href="','href="'.JURI::root(),$item->title);
+					$item->title = str_replace('href="/index','href="'.JURI::root().'index',$item->title);
+					//$row->content = str_replace('href="index','href="'.JURI::root().'index',$row->content);
 				}
 
 				if($row->type == 'polls')
@@ -278,7 +281,7 @@ class EasySocialApiMappingHelper
 				$item->group = $row->cluster_type;
 				$item->element_id = $row->contextId;
 				//
-				$item->content = $row->content;
+				$item->content = urldecode(str_replace('href="/index','href="'.JURI::root().'index',$row->content));
 				
 				//$item->preview = $row->preview;
 				

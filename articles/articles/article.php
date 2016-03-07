@@ -21,18 +21,11 @@ jimport( 'joomla.media.foundry' );
 
 use Joomla\Registry\Registry;
 
-//require_once JPATH_SITE.'/plugins/api/articles/articles/helper/contenthelper.php';
-
 require_once JPATH_SITE .'/components/com_content/models/articles.php';
 require_once JPATH_SITE .'/components/com_content/models/article.php';
 require_once JPATH_SITE .'/libraries/joomla/document/html/html.php';
 require_once JPATH_SITE .'/libraries/cms/plugin/plugin.php';
 require_once JPATH_SITE .'/libraries/cms/plugin/helper.php';
-//require_once JPATH_SITE .'/components/com_content/models/categories.php';
-//require_once JPATH_ADMINISTRATOR .'/components/com_categories/models/categories.php';
-//require_once JPATH_SITE .'/libraries/legacy/model/list.php';
-//require_once JPATH_SITE .'/components/com_content/helpers/query.php';
-//require_once JPATH_SITE .'/libraries/joomla/document/document.php';
 
 class ArticlesApiResourceArticle extends ApiResource
 {
@@ -52,7 +45,7 @@ class ArticlesApiResourceArticle extends ApiResource
 		
 		$limitstart	= $app->input->get('limitstart', 0, 'INT');
 		$limit	= $app->input->get('limit', 0, 'INT');
-		
+
 		//range/relative - if range then startdate enddate mandetory 
 		$date_filtering	= $app->input->get('date_filtering', '', 'STRING');
 		$start_date = $app->input->get('start_date_range', '', 'STRING');
@@ -64,7 +57,7 @@ class ArticlesApiResourceArticle extends ApiResource
 		$art_obj = new ContentModelArticles();
 		
 		$art_obj->setState('list.direction', $listOrder);
-		
+
 		if($limit)
 		{
 			$art_obj->setState('list.start',$limitstart );
@@ -86,7 +79,7 @@ class ArticlesApiResourceArticle extends ApiResource
 		//filter by article
 		if($article_id)
 		$art_obj->setState('filter.article_id',$article_id );
-		
+
 		//filtering
 		if($date_filtering)
 		{
@@ -97,17 +90,17 @@ class ArticlesApiResourceArticle extends ApiResource
 				$art_obj->setState('filter.end_date_range',$end_date );
 			}
 		}
-		/*
+		
 		//get article data
-		if($article_id)
+		/*if($article_id)
 		{
 			$artcl = new ContentModelArticle();
 			$adetails = $artcl->getItem($article_id);
 			//$art_obj->setState('filter.article_id',$article_id );
 		}*/
-		
+
 		$rows = $art_obj->getItems();
-		
+
 		//test code
 		/*JPluginHelper::importPlugin( 'content' );
 		$dispatcher = JEventDispatcher::getInstance();
@@ -134,10 +127,10 @@ class ArticlesApiResourceArticle extends ApiResource
 			$dispatcher->trigger('onContentPrepare', array ('com_content.article', &$row, &$row->params, null));
 			*/
 			
-			$items[] = $obj->mapPost($row,'', 100, array());
+			$item = $obj->mapPost($row,'', 100, array());
 		}
-		
-		$this->plugin->setResponse($items);
+	
+		$this->plugin->setResponse($item);
 		
 	}
 	

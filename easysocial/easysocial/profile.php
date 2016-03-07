@@ -121,9 +121,19 @@ class EasysocialApiResourceProfile extends ApiResource
 				}
 				elseif(($fld->field_name == 'Birthday') && (!empty($fld->field_value)))
 				{    
-
-				       $dtchange= new DateTime($fld->field_value);
-                                       $fld->field_value=$dtchange->format('d M Y');					
+					
+					$dtchange= new DateTime($fld->field_value);
+					$fld->field_value=$dtchange->format('d M Y');
+					
+					/*if(checkdate($fld->field_value))
+					{		
+						$dtchange= new DateTime($fld->field_value);
+						$fld->field_value=$dtchange->format('d M Y');					
+					}
+					else
+					{
+						$fld->field_value = '';
+					}*/
 
 					/*$vals = json_decode($fld->field_value);
 		

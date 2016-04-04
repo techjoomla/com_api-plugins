@@ -49,7 +49,7 @@ class EasysocialApiResourceShare extends ApiResource
 		//public,members,friends,only_me
 		$privacy = $app->input->get('privacy', 'public', 'STRING');
 		//specific user id for sharing
-		$customPrivacy = $app->input->get('privacyCustom', '', 'STRING');
+		$customPrivacy = $app->input->get('privacyCustom', '', 'string');
 		
 		$log_usr = intval($this->plugin->get('user')->id);
 		//now take login user stream for target

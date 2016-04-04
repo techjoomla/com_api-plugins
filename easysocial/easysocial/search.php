@@ -49,7 +49,7 @@ class EasysocialApiResourceSearch extends ApiResource
 		}
 		
 		$mapp = new EasySocialApiMappingHelper();
-		
+
 		$res = new stdClass;
 		
 		if(empty($search))
@@ -70,6 +70,8 @@ class EasysocialApiResourceSearch extends ApiResource
 		$query->select($db->quoteName(array('su.user_id')));
 		$query->from($db->quoteName('#__social_users','su'));
 		$query->join('LEFT', $db->quoteName('#__users', 'u') . ' ON (' . $db->quoteName('su.user_id') . ' = ' . $db->quoteName('u.id') . ')');
+		//$query->where("su.user_id NOT IN( SELECT bu.user_id FROM #__social_block_users AS bu)");
+
 		//->where(($db->quoteName('u.username') . ' LIKE '. $db->quote('\'% '.$search.'%\'') ).'OR' .( $db->quoteName('u.name') . ' LIKE '. $db->quote('\'%'.$search.'%\'') ).'OR'.( $db->quoteName('u.email') . ' LIKE '. $db->quote('\'%'.$search.'%\'')))
 
 		if(!empty($search))
@@ -81,11 +83,16 @@ class EasysocialApiResourceSearch extends ApiResource
 
 		$db->setQuery($query);
 		$tdata = $db->loadObjectList();
-
+		$block_model = FD::model('Blocks');	
 		$susers = array();
 		foreach($tdata as $ky=>$val)
-		{		
-			$susers[]   = FD::user($val->user_id);
+		{
+	
+			$block = $block_model->isBlocked($val->user_id,$userid);
+			if(!$block)
+			{		
+				$susers[]   = FD::user($val->user_id);				
+			}
 		}
 				
 		//manual pagination code

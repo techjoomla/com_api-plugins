@@ -39,37 +39,19 @@ class EasysocialApiResourceGcm extends ApiResource
 		//DB Create steps
 		$db = FD::db();
 		
-		$state = $this->tnotify($log_user, $dev_id, $nval);
-		
-		/*$query = "SHOW COLUMNS FROM #__social_gcm_users LIKE 'type'";
-		$db->setQuery($query);
-		$db->query();
-		$rows = $db->loadObjectList();
-		
-		if(count($rows))
+		/*if( $reg_id == "null" || $reg_id == null )
 		{
-			$state = $this->tnotify($log_user, $dev_id, $nval);
+			$result->message = JText::_( 'PLG_API_EASYSOCIAL_NO_DEVICE_ID' );
+			$result->success = $state;
 		}
 		else
-		{
-			$query_a = "ALTER TABLE #__social_gcm_users ADD type text";
-			$db->setQuery($query_a);
-			$val = $db->query();
-			
-			if($val)
-			{
-				$state = $this->tnotify($log_user, $dev_id, $nval);
-			}
-			else
-			{
-				$result->success = 0;
-				$result->message = 'old package, please update api package';
-				return $result;
-			}
-		}*/
-		
+		{*/
+
+		$state = $this->tnotify($log_user, $dev_id, $nval);
 		$result->success= $state;
-		$result->message = ( $state && $nval )?'Notification on':'Notification off';
+		$result->message = ( $state && $nval )?JText::_( 'PLG_API_EASYSOCIAL_NOTIFICATION_ON' ):JText::_( 'PLG_API_EASYSOCIAL_NOTIFICATION_OFF' );
+
+		//}	
 		
 		return $result;
 	}
@@ -84,7 +66,7 @@ class EasysocialApiResourceGcm extends ApiResource
 		$db->query();
 		$id = $db->loadResult();
 		
-		$query_a = "UPDATE #__acpush_users SET active = '".$val."' WHERE id = ".$id;
+		$query_a = "UPDATE #__acpush_users SET active = '".$val." WHERE id = '".$id;
 
 		$db->setQuery($query_a);
 		return $val = $db->query();
@@ -97,11 +79,18 @@ class EasysocialApiResourceGcm extends ApiResource
 		$log_user = $this->plugin->get('user')->id;
 		$user=FD::user($log_user);
 		$reg_id = $app->input->get('device_id','','STRING');
-		//$sender_id = $app->input->get('sender_id','','STRING');
-		//$server_key = $app->input->get('server_key','','STRING');
-		//$bundle_id = $app->input->get('bundle_id','','STRING');
+
 		$type = $app->input->get('type','','STRING');
 		$res = new stdClass;
+			
+		//not allow empty device id for registration
+		if( $reg_id == "null" || $reg_id == null )
+		{
+			$res->message = JText::_( 'PLG_API_EASYSOCIAL_NO_DEVICE_ID' );
+			$res->status=false;
+			return $res;
+
+		}
 		
 		//DB Create steps
 		$db = FD::db();
@@ -111,28 +100,9 @@ class EasysocialApiResourceGcm extends ApiResource
 		//Get date.
 		$now = new DateTime();
 		$currentdate=$now->format('Y-m-d H:i:s'); 
-		
-		/*$query = "CREATE TABLE IF NOT EXISTS `#__social_gcm_users` (
-		`id` int(10) NOT NULL AUTO_INCREMENT,
-		`device_id` text NOT NULL,
-		`bundle_id` text NOT NULL,
-		`sender_id` text NOT NULL,
-		`server_key` text NOT NULL,
-		`type` text NOT NULL,
-		`user_id` int(20) NOT NULL, 
-		`send_notify` int(20) DEFAULT 1, 
-		`created_date` datetime, 
-		PRIMARY KEY (`id`)
-		) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1";		
-		$db->setQuery($query);
-		$db->query();
-		*/
-		
+				
 		//Getting database values to check current user is login again or he change his device then only adding device to database
 		$checkval = $db->getQuery(true);
-		/*$checkval->select($db->quoteName(array('device_id','user_id','type')));
-		$checkval->from($db->quoteName('#__acpush_users'));*/
-
 		$checkval->select($db->quoteName('id'));
 		$checkval->from($db->quoteName('#__acpush_users'));
 		$checkval->where("device_id LIKE '%".$reg_id."%' AND type = "."'".$type."'");
@@ -153,7 +123,7 @@ class EasysocialApiResourceGcm extends ApiResource
 		
 		if($ids_dev && $ids_dev == null )
 		{
-			$res->message = "Your device is already register to server.";
+			$res->message = JText::_( 'PLG_API_EASYSOCIAL_DEVICE_ALREADY_REGISTERED_MESSAGE' );
 			$res->status=false;
 			return $res;
 		}
@@ -166,10 +136,10 @@ class EasysocialApiResourceGcm extends ApiResource
 		$values = array($db->quote($reg_id),$db->quote($user->id),$db->quote($currentdate),$db->quote($type),1);
 		//Prepare the insert query.
 		$inserquery->insert($db->quoteName('#__acpush_users'))->columns($db->quoteName($columns))->values(implode(',', $values));
-//echo($inserquery);die("in api");
+
 		$db->setQuery( $inserquery );
 		$result = $db->query();
-		$res->message = "Your device is register to server.";
+		$res->message = JText::_( 'PLG_API_EASYSOCIAL_DEVICE_REGISTER_MESSAGE' );
 		$res->status=$result;
 		return $res;
 		}
@@ -187,10 +157,11 @@ class EasysocialApiResourceGcm extends ApiResource
 		$query->delete($db->quoteName('#__acpush_users'));
 		$query->where($conditions); 
 		$db->setQuery($query);
-		//~ echo $query;
-		//~ die();		 
+		 
 		$result = $db->execute();
 		return $result;
+		//return true;
 	}
 }
+
 

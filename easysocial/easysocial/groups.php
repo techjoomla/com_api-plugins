@@ -14,13 +14,14 @@ jimport('joomla.html.html');
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/foundry.php';
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/groups.php';
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/covers.php';
+require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/fields.php';
 
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/mappingHelper.php';
 
 class EasysocialApiResourceGroups extends ApiResource
 {
 	public function get()
-	{
+	{               
 		$this->plugin->setResponse($this->getGroups());
 	}
 

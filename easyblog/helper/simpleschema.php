@@ -52,10 +52,10 @@ class EasyBlogSimpleSchema_plg
 			$item->textplain = strip_tags($blog->text, $strip_tags);
 		}
 		
-		if ($text_length > 0) {
+		/*if ($text_length > 0) {
 			$pos = JString::strpos(strip_tags($item->textplain), ' ', false);
 			$item->textplain = JString::substr(strip_tags($blog->text), 0, $pos);
-		}
+		}*/
 	
 		//$image_data = json_decode($blog->image);
 

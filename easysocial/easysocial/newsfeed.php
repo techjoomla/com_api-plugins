@@ -32,7 +32,7 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 	function getStream()
 	{
 	//init variable
-	$app = JFactory::getApplication();
+	$app =  JFactory::getApplication();
 	//code for get non sef urls 
 	$jrouter = JFactory::getApplication()->getRouter();
 	$jrouter->setMode(JROUTER_MODE_RAW);
@@ -119,10 +119,13 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 
 		$stream->get($options);
 
-		$result 	= $stream->toArray();
-
+		$result = $stream->toArray();
+				
 		$data	= array();
-
+		if(!is_array($result))
+		{
+			return $data;
+		}
 		$data11 = $mapp->mapItem($result,'stream',$target_user);
 		//set back sef
 		$jrouter->setMode(JROUTER_MODE_SEF);

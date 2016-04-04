@@ -39,7 +39,7 @@ class EasysocialApiResourceGroup_members extends ApiResource
 		$mapp = new EasySocialApiMappingHelper();
 		$data = array();
 		//hari
-		$filter = $app->input->get('filter','going','STRING');		
+		$filter = $app->input->get('filter','admins','STRING');		
 	
 		if($limitstart)
 		{
@@ -54,7 +54,7 @@ class EasysocialApiResourceGroup_members extends ApiResource
 
 		if($type == 'group')
 		{		
-			$options = array( 'groupid' => $group_id );
+			/*$options = array( 'groupid' => $group_id );
 			$gruserob   = new EasySocialModelGroupMembers();
 
 			$gruserob->setState('limit',$limit);
@@ -64,36 +64,14 @@ class EasysocialApiResourceGroup_members extends ApiResource
 			foreach($data as $val ) 
 			{
 				$val->id = $val->uid; 
-			}
+			}*/
+		
+			$data = $this->getGroupMembers($group_id,$limit,$log_user,$mapp);
 		
 		}
 		else if( $type == 'event' )
 		{
-			//hari
-			//Get event guest with filter.
-			if(!empty($filter))
-			{			
-				switch($filter)
-				{
-					case 'going':
-									$options['state'] = SOCIAL_EVENT_GUEST_GOING;
-					break;
-					case 'notgoing':
-									$options['state'] = SOCIAL_EVENT_GUEST_NOT_GOING;
-					break;
-					case 'maybe': 
-									$options['state'] = SOCIAL_EVENT_GUEST_MAYBE;
-										
-					break;
-					case 'admins':
-									$options['admin'] = true;
-					break;
-				}
-				$options['users'] = true;
-				$eguest = FD::model('Events');	
-				$data = $eguest->getGuests($group_id,$options);
-			}
-
+			$data = $this->getEventMembers($group_id,$filter,$log_user,$mapp);
 		}
 		
 		if(empty($data))
@@ -103,10 +81,102 @@ class EasysocialApiResourceGroup_members extends ApiResource
                     $ret_arr->message = JText::_( 'PLG_API_EASYSOCIAL_MEMBER_NOT_FOUND_MESSAGE' );
                     return $ret_arr;
                 }		
+		
+		//manual pagination code
+		$user_list = array_slice( $data, $limitstart, $limit );
+
+		return $user_list;
+	}
+
+	//get events members
+        public function getEventMembers($group_id,$filter,$log_user,$mapp)
+	{
+	
+		//Get event guest with filter.
+		$grp_model = FD::model('Events');			
+		if(!empty($filter))
+		{	
+			$options['users'] = true;		
+			switch($filter)
+			{
+				case 'going':
+								$options['state'] = SOCIAL_EVENT_GUEST_GOING;
+				break;
+				case 'notgoing':
+								$options['state'] = SOCIAL_EVENT_GUEST_NOT_GOING;
+				break;
+				case 'maybe': 
+								$options['state'] = SOCIAL_EVENT_GUEST_MAYBE;
+									
+				break;
+				case 'pending': 
+								$options['state'] = SOCIAL_EVENT_GUEST_PENDING;
+								$options['users'] = true;	
+				break;
+				case 'admins':
+								$options['admin'] = true;
+				break;
+			}
+			
+			$eguest = FD::model('Events');	
+			$data = $eguest->getGuests($group_id,$options);
+				
+			$data = $mapp->mapItem( $data,'user',$log_user );			
+			
+			if($filter == 'pending')
+			{
+				$options['state'] = SOCIAL_EVENT_GUEST_PENDING;
+				$options['users'] = false;
+				$udata = $eguest->getGuests($group_id,$options);
+
+				foreach($udata as $usr )
+                                {
+					foreach($data as $dt )
+		                        {
+						if($usr->uid == $dt->id)
+						  {
+							$dt->request_id = $usr->id;
+							$dt->request_state = $usr->state;
+							$dt->isowner = $usr->isOwner();
+							$dt->isStrictlyAdmin = $usr->isStrictlyAdmin();
+							$dt->isGoing = $usr->isGoing();
+							$dt->isMaybe = $usr->isMaybe();
+							$dt->isNotGoing = $usr->isNotGoing();
+							$dt->isPending = $usr->isPending();
+	   					  }
+
+					
+					}
+					
+				}	
+    
+			}
+			
+			return $data;
+				
+
+		}
+
+	}
+
+	//get group members
+        public function getGroupMembers($group_id,$limit,$log_user,$mapp)
+	{
+		$grp_model = FD::model('Groups');
+		$options = array( 'groupid' => $group_id );
+		$gruserob   = new EasySocialModelGroupMembers();
+		
+		$gruserob->setState('limit',$limit);
+
+		$data = $gruserob->getItems($options);
+
+		foreach($data as $val ) 
+		{
+			$val->id = $val->uid; 
+		}
 
 		$user_list = $mapp->mapItem( $data,'user',$log_user );
-		
-		$grp_model = FD::model('Groups');
+
 		foreach($user_list as $user)
 		{
 			$user->isMember = $grp_model->isMember( $user->id,$group_id );
@@ -114,11 +184,11 @@ class EasysocialApiResourceGroup_members extends ApiResource
 			$user->isInvited = $grp_model->isInvited( $user->id,$group_id );
 			$user->isPendingMember = $grp_model->isPendingMember( $user->id,$group_id );
 		}
-		
-		//manual pagination code
-		$user_list = array_slice( $user_list, $limitstart, $limit );
+
 		return $user_list;
+
 	}
+
 	//join group by user
 	public function joineGroup()
 	{
@@ -144,16 +214,19 @@ class EasysocialApiResourceGroup_members extends ApiResource
 		if(!$group->isMember( $log_user ))
 		{
 		// Create a member record for the group
-		$members = $group->createMember($log_user);
-		
-		$obj->success = 1;
-		$obj->state = $members->state;
+            if($group->type == 3){
+		        $members = $group->createMember($log_user, true);
+            } else {  
+                  $members = $group->createMember($log_user);
+            }
+		    $obj->success = 1;
+		    $obj->state = $members->state;
 
 	       if($group->type == 1 && $obj->state == 1)
                {                        
                        $obj->message = 'Welcome to the group, since this is an open group, you are automatically a member of the group now.';
                }
-		elseif($group->type == 3 && $obj->state == 3 )
+		elseif($group->type == 3 && $obj->state == 1 )
 		{
 			$obj->message = 'Great! Your joined group.';
 		}	

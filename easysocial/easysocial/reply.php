@@ -140,7 +140,7 @@ class EasysocialApiResourceReply extends ApiResource
 		// Load the discussion
 		$discuss_id 	= $mainframe->input->get('discussion_id',0,'INT');
 		$groupId 	= $mainframe->input->get('group_id',0,'INT');
-		$content 	= $mainframe->input->get('content','','STRING');
+		$content 	= $mainframe->input->get('content','','RAW');
 		
 		$wres = new stdClass;
 		

@@ -37,6 +37,8 @@ class EasysocialApiResourcePhotoadd extends ApiResource
 		$photo_obj = new EasySocialApiUploadHelper();
 		$addphoto= $photo_obj->addPhotoAlbum($userid,$album_id);				
 		$album->params=$addphoto;
+        $album->title =  JText::_($album->title);
+		$album->caption =  JText::_($album->caption);
 		return $album;		
 	}
 }

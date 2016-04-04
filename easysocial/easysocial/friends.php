@@ -36,17 +36,19 @@ class EasysocialApiResourceFriends extends ApiResource
 		$search = $app->input->get('search','','STRING');
 		$limit = $app->input->get('limit',10,'INT');
 		$limitstart = $app->input->get('limitstart',0,'INT');		
-		$options['limit']=$limit;
-		$options['limitstart']=$limitstart;
+		//$options['limit']=$limit;
+		//$options['limitstart']=$limitstart;
 		$mssg;
 		$mapp = new EasySocialApiMappingHelper();
 		
 		if($userid == 0)
 		$userid = $user->id;
+
+
 		
 		$frnd_mod = FD::model( 'Friends' );
 		$frnd_mod->setState('limit',$limit);
-		$frnd_mod->setState('limitstart',$limitstart);
+		//$frnd_mod->setState('limitstart',$limitstart);
 		
 		$ttl_list = array();
 		switch($filter)
@@ -71,7 +73,8 @@ class EasysocialApiResourceFriends extends ApiResource
 			case 'suggest': //getting suggested friends							
 							$sugg_list = $frnd_mod->getSuggestedFriends($userid);
 
-							$sugg_list = array_slice($sugg_list,$limitstart,$limit);
+
+							//$sugg_list = array_slice($sugg_list,$limitstart,$limit);
 							foreach($sugg_list as $sfnd)
 							{
 								$ttl_list[] = $sfnd->friend;
@@ -83,9 +86,10 @@ class EasysocialApiResourceFriends extends ApiResource
 							}
 							else
 							{
-								$flag=0;
+								$flag=1;
 								$mssg=JText::_( 'PLG_API_EASYSOCIAL_NO_SUGGESTIONS' );
 							}
+	
 
 
 			break;						
@@ -101,8 +105,7 @@ class EasysocialApiResourceFriends extends ApiResource
 			break;		
 		}		
 		// if search word present then search user as per term and given id
-
-		if(empty($search) && empty($ttl_list) && $flag!=1)
+		if(empty($search) && empty($ttl_list) && $flag!=1 )
 		{
 			$ttl_list = $frnd_mod->getFriends($userid,$options); 
 		}
@@ -110,16 +113,13 @@ class EasysocialApiResourceFriends extends ApiResource
 		{						
 			$ttl_list = $frnd_mod->search($userid,$search,'username');
 		}		
+	
 
-
-	if($frnd_mod->get('total')>$limitstart)
+	if(count($ttl_list)>'0')
 	{	
-
 	    $frnd_list['data'] = $mapp->mapItem( $ttl_list,'user',$userid);
 
 	    $frnd_list['data'] = $mapp->frnd_nodes( $frnd_list['data'],$user);
-
-
 	    
 	    $myoptions[ 'state' ]	= SOCIAL_FRIENDS_STATE_PENDING;
 	    $myoptions[ 'isRequest' ]	= true;		
@@ -132,7 +132,7 @@ class EasysocialApiResourceFriends extends ApiResource
 				$myarr[]= $row->id;
 			}
 	     }	 
-	   			
+   			
 	    //get other data
 	    foreach($frnd_list['data'] as $ky=>$lval)
 	    {	
@@ -167,28 +167,33 @@ class EasysocialApiResourceFriends extends ApiResource
 			//$lval->mutual = $frnd_mod->getMutualFriendCount($user->id,$lval->id);
 			//$lval->isFriend = $frnd_mod->isFriends($user->id,$lval->id);
 		}
+
 	}
 	else
 	{
 		$frnd_list['data'] = $ttl_list;
 	}	
+	
 		//if data is empty givin respective message and status.
-		if(empty($frnd_list['data']))
-		{				
-			$frnd_list['data']['message'] = $mssg;
-			//$frnd_list['data']['status'] = false;
-			$frnd_list['data_status'] = false;    
+		if(count($frnd_list['data']))
+		{	
+			//as per front developer requirement manage list
+			$frnd_list['data'] = array_slice($frnd_list['data'],$limitstart,$limit);
+                        $frnd_list['data_status'] = (count($frnd_list['data']))?true:false;			
+			   
 		}
 		else
 		{
-			//as per front developer requirement manage list
-			$frnd_list['data'] = array_slice($frnd_list['data'],$limitstart,$limit);
-                        $frnd_list['data_status'] = true;    
+			$frnd_list['data']['message'] = $mssg;
+			//$frnd_list['data']['status'] = false;
+			$frnd_list['data_status'] = false; 
+
 		}
 		//pending
 		 $frnd_list['status']['pending'] = $frnd_mod->getTotalPendingFriends( $userid );
-		 //all frined
-		 $frnd_list['status']['all'] = $frnd_mod->getTotalFriends( $userid , array( 'state' => SOCIAL_FRIENDS_STATE_FRIENDS ) );
+		 
+		//all frined
+		 $frnd_list['status']['all'] = $frnd_mod->getTotalFriends( $userid );
 			//suggested
 		 $frnd_list['status']['suggest'] = $frnd_mod->getSuggestedFriends( $userid, null, true );
 		 //request sent		 

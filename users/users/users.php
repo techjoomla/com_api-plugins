@@ -116,8 +116,6 @@ class UsersApiResourceUsers extends ApiResource
 		$date = JFactory::getDate();
 		$user->set('registerDate', $date->toSql());
 
-//print_r($_POST);die("in api after save");
-
 		// True on success, false otherwise
 		if (!$user->save())
 		{
@@ -524,7 +522,9 @@ class UsersApiResourceUsers extends ApiResource
 		}
 
 		// Send the registration email.
-		return $return = JFactory::getMailer()->sendMail($data['mailfrom'], $data['fromname'], $base_dt['email'], $emailSubject, $emailBody);
+		$return = JFactory::getMailer()->sendMail($data['mailfrom'], $data['fromname'], $base_dt['email'], $emailSubject, $emailBody);
+//print_r($return);die("in api");
+		return $return;
 		
 	}
 }

@@ -119,28 +119,7 @@ class EasysocialApiResourceProfile extends ApiResource
 				{
 					unset($field_arr[$ky]);
 				}
-				elseif(($fld->field_name == 'Birthday') && (!empty($fld->field_value)))
-				{    
-					
-					$dtchange= new DateTime($fld->field_value);
-					$fld->field_value=$dtchange->format('d M Y');
-					
-					/*if(checkdate($fld->field_value))
-					{		
-						$dtchange= new DateTime($fld->field_value);
-						$fld->field_value=$dtchange->format('d M Y');					
-					}
-					else
-					{
-						$fld->field_value = '';
-					}*/
-
-					/*$vals = json_decode($fld->field_value);
-		
-					$fld->field_value = implode('-',(array)$vals);	
-					
-					$fld->field_value=date('d M Y',strtotime($fld->field_value));*/
-				}				
+							
 			}
 			
 			$friendmodel = FD::model( 'Friends' );

@@ -16,6 +16,7 @@ require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/groups.php';
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/covers.php';
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/albums.php';
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/fields.php';
+require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/videos.php';
 
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/group.php';
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/message.php';
@@ -29,6 +30,7 @@ require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/albums.php';
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/photos.php';
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/createalbum.php';
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/events.php';
+require_once JPATH_SITE.'/plugins/api/easysocial/libraries/schema/videos.php';
 
 
 class EasySocialApiMappingHelper
@@ -81,8 +83,14 @@ class EasySocialApiMappingHelper
 						return $this->photosSchema($rows,$userid);
 						break;
 			case 'event':
-                                               return $this->eventsSchema($rows,$userid);                                                
-                                               break;
+                        return $this->eventsSchema($rows,$userid);                                                
+                        break;
+            case 'videos':
+                        return $this->videosSchema($rows,$userid);                                                
+                        break;
+            case 'polls':
+						return $this->pollsSchema($rows);                                                
+                        break;
 		}
 		
 		return $item;
@@ -95,12 +103,13 @@ class EasySocialApiMappingHelper
 		$result = array();		
 		foreach($rows as $ky=>$row)
 		{
+
 			if(isset($row->id))
 			{					
 				$item = new PhotosSimpleSchema();
 				$pht_lib = FD::photo($row->id,$row->type,$row->album_id);
-				$item->isowner= ( $pht_lib->creator()->id == $userid )?true:false;
-
+	
+				$item->isowner= ( $pht_lib->creator()->id == $userid )?true:false;			
 				$item->id = $row->id;
 				$item->album_id = $row->album_id;
 				$item->cover_id = $row->cover_id;
@@ -191,10 +200,16 @@ class EasySocialApiMappingHelper
 	//To build field object
 	public function fieldsSchema($rows,$userid)
 	{
+		if(empty($rows))
+		{
+		  return array();	
+		}
 		
 		$lang = JFactory::getLanguage();
 		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, '', true);
 		//$str = JText::_('COM_EASYSOCIAL_FIELDS_PROFILE_DEFAULT_DESIRED_USERNAME');
+		
+		$user = FD::user($userid);
 		
 		if(count($rows)>0)
 		{
@@ -213,10 +228,29 @@ class EasySocialApiMappingHelper
 				$fobj->step = $row->step_id;
 				$fobj->field_value = $fmod_obj->getCustomFieldsValue($row->id,$userid , SOCIAL_FIELDS_GROUP_USER);
 				
+				if($fobj->field_name == 'Name' &&  $fobj->field_value != null )
+				{
+					
+					$fobj->field_value = $user->name;
+
+ 					//$fobj->field_value = $gender->data;
+					//$fobj->field_value = ( $gender->data == 1 )?'male':'female';
+				}
 				
 				if($fobj->field_name == 'Gender' &&  $fobj->field_value != null )
 				{
-					$fobj->field_value = ( $fobj->field_value == 1 )?'male':'female';
+					
+					$gender = $user->getFieldValue('GENDER');
+ 					//$fobj->field_value = $gender->data;
+					$fobj->field_value = ( $gender->data == 1 )?'male':'female';
+				}
+				
+				if($fobj->field_name == 'Birthday')
+				{
+					$birthday = $user->getFieldValue('BIRTHDAY');
+					$date = new DateTime($birthday->data);	
+					$fobj->field_value = $date->format('d-m-Y');
+//print_r($birthday);die("in api");
 				}
 				
 				//to manage address as per site
@@ -251,7 +285,11 @@ class EasySocialApiMappingHelper
 	public function streamSchema($rows,$userid) 
 	{
 		$result = array();
-		
+		if(is_array($rows) && empty($rows))
+		{
+		  return $result;	
+		}		
+
 		foreach($rows as $ky=>$row)
 		{
 			if(isset($row->uid))
@@ -268,8 +306,7 @@ class EasySocialApiMappingHelper
 				$item->title = $row->title;
 				if($row->type != 'links')
 				{
-					$item->title = str_replace('href="/index','href="'.JURI::root().'index',$item->title);
-					//$row->content = str_replace('href="index','href="'.JURI::root().'index',$row->content);
+					$item->title = str_replace('href="','href="'.JURI::root(),$item->title);
 				}
 
 				if($row->type == 'polls')
@@ -406,7 +443,7 @@ class EasySocialApiMappingHelper
 				$item->comments = (!empty($row->comments->uid))?$this->createCommentsObj($row->comments):null;
 				
 				// These properties onwards are not activity stream specs
-				$item->icon = $row->fonticon;
+				//$item->icon = $row->fonticon;
 
 				// Set the lapsed time
 				$item->lapsed = $row->lapsed;
@@ -432,30 +469,7 @@ class EasySocialApiMappingHelper
 				$strm_urls = array();
 				
 				$strm_urls['actors'] = $user_url;
-				
-				/*switch( $row->type )
-				{
-					case 'discussions': $strm_urls['discussions'] = JURI::root().FRoute::apps( array('id' => $row->uid , 'layout' => 'canvas', 'sef' => false ));
-					//FRoute::apps( array( 'layout' => 'canvas' , 'customView' => 'item' , 'uid' => $group->getAlias() , 'type' => SOCIAL_TYPE_GROUP , 'id' => $this->getApp()->getAlias() , 'discussionId' => $discussion->id ) , false );
-									break;
-					case 'apps':	$strm_urls['apps'] = JURI::root().FRoute::apps( array('id' => $row->element_id , 'layout' => 'item', 'sef' => false ));
-									break;
-					case 'dashboard':	$strm_urls['dashboard'] = JURI::root().FRoute::dashboard( array('id' => $row->element_id , 'layout' => 'item', 'sef' => false ));
-									break;
-					case 'albums':	$strm_urls['album'] = JURI::root().FRoute::albums( array('id' => $row->element_id , 'layout' => 'item', 'sef' => false ));
-									break;
-					case 'photos':	$strm_urls['photos'] = JURI::root().FRoute::photos( array('id' => $row->element_id , 'layout' => 'item', 'sef' => false ));
-									break;
-					case 'groups':	$strm_urls['groups'] = JURI::root().FRoute::groups( array('id' => $row->element_id , 'layout' => 'item', 'sef' => false ));
-									break;
-					case 'links':	$lnk_arr = explode('shared', $item->title);
-									
-									preg_match_all('/href=\"(.*?)\"/i', $lnk_arr[1], $matches);
-									$strm_urls['links'] = $matches[1][0];
-									break;
-				}
-				
-				$item->strm_urls = $strm_urls; */
+								
 				$result[]	= $item;
 				//$result[]	= $row;
 				//end new
@@ -753,14 +767,21 @@ class EasySocialApiMappingHelper
 				$item->isRecurring=$eventobj->isRecurringEvent();                                
                                	$item->hasRecurring=$eventobj->hasRecurringEvents();				
 				
-				$event_owner=reset($row->admins);                               
-                		$item->owner = FD::user($event_owner)->username;
-                		//$item->owner=$user->username;
+				$event_owner = reset($row->admins);
+                             	if($event_owner)
+				{
+                		$item->owner = $this->createUserObj($event_owner)->username;
+				$item->owner_id = $event_owner;
+				}                		
+				//$item->owner=$user->username;
 				
 				$item->isMaybe=in_array($userid,$row->maybe);
 				$item->total_guest=$eventobj->getTotalGuests();
 				// this node is for past events
-                                $item->isoverevent=$eventobj->isOver();
+                $item->isoverevent=$eventobj->isOver();
+                if($item->end_date == null){
+					$item->isoverevent = false;
+				}
 				
 				$item->location=$row->address;
 				$item->longitude=$row->longitude;
@@ -776,6 +797,12 @@ class EasySocialApiMappingHelper
 				$eve->photo_id=$row->cover->photo_id;
 				$item->cover_image=$eve->getSource();
 				//end
+                $item->isInvited = false;
+                $event = FD::event($row->id);
+				$guest = $event->getGuest($userid);
+				if ($guest->invited_by) {	
+					$item->isInvited = true;
+				}
 				$result[] = $item;
 			}
 		}
@@ -799,6 +826,9 @@ class EasySocialApiMappingHelper
 
 		foreach($rows as $ky=>$row)
 		{
+			$fieldsModel = FD::table('FieldData');
+			$fieldsModel->load($row->id);
+
 			if(isset($row->id))
 			{
 				$grpobj = FD::group( $row->id );
@@ -810,8 +840,9 @@ class EasySocialApiMappingHelper
 				$item->description = $row->description;
 				$item->hits = $row->hits;
 				$item->state = $row->state;
+                $item->website = $fieldsModel->raw;
 				$item->created_date = $this->dateCreate($row->created);
-				
+                				
 				//get category name
 				$category 	= FD::table('GroupCategory');
 				$category->load($row->category_id);
@@ -876,11 +907,15 @@ class EasySocialApiMappingHelper
 		$user_obj->isself = ($userid == $other_user_id )?true:false;
 		$user_obj->cover = $other_user_obj->getCover();
 
+		$user_obj->isblocked_me = $log_user_obj->isBlockedBy($other_user_id);
+		$user_obj->isblockedby_me = $other_user_obj->isBlockedBy($userid);
+
 		if( $userid != $other_user_id )
 		{
 			$frnd_mod = FD::model( 'Friends' );
 			$trg_obj = FD::user( $other_user_id );
 			$user_obj->isfriend = $trg_obj->isFriends( $userid );
+
 			$user_obj->isfollower = $trg_obj->isFollowed( $userid );
 			$user_obj->approval_pending = $frnd_mod->isPendingFriends($userid,$other_user_id);
 
@@ -922,6 +957,10 @@ class EasySocialApiMappingHelper
 	public function userSchema($rows) 
 	{
 		$data = array();
+		if(empty($rows))
+			return $data;
+
+		
 		foreach($rows as $row)
 		{
 			$data[] = $this->createUserObj($row->id);
@@ -1037,8 +1076,12 @@ class EasySocialApiMappingHelper
 	
 	//create user object
 	public function createUserObj($id){
+
+		if($id)
+		{
 		
 		$user = FD::user($id);
+		
 		/*
 		$actor = new stdClass;
 		
@@ -1074,7 +1117,7 @@ class EasySocialApiMappingHelper
 		}
 
 		$actor->name = $user->name;
-		
+
 		$image->image_small = $user->getAvatar('small');
 		$image->image_medium = $user->getAvatar();
 		$image->image_large = $user->getAvatar('large');
@@ -1095,10 +1138,16 @@ class EasySocialApiMappingHelper
 		$actor->points = $user->points;
 		$actor->totale_badges = $user->getTotalBadges();  		
 		$actor->badges = $this->createBadge($user->getBadges());
+		
+		$fmodel	= FD::model( 'Friends' );
+		//$actor->friend_count = $fmodel->getFriendsCount( $id );
 		$actor->friend_count = $user->getTotalFriends();
+
+
 		$actor->follower_count = $user->getTotalFollowers();
 	
 		return $actor;
+		}
 				
 		}
 
@@ -1137,14 +1186,12 @@ class EasySocialApiMappingHelper
 	//create user frnd details nod
 	public function frnd_nodes($data,$user)
 	{
-		//print_r($this->plugin->get('user')->id);die();
 		//$user = JFactory::getUser($this->plugin->get('user')->id);
 		$frnd_mod = FD::model( 'Friends' );
 		$list = array();
 		foreach($data as $k=>$node)
 		{
-			//~ print_r($node);
-			//~ die();
+
 			if($node->id != $user->id)
 			{								
 				$node->mutual = $frnd_mod->getMutualFriendCount($user->id,$node->id);
@@ -1153,7 +1200,114 @@ class EasySocialApiMappingHelper
 			}
 		}		
 		return $data;	
-	 }	
+	}	
+    
+    //function for getting polls 	
+	 public function pollsSchema($rows)
+	{
+		 $item=array();
+		foreach($rows as $row)
+		{		
+				$item = new pollsSchema();
+				
+				$item->id = $row->id;
+				$item->element = $row->element;
+				$item->uid  = $row->uid;
+				$item->title  = $row->title;
+				$item->multiple  = $row->multiple;
+				$item->locked  = $row->locked;
+				$item->cluster_id  = $row->cluster_id;
+				$item->created_by  = $row->created_by;
+				$item->created =$row->created;
+				$item->expiry_date  = $row->expiry_date;
+		
+				$result[] = $item;		
+		}
+		return $result;
+	}		
+    
+    //function for getting all videos 	
+	public function videosSchema($rows,$userid)	
+	{	
+		foreach($rows as $ky=>$row)
+		{
+				$item = new VideoSimpleSchema();
+				
+				$category 	= FD::table('VideoCategory');
+				
+				$video = FD::video($row->id);
+	//print_r($row);die("in map");		
+				$category->load($row->category_id);				
+								
+								
+								
+				$item->id = $row->id;
+				$item->title = $row->title;
+				$item->description = $row->description;
+				$item->created_by = $this->createUserObj($row->user_id);;
+				$item->uid = $row->uid;
+				$item->type = $row->type;
+				$item->created = $row->created;
+				$item->state = $row->state;
+				$item->featured = $row->featured;
+				$item->category_id = $row->category_id;
+				$item->category_name = $category->get('title');
+				$item->hits = $row->hits;
+				$item->duration = $video->getDuration();//$row->duration;
+				$item->size = $row->size;
+				$item->params = json_decode($row->params,true);
+				$item->storage = $row->storage;
+				$item->path = $row->path;
+				$item->original = $row->original;
+				$item->file_title = $row->file_title;
+				$item->source = $row->source;	
+				$item->thumbnail = $row->thumbnail;
+				
+				$like = FD::likes($row->uid, SOCIAL_TYPE_VIDEOS , 'create', SOCIAL_APPS_GROUP_USER );								
+				//$stream_id=8455;
+				$item->likes = $this->createlikeObj($like,$userid,$stream_id);
+													
+				//$comobj = $like->comments();				
+				$item->comment_element = $comobj->element.".".$comobj->group.".".$comobj->verb;			
+				$item->comments=$this->createCommentsObj($comobj);
+		
+				$result[] = $item;				
+		}
+		return $result;	
+	}
 	
+	//function for mapping video object
+	public function videoMap($rows)
+	{
+		foreach($rows as $row)
+		{
+				$item = new VideoSimpleSchema();
+					
+				$item->id = $row->id;
+				$item->title = $row->title;
+				$item->description = $row->description;
+				$item->user_id = $row->user_id;
+				$item->uid = $row->uid;
+				$item->type = $row->type;
+				$item->created = $row->created;
+				$item->state = $row->state;
+				$item->featured = $row->featured;
+				$item->category_id = $row->category_id;
+				$item->hits = $row->hits;
+				$item->duration = $row->duration;
+				$item->size = $row->size;
+				$item->params = $row->params;
+				$item->storage = $row->storage;
+				$item->path = $row->path;
+				$item->original = $row->original;
+				$item->file_title = $row->file_title;
+				$item->source = $row->source;	
+				$item->thumbnail = $row->thumbnail;
+				$item->message = "Video uploaded successfully";	
+		
+				$result[] = $item;	
+				return $result;
+		}
+	}
 	
 }

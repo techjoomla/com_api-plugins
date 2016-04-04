@@ -28,19 +28,61 @@ class EasysocialApiResourceReport extends ApiResource
 		$app = JFactory::getApplication();
 		$msg = $app->input->get('message','','STRING');
 		$title = $app->input->get('user_title','','STRING');
-		$item_id = $app->input->get('itemId',0,'INT');
+		$item_id = $app->input->get('itemId',0,'INT'        );
 		$log_user = $this->plugin->get('user')->id;
+		
 		$data =array();
 		$data['message']= $msg;
 		$data['uid']= $item_id;
-		$data['type']= 'stream';
+		$data['type']= $app->input->get('type','stream','STRING');
 		$data['title']= $title;
 		$data['extension']= 'com_easysocial';
 		 //build share url use for share post through app
+
+		switch($data['type'])
+		{
+
+			case 'stream':	
         $sharing = FD::get( 'Sharing', array( 'url' => FRoute::stream( array( 'layout' => 'item', 'id' => $item_id, 'external' => true, 'xhtml' => true ) ), 'display' => 'dialog', 'text' => JText::_( 'COM_EASYSOCIAL_STREAM_SOCIAL' ) , 'css' => 'fd-small' ) );
         $url = $sharing->url;
 		$data['url']= $url;
-		
+			break;
+			
+			case 'groups':
+                        $group	= FD::group( $item_id );
+			$data['url'] = $group->getPermalink( false, true );
+			break;
+			
+			case 'events':
+
+                        $event	= FD::event( $item_id );
+			$data['url'] = $event->getPermalink( false, true );
+			break;	
+			
+			case 'profile':
+                        $user	= FD::user( $item_id );
+			$data['url'] = $user->getPermalink( false, true );
+			break;
+			
+			
+			case 'photos':
+
+			$ptable	= FD::table( 'Photo' );
+			$ptable->load( $item_id );		
+			$data['url'] = $ptable->getPermalink();
+
+			break;
+
+			case 'albums':
+
+			$atable	= FD::table( 'Album' );
+			$atable->load( $item_id );
+			$data['url'] = $atable->getPermalink();
+
+			break; 			       
+
+		}
+
 		// Get the reports model
 		$model 		= FD::model('Reports');
 		// Determine if this user has the permissions to submit reports.

@@ -253,7 +253,7 @@ class EasysocialApiResourceGroup extends ApiResource
 											break;
 						case 'TYPE':	$grp_data['group_type'] = $type;
 										break;
-						case 'URL':		$grp_data['es-fields-'.$field['id']] = $app->input->get('website',0,'STRING');
+						case 'URL':		$grp_data['es-fields-'.$field['id']] = $app->input->get('website',null,'STRING');
 										break;
 						case 'PHOTOS':	$grp_data['photo_albums'] = $app->input->get('photo_album',0,'INT');
 										break;

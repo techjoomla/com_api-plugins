@@ -69,8 +69,8 @@ class EasysocialApiResourceEvent extends ApiResource
 		$post['startDatetime']  = $app->input->post->get('startDatetime','','string');
 		$post['endDatetime']  = $app->input->post->get('endDatetime','','string');
 		$post['event_allday']  = $app->input->post->get('event_allday',0,'INT');
-		$post['repeat']  = $app->input->post->get('repeat',null,'RAW');
-		//$post['repeat']  = $app->input->post->get('repeat',array('type'=>'none','end'=>null),'ARRAY');
+		//$post['repeat']  = $app->input->post->get('repeat',null,'RAW');
+		$post['repeat']  = $app->input->post->get('repeat',array('type'=>'none','end'=>null),'ARRAY');
 		$post['website']  = $app->input->post->get('website',0,'INT');
 		$post['allowmaybe']  = $app->input->post->get('allowmaybe',0,'INT');
 		$post['allownotgoingguest']  = $app->input->post->get('allownotgoingguest',0,'INT');

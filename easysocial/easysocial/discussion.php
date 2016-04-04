@@ -157,7 +157,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 		$discussion->uid 		= $group->id;
 		$discussion->type 		= 'group';
 		$discussion->title 		= $mainframe->input->get('title',0,'STRING');
-		$discussion->content 	= $mainframe->input->get('content',0,'STRING');
+		$discussion->content 	= $mainframe->input->get('content',0,'RAW');
 
 		// If discussion is edited, we don't want to modify the following items
 		if( !$discussion->id )

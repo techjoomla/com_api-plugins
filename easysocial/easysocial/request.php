@@ -45,7 +45,8 @@ class EasysocialApiResourceRequest extends ApiResource
 		
 		$group_id = $app->input->get('group_id',0,'INT');
 		$req_val = $app->input->get('request','','STRING');
-		$other_user_id = $app->input->get('target_user',0,'INT'); 
+		$other_user_id = $app->input->get('target_user',0,'INT');
+		$type = $app->input->get('type','group','STRING'); 
 		
 		//$userid = ($other_user_id)?$other_user_id:$log_user->id;
 		$data = array();
@@ -65,8 +66,8 @@ class EasysocialApiResourceRequest extends ApiResource
 		}
 		else
 		{
-			$group = FD::group($group_id);
-			
+			$group = FD::$type($group_id);
+
 			if($group->isAdmin() != $log_user && ($req_val != 'withdraw'))
 			{
 				$res->success = 0;
@@ -74,23 +75,74 @@ class EasysocialApiResourceRequest extends ApiResource
 				return $res;
 			}
 			
-			switch($req_val)
-			{
-				case 'Approve':
-				case 'approve': $res->success = $group->approveUser( $other_user_id );
-								$res->message = ($res->success)?JText::_( 'PLG_API_EASYSOCIAL_USER_REQ_GRANTED' ):JText::_( 'PLG_API_EASYSOCIAL_USER_REQ_UNSUCCESS' );
-								break;
-				case 'Reject':
-				case 'reject' : $res->success =  $group->rejectUser( $other_user_id );
-								$res->message = ($res->success)?JText::_( 'PLG_API_EASYSOCIAL_USER_APPLICATION_REJECTED' ):JText::_( 'PLG_API_EASYSOCIAL_UNABLE_REJECT_APPLICATION' );
-								break;
-				case 'Withdraw':
-				case 'withdraw' :	$res->success = $group->deleteMember( $other_user_id );
-									$res->message = ($res->success)?JText::_( 'PLG_API_EASYSOCIAL_REQUEST_WITHDRAWN' ):JText::_( 'PLG_API_EASYSOCIAL_UNABLE_WITHDRAWN_REQ' );
-									break;
-			}
 			
+			if($type == 'group')
+			{			
+				switch($req_val)
+				{
+					case 'Approve':
+					case 'approve': $res->success = $group->approveUser( $other_user_id );
+									$res->message = ($res->success)?JText::_( 'PLG_API_EASYSOCIAL_USER_REQ_GRANTED' ):JText::_( 'PLG_API_EASYSOCIAL_USER_REQ_UNSUCCESS' );
+									break;
+					case 'Reject':
+					case 'reject' : $res->success =  $group->rejectUser( $other_user_id );
+									$res->message = ($res->success)?JText::_( 'PLG_API_EASYSOCIAL_USER_APPLICATION_REJECTED' ):JText::_( 'PLG_API_EASYSOCIAL_UNABLE_REJECT_APPLICATION' );
+									break;
+					case 'Withdraw':
+					case 'withdraw' :	$res->success = $group->deleteMember( $other_user_id );
+										$res->message = ($res->success)?JText::_( 'PLG_API_EASYSOCIAL_REQUEST_WITHDRAWN' ):JText::_( 'PLG_API_EASYSOCIAL_UNABLE_WITHDRAWN_REQ' );
+										break;
+				}
+			}
+			else
+			{
+
+				$guest = FD::table('EventGuest');
+        			$state = $guest->load($other_user_id);
+			
+				// Get the event object
+        			$event = FD::event($group_id);
+				$my = FD::user($log_user);
+
+        			$myGuest = $event->getGuest();
+				
+				$res->success = 0;
+				if (!$state || empty($guest->id))
+				{
+					$res->message = JText::_('COM_EASYSOCIAL_EVENTS_INVALID_GUEST_ID');
+				}
+				else if (empty($event) || empty($event->id)) 
+				{
+					$res->message = JText::_('COM_EASYSOCIAL_EVENTS_INVALID_EVENT_ID');
+				}
+				else if ( $myGuest->isAdmin() && $guest->isPending()) 
+				{
+				
+					switch($req_val)
+					{
+						case 'Approve':
+						case 'approve': 
+								$res->success = $guest->approve();
+								$res->message = ($res->success)?JText::_( 'PLG_API_EASYSOCIAL_USER_REQ_GRANTED' ):JText::_( 'PLG_API_EASYSOCIAL_USER_REQ_UNSUCCESS' );
+										break;
+						case 'Reject':
+						case 'reject' : $res->success =  $guest->reject();
+								$res->message = ($res->success)?JText::_( 'PLG_API_EASYSOCIAL_USER_APPLICATION_REJECTED' ):JText::_( 'PLG_API_EASYSOCIAL_UNABLE_REJECT_APPLICATION' );
+										break;
+						case 'remove':
+						case 'Remove' :	$res->success = $guest->remove();
+								$res->message = ($res->success)?JText::_( 'COM_EASYSOCIAL_EVENTS_GUEST_REMOVAL_SUCCESS' ):JText::_( 'COM_EASYSOCIAL_EVENTS_NO_ACCESS_TO_EVENT' );
+											break;
+					}
+				}
+				else
+				{
+					$res->message = JText::_('COM_EASYSOCIAL_EVENTS_NO_ACCESS_TO_EVENT');
+				}
+			}
+
 			return $res;
+
 		}
 	}
 

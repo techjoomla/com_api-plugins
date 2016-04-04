@@ -61,7 +61,7 @@ class EasysocialApiResourceGetalbums extends ApiResource
 		{
 		 if($album->cover_id)
          {
-         $album->load( $album->cover_id );
+         $album->load( $album->id );
 		 }
          $album->cover_featured = $album->getCover('featured');
          $album->cover_large = $album->getCover('large');

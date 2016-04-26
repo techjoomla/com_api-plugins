@@ -11,11 +11,21 @@ jimport('joomla.plugin.plugin');
 
 class plgAPIEasysocial extends ApiPlugin
 {
-	public function __construct()
+	public function __construct(&$subject, $config = array())
 	{
 
-		parent::__construct();
+		parent::__construct($subject = 'api' , $config = array());
 
 		ApiResource::addIncludePath(dirname(__FILE__).'/easysocial');
+		
+				/*load language file for plugin frontend*/ 
+		$lang = JFactory::getLanguage(); 
+		$lang->load('plg_api_easysocial', JPATH_ADMINISTRATOR,'',true);
+		
+		$this->setResourceAccess('terms', 'public', 'post');	
+		$this->setResourceAccess('slogin', 'public', 'post');
+		$this->setResourceAccess('fblogin', 'public', 'post');
+        	
+		
 	}
 }

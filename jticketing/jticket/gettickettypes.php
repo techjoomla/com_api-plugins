@@ -1,75 +1,84 @@
 <?php
 /**
- * @package API plugins
- * @copyright Copyright (C) 2009 2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
- * @license GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
- * @link http://www.techjoomla.com
-*/
+ * @version    SVN: <svn_id>
+ * @package    JTicketing
+ * @author     Techjoomla <extensions@techjoomla.com>
+ * @copyright  Copyright (c) 2009-2015 TechJoomla. All rights reserved.
+ * @license    GNU General Public License version 2 or later.
+ */
 
 defined('_JEXEC') or die;
-
 jimport('joomla.plugin.plugin');
 
-
+/**
+ * Class for getting ticket types based on event id
+ *
+ * @package     JTicketing
+ * @subpackage  component
+ * @since       1.0
+ */
 class JticketApiResourceGettickettypes extends ApiResource
 {
+	/**
+	 * Get ticket types based on event id
+	 *
+	 * @return  json user list
+	 *
+	 * @since   1.0
+	 */
 	public function get()
 	{
-		$this->plugin->setResponse($this->getTickettype());
-	}
-	
-	public function post()
-	{
-		$this->plugin->setResponse($this->getTickettype());
-	}
-	
-	public function getTickettype()
-	{
-        $lang =& JFactory::getLanguage();
+		$lang      = JFactory::getLanguage();
 		$extension = 'com_jticketing';
-		$base_dir = JPATH_SITE;
-		$jinput = JFactory::getApplication()->input;
-
+		$base_dir  = JPATH_SITE;
+		$input     = JFactory::getApplication()->input;
 		$lang->load($extension, $base_dir);
-		$eventid = $jinput->get('eventid',0,'INT');
-		
-		if(empty($eventid))
-        {
+		$eventid = $input->get('eventid', '0', 'INT');
+
+		if (empty($eventid))
+		{
 			$obj->success = 0;
-			$obj->message =JText::_("COM_JTICKETING_INVALID_EVENT");
-			return $obj;
+			$obj->message = JText::_("COM_JTICKETING_INVALID_EVENT");
+			$this->plugin->setResponse($obj);
+
+			return;
 		}
 
-				$jticketingmainhelper = new jticketingmainhelper();
-				$tickettypes= $jticketingmainhelper->GetTicketTypes($eventid,'');
+		$jticketingmainhelper = new jticketingmainhelper;
+		$tickettypes          = $jticketingmainhelper->GetTicketTypes($eventid, '');
 
-				if($tickettypes)
+		if ($tickettypes)
+		{
+			foreach ($tickettypes as &$tickettype)
+			{
+				if ($tickettype->available == 0 || $tickettype->unlimited_seats == 1)
 				{
-					foreach($tickettypes as &$tickettype)
-					{
-						$tickettype->available=(int)$tickettype->available;
-						$tickettype->count=(int)$tickettype->count;
-						$tickettype->soldticket=$tickettype->available-$tickettype->count;
-
-						if(empty($tickettype->soldticket) or $tickettype->soldticket<0)
-						{
-							$tickettype->soldticket=0;
-						}
-
-						$tickettype->checkins=(int) $jticketingmainhelper->GetTicketTypescheckin($tickettype->id);
-						if(empty($tickettype->checkins) or $tickettype->checkins<0)
-						{
-							$tickettype->checkins=0;
-						}
-					}
-
+					$tickettype->available = JText::_('COM_JTICKETING_UNLIMITED_SEATS');
 				}
 
-        if($tickettypes)
+				$tickettype->soldticket = (int) $jticketingmainhelper->GetTicketTypessold($tickettype->id);
+
+				if (empty($tickettype->soldticket) or $tickettype->soldticket < 0)
+				{
+					$tickettype->soldticket = 0;
+				}
+
+				$tickettype->checkins = (int) $jticketingmainhelper->GetTicketTypescheckin($tickettype->id);
+
+				if (empty($tickettype->checkins) or $tickettype->checkins < 0)
+				{
+					$tickettype->checkins = 0;
+				}
+			}
+		}
+
+		$obj = new Stdclass;
+
+		if (isset($tickettypes))
 		{
 			$obj->success = "1";
-			$obj->data =$tickettypes;
-        }
+			$obj->data    = $tickettypes;
+		}
 		else
 		{
 			$obj->success = "0";
@@ -79,21 +88,51 @@ class JticketApiResourceGettickettypes extends ApiResource
 		$this->plugin->setResponse($obj);
 	}
 
-	public function put()
+	/**
+	 * Post Method
+	 *
+	 * @return  void
+	 *
+	 * @since   1.0
+	 */
+	public function post()
 	{
-		$obj = new stdClass();
+		$obj          = new stdClass;
 		$obj->success = 0;
-		$obj->code = 403;
-		$obj->message = JText::_("COM_JTICKETING_WRONG_METHOD_PUT");
-		$this->plugin->setResponse($obj);
-	}
-	public function delete()
-	{
-		$obj = new stdClass();
-		$obj->success = 0;
-		$obj->code = 403;
-		$obj->message = JText::_("COM_JTICKETING_WRONG_METHOD_DEL");
+		$obj->code    = 20;
+		$obj->message = JText::_("COM_JTICKETING_SELECT_GET_METHOD");
 		$this->plugin->setResponse($obj);
 	}
 
+	/**
+	 * Put method
+	 *
+	 * @return  void
+	 *
+	 * @since   1.0
+	 */
+	public function put()
+	{
+		$obj          = new stdClass;
+		$obj->success = 0;
+		$obj->code    = 20;
+		$obj->message = JText::_("COM_JTICKETING_SELECT_GET_METHOD");
+		$this->plugin->setResponse($obj);
+	}
+
+	/**
+	 * Delete method
+	 *
+	 * @return  void
+	 *
+	 * @since   1.0
+	 */
+	public function delete()
+	{
+		$obj          = new stdClass;
+		$obj->success = 0;
+		$obj->code    = 20;
+		$obj->message = JText::_("COM_JTICKETING_SELECT_GET_METHOD");
+		$this->plugin->setResponse($obj);
+	}
 }

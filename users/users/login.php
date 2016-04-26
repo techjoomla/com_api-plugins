@@ -26,7 +26,8 @@ class UsersApiResourceLogin extends ApiResource
 {
 	public function get()
 	{
-		$this->plugin->setResponse("unsupported method,please use post method");
+
+		$this->plugin->setResponse( JText::_( 'PLG_API_USERS_GET_METHOD_NOT_ALLOWED_MESSAGE' ));	
 	}
 
 	public function post()
@@ -34,7 +35,7 @@ class UsersApiResourceLogin extends ApiResource
 	   $this->plugin->setResponse($this->keygen());
 	}
 
-	function keygen()
+	public function keygen()
 	{
 		//init variable
 		$obj = new stdclass;
@@ -60,30 +61,30 @@ class UsersApiResourceLogin extends ApiResource
 		}
 		elseif( $key == null || empty($key) )
 		{
-			// Create new key for user
-			$data = array(
-			'userid' => $user->id,
-			'domain' => '' ,
-			'state' => 1,
-			'id' => '',
-			'task' => 'save',
-			'c' => 'key',
-			'ret' => 'index.php?option=com_api&view=keys',
-			'option' => 'com_api',
-			JSession::getFormToken() => 1
-			);
+				// Create new key for user
+				$data = array(
+				'userid' => $user->id,
+				'domain' => '' ,
+				'state' => 1,
+				'id' => '',
+				'task' => 'save',
+				'c' => 'key',
+				'ret' => 'index.php?option=com_api&view=keys',
+				'option' => 'com_api',
+				JSession::getFormToken() => 1
+				);
 
-			$result = $kmodel->save($data);
-			$key = $result->hash;
-			
-			//add new key in easysocial table
-			$easyblog = JPATH_ROOT . '/administrator/components/com_easyblog/easyblog.php';
-			if (JFile::exists($easyblog) && JComponentHelper::isEnabled('com_easysocial', true))
-			{
-				$this->updateEauth( $user , $key );
-			}
+				$result = $kmodel->save($data);
+				$key = $result->hash;
+				
+				//add new key in easysocial table
+				$easyblog = JPATH_ROOT . '/administrator/components/com_easyblog/easyblog.php';
+				if (JFile::exists($easyblog) && JComponentHelper::isEnabled('com_easysocial', true))
+				{
+					$this->updateEauth( $user , $key );
+				}
 		}
-
+		
 		if( !empty($key) )
 		{
 			$obj->auth = $key;
@@ -93,9 +94,10 @@ class UsersApiResourceLogin extends ApiResource
 		else
 		{
 			$obj->code = 403;
-			$obj->message = 'Bad request';
+			$obj->message = JText::_('PLG_API_USERS_BAD_REQUEST_MESSAGE');
 		}
 		return( $obj );
+	
 	}
 	
 	/*
@@ -110,6 +112,7 @@ class UsersApiResourceLogin extends ApiResource
 		$user->alias = $user->username;
 		$user->auth = $key;
 		$user->store();
+	
 		return $id;
 	}
 }

@@ -1,19 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension version="2.5.0" type="plugin" group="api" method="upgrade">
     <name>Api - Easyblog</name>
-    <version>1.6</version>
+    <version>1.8.4</version>
     <creationDate>10/11/2014</creationDate>
     <author>Techjoomla</author> 
     <authorEmail>extensions@techjoomla.com</authorEmail> 
     <authorUrl>www.techjoomla.com</authorUrl> 
     <copyright>Techjoomla. All rights reserved.</copyright> 
     <license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
-    <description>Easyblog APIs</description>
-    <scriptfile>script.php</scriptfile>
+    <description>PLG_API_EASYBLOG_DESCRIPTION</description>
     <files>
         <filename plugin="easyblog">easyblog.php</filename>
-        <folder>easyblog</folder>
+        <folder>easyblog4</folder>
+        <folder>easyblog5</folder>
+        <folder>helper</folder>
         <folder>components</folder>
         <folder>libraries</folder>
     </files>
+    
+    <languages folder="language">
+		<language tag="en-GB">en-GB/en-GB.plg_api_easyblog.ini</language>
+		<language tag="en-GB">en-GB/en-GB.plg_api_easyblog.sys.ini</language>
+	</languages>
+	
+	<config>
+	<fields name="params">
+		<fieldset name="advanced">
+		<field
+			name="retain_tags"
+			type="text"
+			default=""
+			label="HTML Tags to retain"
+			description="Comma separated list of tags (p,br,h1,h2,h3,img......) to allow in the API, so that the mobile app will be able to show the relevant content. Note that not all tags will work, and some tags may not have the desired effects since tags are handled differently between browsers and apps. Eg: Retaining the iframe tag might not ensure that the iframe is always displayed correctly, but allowing the iframe tag is necessary if you have embedded videos in your blogs"
+			filter="string"
+			size="50" />
+		</fieldset>
+	</fields>
+	</config>
 </extension>

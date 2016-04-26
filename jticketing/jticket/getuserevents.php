@@ -1,124 +1,184 @@
 <?php
 /**
- * @package API plugins
- * @copyright Copyright (C) 2009 2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
- * @license GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
- * @link http://www.techjoomla.com
-*/
+ * @version    SVN: <svn_id>
+ * @package    JTicketing
+ * @author     Techjoomla <extensions@techjoomla.com>
+ * @copyright  Copyright (c) 2009-2015 TechJoomla. All rights reserved.
+ * @license    GNU General Public License version 2 or later.
+ */
 
 defined('_JEXEC') or die;
-
 jimport('joomla.plugin.plugin');
 
-
+/**
+ * Class for getting user events based on user id
+ *
+ * @package     JTicketing
+ * @subpackage  component
+ * @since       1.0
+ */
 class JticketApiResourceGetuserevents extends ApiResource
 {
+	/**
+	 * Get Event data
+	 *
+	 * @return  json user list
+	 *
+	 * @since   1.0
+	 */
 	public function get()
 	{
-		$this->plugin->setResponse($this->getUserEvent());
-	}
-	
-	public function post()
-	{
-		$this->plugin->setResponse($this->getUserEvent());
-	}
-	
-	public function getUserEvent()
-	{
-		$com_params=JComponentHelper::getParams('com_jticketing');
-		//0 Jomsocial 1/Native 3 JEvents
+		$com_params  = JComponentHelper::getParams('com_jticketing');
 		$integration = $com_params->get('integration');
-
-		$lang =& JFactory::getLanguage();
+		$input       = JFactory::getApplication()->input;
+		$lang      = JFactory::getLanguage();
 		$extension = 'com_jticketing';
-		$base_dir = JPATH_SITE;
-		$jinput = JFactory::getApplication()->input;
-
+		$base_dir  = JPATH_SITE;
 		$lang->load($extension, $base_dir);
-		$userid = $jinput->get('userid',0,'INT');
-		
-		if(empty($userid))
+
+		$userid = $input->get('userid', '', 'INT');
+
+		// $userid = $this->plugin->get('user')->id;
+
+		if (empty($userid))
 		{
 			$obj->success = 0;
-			$obj->message =JText::_("COM_JTICKETING_INVALID_USER");
-			return $obj;
-		}
-		$jticketingmainhelper = new jticketingmainhelper();
-		$eventdatapaid= $jticketingmainhelper->GetUserEventsAPI($userid,'');
+			$obj->message = JText::_("COM_JTICKETING_INVALID_USER");
+			$this->plugin->setResponse($obj);
 
-		$eveidarr=array();
-		if($eventdatapaid)
-		{
-			foreach($eventdatapaid as &$eventdata1)
-			{
-				$eveidarr[]=$eventdata1->id;
-				if($eventdata1->avatar)
-				$eventdata1->avatar=$eventdata1->avatar;
-				else
-				$eventdata1->avatar='';
-
-				$eventdata1->totaltickets= $jticketingmainhelper->GetTicketcount($eventdata1->id);
-
-				if(empty($eventdata1->totaltickets))
-				$eventdata1->totaltickets=0;
-				$return=$jticketingmainhelper->getTimezoneString($eventdata1->id);
-				$eventdata1->startdate=$return['startdate'];
-				$eventdata1->enddate=$return['enddate'];
-				$datetoshow=$return['startdate'].'-'.$return['enddate'];
-				if(!empty($return['eventshowtimezone']))
-				$datetoshow.='<br/>'.$return['eventshowtimezone'];
-			}
+			return;
 		}
 
-		$eventdataunpaid= $jticketingmainhelper->GetUser_unpaidEventsAPI($userid,$eveidarr,'');
-		if($eventdataunpaid)
+		$jticketingmainhelper = new jticketingmainhelper;
+		$plugin = JPluginHelper::getPlugin('api', 'jticket');
+
+		// Check if plugin is enabled
+		if ($plugin)
 		{
-			foreach($eventdataunpaid as &$eventdata3)
-			{
-				$eventdata3->totaltickets= $jticketingmainhelper->GetTicketcount($eventdata3->id);
-				if(empty($eventdata3->totaltickets))
-				$eventdata3->totaltickets=0;
-				$eventdata3->startdate= $jticketingmainhelper->getLocaletime($userid,$eventdata3->startdate);
-				$eventdata3->enddate= $jticketingmainhelper->getLocaletime($userid,$eventdata3->enddate);
-				$eventdata3->soldtickets=0;
-				$eventdata3->checkin=0;
-			}
+			// Get plugin params
+			$pluginParams = new JRegistry($plugin->params);
+			$users_allow_access_app = $pluginParams->get('users_allow_access_app');
 		}
-		if($eventdatapaid and $eventdataunpaid)
-		$obj_merged =  array_merge((array) $eventdatapaid, (array) $eventdataunpaid);
-		else if($eventdatapaid and empty($eventdataunpaid))
-		$obj_merged=$eventdatapaid;
-		else if($eventdataunpaid and empty($eventdatapaid))
-		$obj_merged=$eventdataunpaid;
 
-		$obj = new stdClass();
-		if($obj_merged)
+		// If user is in allowed user to access APP show all events to that user
+		if (is_array($users_allow_access_app) and in_array($userid, $users_allow_access_app))
 		{
-			foreach($obj_merged as &$objmerged)
-			{
-				if(empty($objmerged->soldtickets))
-				$objmerged->soldtickets=0;
+			$eventdatapaid        = $jticketingmainhelper->GetUserEventsAPI();
+		}
+		else
+		{
+			$eventdatapaid        = $jticketingmainhelper->GetUserEventsAPI($userid, '');
+		}
 
-				if(empty($objmerged->totaltickets))
-				$objmerged->totaltickets=0;
-				if($objmerged->avatar)
+		$eveidarr = array();
+
+		if ($eventdatapaid)
+		{
+			foreach ($eventdatapaid as &$eventdata1)
+			{
+				$eveidarr[] = $eventdata1->id;
+
+				if (isset($eventdata1->avatar))
 				{
-					if($integration==2)
+					$eventdata1->avatar = $eventdata1->avatar;
+				}
+				else
+				{
+					$eventdata1->avatar = '';
+				}
+
+				$eventdata1->totaltickets = $jticketingmainhelper->GetTicketcount($eventdata1->id);
+
+				if (empty($eventdata1->totaltickets))
+				{
+					$eventdata1->totaltickets = 0;
+				}
+
+				$return                = $jticketingmainhelper->getTimezoneString($eventdata1->id);
+				$eventdata1->startdate = $return['startdate'];
+				$eventdata1->enddate   = $return['enddate'];
+				$datetoshow            = $return['startdate'] . '-' . $return['enddate'];
+
+				if (!empty($return['eventshowtimezone']))
+				{
+					$datetoshow .= $return['eventshowtimezone'];
+				}
+			}
+		}
+
+		$eventdataunpaid = $jticketingmainhelper->GetUser_unpaidEventsAPI('', $userid, $eveidarr);
+
+		if ($eventdataunpaid)
+		{
+			foreach ($eventdataunpaid as &$eventdata3)
+			{
+				$eventdata3->totaltickets = $jticketingmainhelper->GetTicketcount($eventdata3->id);
+
+				if (empty($eventdata3->totaltickets))
+				{
+					$eventdata3->totaltickets = 0;
+				}
+
+				$eventdata3->startdate   = $jticketingmainhelper->getLocaletime($userid, $eventdata3->startdate);
+				$eventdata3->enddate     = $jticketingmainhelper->getLocaletime($userid, $eventdata3->enddate);
+				$eventdata3->soldtickets = 0;
+				$eventdata3->checkin     = 0;
+			}
+		}
+
+		if ($eventdatapaid and $eventdataunpaid)
+		{
+			$obj_merged = array_merge((array) $eventdatapaid, (array) $eventdataunpaid);
+		}
+		elseif ($eventdatapaid and empty($eventdataunpaid))
+		{
+			$obj_merged = $eventdatapaid;
+		}
+		elseif ($eventdataunpaid and empty($eventdatapaid))
+		{
+			$obj_merged = $eventdataunpaid;
+		}
+
+		$obj = new stdClass;
+
+		if ($obj_merged)
+		{
+			foreach ($obj_merged as &$objmerged)
+			{
+				if (empty($objmerged->soldtickets))
+				{
+					$objmerged->soldtickets = 0;
+				}
+
+				if (empty($objmerged->totaltickets))
+				{
+					$objmerged->totaltickets = 0;
+				}
+
+				if (isset($objmerged->avatar))
+				{
+					if ($integration == 2)
 					{
-						$objmerged->avatar=JURI::base().'media/com_jticketing/images/'.$objmerged->avatar;
+						$objmerged->avatar = JUri::base() . 'media/com_jticketing/images/' . $objmerged->avatar;
 					}
 					else
 					{
-						$objmerged->avatar=JURI::base().$objmerged->avatar;
+						$objmerged->avatar = JUri::base() . $objmerged->avatar;
 					}
 				}
 				else
-				$eventdata3->avatar='';
-				if(empty($objmerged->checkin))
-				$objmerged->checkin=0;
+				{
+					$eventdata3->avatar = '';
+				}
+
+				if (empty($objmerged->checkin))
+				{
+					$objmerged->checkin = 0;
+				}
 			}
+
 			$obj->success = "1";
-			$obj->data = $obj_merged;
+			$obj->data    = $obj_merged;
 		}
 		else
 		{
@@ -126,24 +186,54 @@ class JticketApiResourceGetuserevents extends ApiResource
 			$obj->message = JText::_("COM_JTICKETING_NO_EVENT_DATA_USER");
 		}
 
-		return $obj;
+		$this->plugin->setResponse($obj);
 	}
 
+	/**
+	 * Post Method
+	 *
+	 * @return  void
+	 *
+	 * @since   1.0
+	 */
+	public function post()
+	{
+		$obj          = new stdClass;
+		$obj->success = 0;
+		$obj->code    = 20;
+		$obj->message = JText::_("COM_JTICKETING_SELECT_GET_METHOD");
+		$this->plugin->setResponse($obj);
+	}
+
+	/**
+	 * Put method
+	 *
+	 * @return  void
+	 *
+	 * @since   1.0
+	 */
 	public function put()
 	{
-		$obj = new stdClass();
+		$obj          = new stdClass;
 		$obj->success = 0;
-		$obj->code = 403;
-		$obj->message = JText::_("COM_JTICKETING_WRONG_METHOD_PUT");
-		$this->plugin->setResponse($obj);
-	}
-	public function delete()
-	{
-		$obj = new stdClass();
-		$obj->success = 0;
-		$obj->code = 403;
-		$obj->message = JText::_("COM_JTICKETING_WRONG_METHOD_DEL");
+		$obj->code    = 20;
+		$obj->message = JText::_("COM_JTICKETING_SELECT_GET_METHOD");
 		$this->plugin->setResponse($obj);
 	}
 
+	/**
+	 * Delete method
+	 *
+	 * @return  void
+	 *
+	 * @since   1.0
+	 */
+	public function delete()
+	{
+		$obj          = new stdClass;
+		$obj->success = 0;
+		$obj->code    = 20;
+		$obj->message = JText::_("COM_JTICKETING_SELECT_GET_METHOD");
+		$this->plugin->setResponse($obj);
+	}
 }

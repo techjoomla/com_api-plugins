@@ -26,13 +26,13 @@ class EasysocialApiResourceVideos extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse($this->get_videos());	
+		$this->plugin->setResponse($this->get_videos());
 	}
 	
 	public function post()
 	{       
         $app = JFactory::getApplication();	
-		$type =  $app->input->get('source','upload','STRING');		
+		$type =  $app->input->get('source','upload','STRING');
 		$result = ($type=='link')?$this->processVideo():$this->upload_videos($type);
 		$this->plugin->setResponse($result);
 	}
@@ -56,7 +56,7 @@ class EasysocialApiResourceVideos extends ApiResource
 		$userObj = FD::user($log_user);
 		
 		$options = array('limitstart'=>$limitstart,'limit'=>$limit,'sort'=>$sort,'filter'=>$filter,'category'=>$categoryid,'state' => SOCIAL_STATE_PUBLISHED, 'ordering' => $ordering); /* ,'type' => $userObj->isSiteAdmin() ? 'all' : 'user' */			
-		$data = $model->getVideos($options);		
+		$data = $model->getVideos($options);
 	
 		$mapp = new EasySocialApiMappingHelper();
 		$all_videos = $mapp->mapItem($data,'videos',$log_user);
@@ -90,7 +90,7 @@ class EasysocialApiResourceVideos extends ApiResource
 		$es_config = ES::config();
 		
 		$id = $app->input->get('id', 0, 'int');
-		$action = $app->input->get('action', '', 'STRING');			
+		$action = $app->input->get('action', '', 'STRING');	
 		$table = ES::table('Video');
 		$table->load($id);
 
@@ -106,11 +106,11 @@ class EasysocialApiResourceVideos extends ApiResource
 		} elseif($action=="delete") {
 			$state = $video->delete();
 		} elseif($action=="edit") {
-			$video 	= FD::table('Video');				
+			$video 	= FD::table('Video');
             $video->load($id);	            
             return $video;
 		} elseif($action=="update") {
-            $video 	= FD::table('Video');				
+            $video 	= FD::table('Video');
             $video->load($id);	                    
     		$videoEdit = ES::video($video);
 

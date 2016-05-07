@@ -6,7 +6,7 @@ API to create and get content
 POST /index.php?option=com_api&app=content&resource=articles&format=raw
 ```
 
-### Request Params
+#### Request Params
 
 | Param Name | Required | Type | Comment |
 | ---------- | -------- | ------- | ---- |
@@ -22,7 +22,7 @@ POST /index.php?option=com_api&app=content&resource=articles&format=raw
 | language | NO | STRING |Will use the site's default language if none provided. |
 
 
-### Response Params
+#### Response Params
 
 | Param Name | Comment |
 | ---------- | ------- |
@@ -34,7 +34,7 @@ POST /index.php?option=com_api&app=content&resource=articles&format=raw
 ```http
 GET /index.php?option=com_api&app=content&resource=articles&format=raw
 ```
-### Request Params
+#### Request Params
 
 | Param Name | Required | Comment |
 | ---------- | -------- | ------- |
@@ -45,7 +45,7 @@ GET /index.php?option=com_api&app=content&resource=articles&format=raw
 | fields         | NO       | Defaults to id, title, created, state, created_by, catid | 
 
 
-### Response Params
+#### Response Params
 
 | Param Name | Comment |
 | ---------- | ------- |
@@ -59,14 +59,14 @@ GET /index.php?option=com_api&app=content&resource=articles&format=raw
 GET /index.php?option=com_api&app=content&resource=articles&format=raw&id=:id
 ```
 
-### Request Params
+#### Request Params
 
 | Param Name | Required | Comment |
 | ---------- | -------- | ------- |
 | fields         | NO       | Defaults to id, title, created, state, created_by, catid | 
 
 
-### Response Params
+#### Response Params
 
 | Param Name | Comment |
 | ---------- | ------- |
@@ -102,6 +102,7 @@ The actual contents of the article object will vary based on which fields are re
     "id" : "",
     "name" : "",
     "avatar" : ""
-  }
+  },
+  "tags" : {}
 }
 ```

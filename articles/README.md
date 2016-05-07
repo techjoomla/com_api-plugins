@@ -54,7 +54,7 @@ GET /index.php?option=com_api&app=content&resource=articles&format=raw
 | data.results | Array of [Article Objects](#article-object) in case of success. Empty array in case of failure. |
 
 
-## Get Articles
+## Get Single Article 
 ```http
 GET /index.php?option=com_api&app=content&resource=articles&format=raw&id=:id
 ```
@@ -88,7 +88,7 @@ The actual contents of the article object will vary based on which fields are re
   "catid" : {
     "id" : "",
     "title" : ""
-  }
+  },
   "state" : "",
   "created" : "",
   "modified" : "",

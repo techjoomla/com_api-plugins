@@ -7,7 +7,7 @@ POST /index.php?option=com_api&app=content&resource=articles&format=raw
 ```
 OR update an existing article
 ```http
-POST /index.php?option=com_api&app=content&resource=articles&format=raw
+POST /index.php?option=com_api&app=content&resource=articles&format=raw&id=:id
 ```
 
 #### Request Params

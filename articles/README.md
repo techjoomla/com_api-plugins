@@ -8,8 +8,8 @@ POST /index.php?option=com_api&app=content&resource=articles&format=raw
 
 #### Request Params
 
-| Param Name | Required | Type | Comment |
-| ---------- | -------- | ------- | ---- |
+| Param Name | Required | Type | Comment  |
+| ---------- | -------- | ------- | :---- |
 | id         | NO       |  INT | Used to update an article. If empty, will create a new article.      | 
 | title      | YES      | STRING |         |
 | alias      | NO      | STRING | URL alias. Will be generated based on title if kept empty |
@@ -25,7 +25,7 @@ POST /index.php?option=com_api&app=content&resource=articles&format=raw
 #### Response Params
 
 | Param Name | Comment |
-| ---------- | ------- |
+| ---------- | :------ |
 | success | true if the article was created, false if there was a problem |
 | message | Error mesage in case success is false |
 | data.results | Array containing a single [Article Object](#article-object) in case of success. Empty array in case of failure. |
@@ -37,7 +37,7 @@ GET /index.php?option=com_api&app=content&resource=articles&format=raw
 #### Request Params
 
 | Param Name | Required | Comment |
-| ---------- | -------- | ------- |
+| ---------- | -------- | :------ |
 | limit         | NO       | Defaults to 20        | 
 | limitstart      | NO      | Defaults to 0        |
 | filters | NO | Key value pairs of values to filter on |
@@ -48,7 +48,7 @@ GET /index.php?option=com_api&app=content&resource=articles&format=raw
 #### Response Params
 
 | Param Name | Comment |
-| ---------- | ------- |
+| ---------- | :------- |
 | success | true if the article was created, false if there was a problem |
 | message | Error mesage in case success is false |
 | data.results | Array of [Article Objects](#article-object) in case of success. Empty array in case of failure. |
@@ -62,14 +62,14 @@ GET /index.php?option=com_api&app=content&resource=articles&format=raw&id=:id
 #### Request Params
 
 | Param Name | Required | Comment |
-| ---------- | -------- | ------- |
+| ---------- | -------- | :------ |
 | fields         | NO       | Defaults to id, title, created, state, created_by, catid | 
 
 
 #### Response Params
 
-| Param Name | Comment |
-| ---------- | ------- |
+| Param Name | Comment  |
+| ---------- | :------- |
 | success | true if the request succeeds, false if there was a problem |
 | message | Error mesage in case success is false |
 | data.results | Array containing a single [Article Object](#article-object) in case of success. Empty array in case of failure. |

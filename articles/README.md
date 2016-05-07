@@ -5,12 +5,15 @@ API to create and get content
 ```http
 POST /index.php?option=com_api&app=content&resource=articles&format=raw
 ```
+OR update an existing article
+```http
+POST /index.php?option=com_api&app=content&resource=articles&format=raw
+```
 
 #### Request Params
 
 | Param Name | Required | Type | Comment  |
 | ---------- | -------- | ------- | :---- |
-| id         | NO       |  INT | Used to update an article. If empty, will create a new article.      | 
 | title      | YES      | STRING |         |
 | alias      | NO      | STRING | URL alias. Will be generated based on title if kept empty |
 | introtext    | YES      | STRING |        |
@@ -42,7 +45,7 @@ GET /index.php?option=com_api&app=content&resource=articles&format=raw
 | limitstart      | NO      | Defaults to 0        |
 | filters | NO | Key value pairs of values to filter on |
 | search | NO | search key for searching article titles |
-| fields         | NO       | Defaults to id, title, created, state, created_by, catid | 
+| fields         | NO       | Defaults to id, title, modified, created_by, catid | 
 
 
 #### Response Params
@@ -63,7 +66,7 @@ GET /index.php?option=com_api&app=content&resource=articles&format=raw&id=:id
 
 | Param Name | Required | Comment |
 | ---------- | -------- | :------ |
-| fields         | NO       | Defaults to id, title, created, state, created_by, catid | 
+| fields         | NO       | Defaults to id, title, modified, created_by, catid | 
 
 
 #### Response Params
@@ -98,6 +101,7 @@ The actual contents of the article object will vary based on which fields are re
   "access" : "",
   "featured" : "",
   "language" : "",
+  "hits: "",
   "created_by": {
     "id" : "",
     "name" : "",

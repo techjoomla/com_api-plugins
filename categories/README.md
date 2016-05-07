@@ -5,12 +5,15 @@ API to create and get Joomla categories
 ```http
 POST /index.php?option=com_api&app=categories&resource=categories&format=raw
 ```
+OR update an existing category
+```http
+POST /index.php?option=com_api&app=categories&resource=categories&format=raw&id=:id
+```
 
 #### Request Params
 
 | Param Name | Required | Type | Comment  |
 | ---------- | -------- | ------- | :---- |
-| id         | NO       |  INT | Used to update an category. If empty, will create a new category.      | 
 | title      | YES      | STRING |         |
 | alias      | NO      | STRING | URL alias. Will be generated based on title if kept empty |
 | description    | NO      | STRING |        |

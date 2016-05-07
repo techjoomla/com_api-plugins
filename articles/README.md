@@ -8,18 +8,18 @@ POST /index.php?option=com_api&app=content&resource=articles&format=raw
 
 ### Request Params
 
-| Param Name | Required | Comment |
-| ---------- | -------- | ------- |
-| id         | NO       |        | 
-| title      | YES      |         |
-| alias      | NO      | URL alias. Will be generated based on title if kept empty |
-| introtext    | YES      |         |
-| fulltext     | NO      |         |
-| state    | NO      | 1 = Published (Default) / 0 = Unpublished / -1 = Archived |
-| catid      | YES      |  Category ID |
-| publish_up      | NO      | Defaults to current date/time |
-| publish_down | NO | Defaults to 0000-00-00 i.e. never |
-| language | NO | Will use the site's default language if none provided. |
+| Param Name | Required | Type | Comment |
+| ---------- | -------- | ------- | ---- |
+| id         | NO       |  INT | Used to update an article. If empty, will create a new article.      | 
+| title      | YES      | STRING |         |
+| alias      | NO      | STRING | URL alias. Will be generated based on title if kept empty |
+| introtext    | YES      | STRING |        |
+| fulltext     | NO      | STRING |        |
+| state    | NO      | INT | 1 = Published (Default) / 0 = Unpublished / -1 = Archived |
+| catid      | YES      | INT |  Category ID |
+| publish_up      | NO      | DATETIME | Defaults to current date/time |
+| publish_down | NO | DATETIME | Defaults to 0000-00-00 i.e. never |
+| language | NO | STRING |Will use the site's default language if none provided. |
 
 
 ### Response Params
@@ -70,12 +70,14 @@ GET /index.php?option=com_api&app=content&resource=articles&format=raw&id=:id
 
 | Param Name | Comment |
 | ---------- | ------- |
-| success | true if the article was created, false if there was a problem |
+| success | true if the request succeeds, false if there was a problem |
 | message | Error mesage in case success is false |
 | data.results | Array containing a single [Article Object](#article-object) in case of success. Empty array in case of failure. |
 
 
 ## Article Object
+The actual contents of the article object will vary based on which fields are requested, however the below is the list of all possible fields.
+
 ```json
 {
   "id" : "",

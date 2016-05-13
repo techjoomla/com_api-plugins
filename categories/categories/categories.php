@@ -35,7 +35,7 @@ class CategoriesApiResourceCategories extends ApiResource
 	}
 
 		/**
-	 * Get the master query for retrieving a list of articles subject to the model state.
+	 * Get the master query for retrieving a list of categories subject to the model state.
 	 *
 	 * @return  JDatabaseQuery
 	 *
@@ -55,7 +55,7 @@ class CategoriesApiResourceCategories extends ApiResource
 		
 	}
 	/**
-	 * CreateUpdateArticle is to create / upadte article
+	 * CreateUpdateCategory is to create / upadte Category
 	 *
 	 * @return  Bolean
 	 *

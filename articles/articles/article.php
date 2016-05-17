@@ -160,8 +160,7 @@ class ContentApiResourceArticles extends ApiResource
 
 			if ($subArray->created_by)
 			{
-				$data[$subKey]->created_by = array('id' => $subArray->created_by,'name' => $subArray->author,
-				'avatar' => "http://172.132.45.45/joomla/investsure/images/samlpe.jpg");
+				$data[$subKey]->created_by = array('id' => $subArray->created_by, 'name' => $subArray->author);
 			}
 
 			$data[$subKey]->tags = $subArray->tags;

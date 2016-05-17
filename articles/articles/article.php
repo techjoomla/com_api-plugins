@@ -122,19 +122,21 @@ class ContentApiResourceArticles extends ApiResource
 		$rows = $art_obj->getItems();
 
 		$num_articles = $art_obj->getTotal();
+		$data[] = new stdClass;
 
 		foreach ($rows as $subKey => $subArray)
 		{
-			if ($subArray->catid)
-			{
-				$subArray->catid = array('catid' => $subArray->catid,'title' => $subArray->category_title);
-			}
-
-			if ($subArray->created_by)
-			{
-				$subArray->created_by = array('id' => $subArray->created_by,'name' => $subArray->author,
-				'avatar' => "http://172.132.45.45/joomla/investsure/images/samlpe.jpg");
-			}
+			$data[$subKey]->id = $subArray->id;
+			$data[$subKey]->title = $subArray->title;
+			$data[$subKey]->alias = $subArray->alias;
+			$data[$subKey]->introtext = $subArray->introtext;
+			$data[$subKey]->fulltext = $subArray->fulltext;
+			$data[$subKey]->catid = array('catid' => $subArray->catid, 'title' => $subArray->category_title);
+			$data[$subKey]->state = $subArray->state;
+			$data[$subKey]->created = $subArray->created;
+			$data[$subKey]->modified = $subArray->modified;
+			$data[$subKey]->publish_up = $subArray->publish_up;
+			$data[$subKey]->publish_down = $subArray->publish_down;
 
 			if ($subArray->images)
 			{
@@ -148,50 +150,32 @@ class ContentApiResourceArticles extends ApiResource
 					}
 				}
 
-				$subArray->images = $images;
+				$data[$subKey]->images = $images;
 			}
 
-			unset($subArray->checked_out);
-			unset($subArray->checked_out_time);
-			unset($subArray->created_by_alias);
-			unset($subArray->modified_by);
-			unset($subArray->modified_by_name);
-			unset($subArray->urls);
-			unset($subArray->attribs);
-			unset($subArray->metadata);
-			unset($subArray->metakey);
-			unset($subArray->metadesc);
-			unset($subArray->xreference);
-			unset($subArray->readmore);
-			unset($subArray->category_route);
-			unset($subArray->category_access);
-			unset($subArray->category_alias);
-			unset($subArray->author_email);
-			unset($subArray->parent_title);
-			unset($subArray->parent_id);
-			unset($subArray->parent_route);
-			unset($subArray->parent_alias);
-			unset($subArray->rating);
-			unset($subArray->rating_count);
-			unset($subArray->published);
-			unset($subArray->parents_published);
-			unset($subArray->alternative_readmore);
-			unset($subArray->layout);
-			unset($subArray->params);
-			unset($subArray->displayDate);
-			unset($subArray->author);
-			unset($subArray->category_title);
+			$data[$subKey]->access = $subArray->access;
+			$data[$subKey]->featured = $subArray->featured;
+			$data[$subKey]->language = $subArray->language;
+			$data[$subKey]->hits = $subArray->hits;
+
+			if ($subArray->created_by)
+			{
+				$data[$subKey]->created_by = array('id' => $subArray->created_by,'name' => $subArray->author,
+				'avatar' => "http://172.132.45.45/joomla/investsure/images/samlpe.jpg");
+			}
+
+			$data[$subKey]->tags = $subArray->tags;
 		}
 
 		$obj = new stdclass;
 		$result = new stdClass;
 
-		if (count($rows) > 0)
+		if (count($data) > 0)
 		{
-			$result->results = $rows;
+			$result->results = $data;
 			$result->total = $num_articles;
 			$obj->success = true;
-			$obj->{'data'} = $result;
+			$obj->data = $result;
 
 			return $obj;
 		}
@@ -331,7 +315,7 @@ class ContentApiResourceArticles extends ApiResource
 		$result->results = $article;
 
 		$obj->success = true;
-		$obj->{'data'} = $result;
+		$obj->data = $result;
 
 		return $obj;
 	}

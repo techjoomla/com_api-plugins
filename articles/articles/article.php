@@ -55,8 +55,8 @@ class ContentApiResourceArticles extends ApiResource
 		$catid = $app->input->get('category_id', 0, 'INT');
 
 		// Featured - hide,only,show
-		$featured	= $app->input->get('featured', '', 'STRING');
-		$auther_id	= $app->input->get('auther_id', 0, 'INT');
+		$featured	= $app->input->get('featured', 0, 'INT');
+		$created_by	= $app->input->get('created_by', 0, 'INT');
 		$search = $app->input->get('search', '', 'STRING');
 		$limitstart	= $app->input->get('limitstart', 0, 'INT');
 		$limit	= $app->input->get('limit', 0, 'INT');
@@ -90,9 +90,9 @@ class ContentApiResourceArticles extends ApiResource
 		}
 
 		// Filter by auther
-		if ($auther_id)
+		if ($created_by)
 		{
-			$art_obj->setState('filter.author_id', $auther_id);
+			$art_obj->setState('filter.created_by', $created_by);
 		}
 
 		// Filter by featured

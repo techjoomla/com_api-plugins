@@ -28,29 +28,27 @@ You can add multiple resource in resource folder and use them for different purp
 
 ## Create .xml file
 Set api group as 'api', add plagin name and other details.
-,,,
+
+```xml
+
 <?xml version="1.0" encoding="utf-8"?>
 <extension version="3.0.0" type="plugin" group="api" method="upgrade">
     <name>PLG_API_USERS</name>
     <version>1.6</version>
     <creationDate>10/11/2014</creationDate>
-    <author>Techjoomla</author> 
-    <authorEmail>extensions@techjoomla.com</authorEmail> 
-    <authorUrl>www.techjoomla.com</authorUrl> 
-    <copyright>Techjoomla. All rights reserved.</copyright> 
-    <license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
+    <author></author> 
     <description>PLG_API_USERS_DESCRIPTION</description>
     <files>
-        <filename plugin="users">users.php</filename>
-        <folder>users</folder> 
+        <filename plugin="your_plugin_name">your_plugin_name.php</filename>
+        <folder>your_plugin_name(resource folder)</folder> 
     </files>
     <languages folder="language">
-		<language tag="en-GB">en-GB/en-GB.plg_api_users.ini</language>
-		<language tag="en-GB">en-GB/en-GB.plg_api_users.sys.ini</language>
+		<language tag="en-GB">en-GB/en-GB.plg_api_plugin_name.ini</language>
+		<language tag="en-GB">en-GB/en-GB.plg_api_plugin_name.sys.ini</language>
 	</languages>
 	
 </extension> 
-,,,
+```
 
 ## Create plugin entry file users.php file
 This file is entry file for api plugin, Change plugin class name 'plgAPIUsers' as per your 
@@ -64,9 +62,12 @@ Here first param in your plugin name, second is status and last is method,
 which is you want to make public. Means, it does not need authentication when 
 called. 
   
-,,, php code
+```php
+
 jimport('joomla.plugin.plugin');
-class plgAPIUsers extends ApiPlugin
+//class structure example
+//ex - class plgAPIUsers extends ApiPlugin
+class plgAPIYour_plugin_name extends ApiPlugin
 {
 	public function __construct(&$subject, $config = array())
 	{
@@ -75,22 +76,24 @@ class plgAPIUsers extends ApiPlugin
 		
 		/*load language file for plugin frontend*/ 
 		$lang = JFactory::getLanguage(); 
-		$lang->load('plg_api_users', JPATH_ADMINISTRATOR,'',true);
+		$lang->load('plg_api_your_plugin_name', JPATH_ADMINISTRATOR,'',true);
 		
 		// Set the login resource to be public
-		$this->setResourceAccess('users', 'public', 'post');
+		$this->setResourceAccess('your_plugin_name', 'public', 'post');
 
 	}
 }
-...
+```
 
 ## Create resource file login.php file
 All resource file are placed in plugin resource folder.
 
-,,,php code
-<?php
+```php
 
-class UsersApiResourceLogin extends ApiResource
+<?php
+//class structure example
+//ex - class UsersApiResourceLogin extends ApiResource
+class Plugin_nameApiResourceResource_file_name extends ApiResource
 {
 	public function get()
 	{
@@ -106,3 +109,4 @@ class UsersApiResourceLogin extends ApiResource
 		$this->plugin->setResponse( $result );
 	}
 }
+```

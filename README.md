@@ -1,5 +1,7 @@
-# com_api-plugins
-Plugins to be used with com_api
+# RESTful API plugins
+
+Plugins to be used with com_api component
+
 RESTful api is simple joomla plugin, which is same as
 any other joomla plugin, the difference is only type of plugin.
 Type must be 'api'

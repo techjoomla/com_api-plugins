@@ -1,23 +1,19 @@
 # RESTful API plugins
 
-Plugins to be used with com_api component
+Plugins to be used with com_api component. To add additional resources to the API, plugins need to be created. Each plugin can provide multiple API resources. Plugins are a convenient way to group several resources. Eg: A single plugin could be created for Quick2Cart with separate resources for products, cart, checkout, orders etc.
 
-RESTful api is simple joomla plugin, which is same as
-any other joomla plugin, the difference is only type of plugin.
-Type must be 'api'
+## API URLs
+The URL to access any route is of the format - 
+```http
+/index.php?option=com_api&format=raw&app=<plugin name>&resource=<resource name>&key=<key>
+```
+## Authentication
+Currently API token based authentication is supported. The token needs to be passed as a HTTP POST or get variable with the name ```key```. This will be changed at some point to be transmitted via a header.
 
-## API plugin file structure
-Following well known HTTP methods are commonly used in REST based architecture.
+## CRUD Operations
+Each resorce can support the GET, POST, DELETE & PUT (needs some work) operations. These are exposed by creating methods of the same name, i.e. get() post() put() and delete() in each of the resources. This way, if a resouce URL is accessed via HTTP POST , the post() method is called, and similarly for the rest.
 
-GET - Provides a read only access to a resource.
-
-PUT - Used to create a new resource.
-
-DELETE - Used to remove a resource.
-
-POST - Used to update a existing resource or create a new resource.
-
-## API plugin file structure
+## Typical API plugin file structure
 * language/en-GB - Resource folder having resource file, keep name same as plugin name.
 	- en-GB.plg_api_users.ini - add plugin language constant.
 	- en-GB.plg_api_users.sys.ini
@@ -28,55 +24,22 @@ POST - Used to update a existing resource or create a new resource.
 
 You can add multiple resource in resource folder and use them for different purpose.
 
-## Create .xml file
-Set api group as 'api', add plagin name and other details.
-
-```xml
-
-<?xml version="1.0" encoding="utf-8"?>
-<extension version="3.0.0" type="plugin" group="api" method="upgrade">
-    <name>PLG_API_USERS</name>
-    <version>1.6</version>
-    <creationDate>10/11/2014</creationDate>
-    <author></author> 
-    <description>PLG_API_USERS_DESCRIPTION</description>
-    <files>
-        <filename plugin="your_plugin_name">your_plugin_name.php</filename>
-        <folder>your_plugin_name(resource folder)</folder> 
-    </files>
-    <languages folder="language">
-		<language tag="en-GB">en-GB/en-GB.plg_api_plugin_name.ini</language>
-		<language tag="en-GB">en-GB/en-GB.plg_api_plugin_name.sys.ini</language>
-	</languages>
-	
-</extension> 
-```
-
 ## Create plugin entry file users.php file
-This file is entry file for api plugin, Change plugin class name 'plgAPIUsers' as per your 
-plugin name 'plgAPIYour_plugin_name'.
+This is the entry file for the API plugin, the things that re deifned in the file are resource locations, and making certain resources public. Below is the code for the file - 
 
-### Make resource function public
- 
-You can make resource method public by using setResourceAccess access as
-$this->setResourceAccess('users', 'public', 'post') 
-Here first param in your plugin name, second is status and last is method,
-which is you want to make public. Means, it does not need authentication when 
-called. 
-  
 ```php
-
 jimport('joomla.plugin.plugin');
 //class structure example
-//ex - class plgAPIUsers extends ApiPlugin
-class plgAPIYour_plugin_name extends ApiPlugin
+class plgAPIUsers extends ApiPlugin
 {
 	public function __construct(&$subject, $config = array())
 	{
 		parent::__construct($subject, $config = array());
+		
+		// Set resource path
 		ApiResource::addIncludePath(dirname(__FILE__).'/users');
 		
-		/*load language file for plugin frontend*/ 
+		// Load language files
 		$lang = JFactory::getLanguage(); 
 		$lang->load('plg_api_your_plugin_name', JPATH_ADMINISTRATOR,'',true);
 		
@@ -88,14 +51,14 @@ class plgAPIYour_plugin_name extends ApiPlugin
 ```
 
 ## Create resource file login.php file
-All resource file are placed in plugin resource folder.
+Although you can place the resource files anywhere, the recommended approach is to place them within a folder inside your plugin.  Below is example code for a resource file. Notice how the methods get() and post() are implemented. The methods will tpically return an array or an object which will be automatically converted to JSON, so the resource does not need to convert to JSON.
 
 ```php
 
 <?php
 //class structure example
 //ex - class UsersApiResourceLogin extends ApiResource
-class Plugin_nameApiResourceResource_file_name extends ApiResource
+class UsersApiResourceLogin extends ApiResource
 {
 	public function get()
 	{
@@ -111,4 +74,38 @@ class Plugin_nameApiResourceResource_file_name extends ApiResource
 		$this->plugin->setResponse( $result );
 	}
 }
+```
+
+### Make some resources public
+ 
+It is possible to make certain resource method public by using the setResourceAccess() access method as
+```php
+$this->setResourceAccess('users', 'public', 'post') 
+```
+
+The first parameter is the resource name, second is status (should be public to make it public and last is method,
+which is you want to make public. Setting a resource public will mean that the URL will not need any authentication.
+  
+
+## Create .xml file
+Finally create a manifest XML so that your plugin can be installed. Set group as 'api', add plugin name and other details.
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="3.0.0" type="plugin" group="api" method="upgrade">
+    <name>YourPlugin</name>
+    <version>1.6</version>
+    <creationDate>10/11/2014</creationDate>
+    <author></author> 
+    <description></description>
+    <files>
+        <filename plugin="your_plugin_name">your_plugin_name.php</filename>
+        <folder>your_plugin_name</folder> 
+    </files>
+    <languages folder="language">
+		<language tag="en-GB">en-GB/en-GB.plg_api_plugin_name.ini</language>
+		<language tag="en-GB">en-GB/en-GB.plg_api_plugin_name.sys.ini</language>
+	</languages>
+	
+</extension> 
 ```

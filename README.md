@@ -16,13 +16,13 @@ DELETE - Used to remove a resource.
 POST - Used to update a existing resource or create a new resource.
 
 ## API plugin file structure
-language/en-GB - Resource folder having resource file, keep name same as plugin name.
-- en-GB.plg_api_users.ini - add plugin language constant.
-- en-GB.plg_api_users.sys.ini
-users - Resource folder having resource file, keep name same as plugin name.
-- login.php - Resource file
-users.php - plugin file
-users.xml - xml file 
+* language/en-GB - Resource folder having resource file, keep name same as plugin name.
+	- en-GB.plg_api_users.ini - add plugin language constant.
+	- en-GB.plg_api_users.sys.ini
+* users - Resource folder having resource file, keep name same as plugin name.
+	- login.php - Resource file
+* users.php - plugin file
+* users.xml - xml file 
 
 You can add multiple resource in resource folder and use them for different purpose.
 
@@ -54,7 +54,7 @@ Set api group as 'api', add plagin name and other details.
 This file is entry file for api plugin, Change plugin class name 'plgAPIUsers' as per your 
 plugin name 'plgAPIYour_plugin_name'.
 
-# Make resource function public
+### Make resource function public
  
 You can make resource method public by using setResourceAccess access as
 $this->setResourceAccess('users', 'public', 'post') 

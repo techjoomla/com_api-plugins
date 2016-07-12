@@ -85,15 +85,33 @@ class EasysocialApiResourceProfile extends ApiResource
 			$fields = FD::fields();
 			$field_arr = array();
 
+			/*$usersModel = ES::model('Users');
+			$asteps = $usersModel->getAbout($user);
+			
+			foreach ($asteps as $step)
+			{
+
+			//print_r($step->fields);die("in api");
+
+			  foreach($step->fields as $fld)
+			{
+				print_r($fld->output);die("in api");	
+			}	
+
+			}*/
+
+
+
 			foreach ($steps as $step)
 			{
 
 				$step->fields = $fieldsModel->getCustomFields(array('step_id' => $step->id, 'data' => true, 'dataId' => $userid, 'dataType' => SOCIAL_TYPE_USER, 'visible' => SOCIAL_PROFILES_VIEW_DISPLAY));
 				$fields = null;
 
+	
 				if(count($step->fields))
 				{
-					$fields = $mapp->mapItem($step->fields,'fields',$other_user_id);
+					$fields = $mapp->mapItem($step->fields,'fields',$other_user_id,SOCIAL_FIELDS_GROUP_USER);
 					//die("in fields loop");
 					if(empty($field_arr))
 					{
@@ -115,7 +133,7 @@ class EasysocialApiResourceProfile extends ApiResource
 	
 			foreach($field_arr as $ky=>$fld)
 			{
-				if($fld->field_name == 'Password'||  $fld->field_name == 'Timezone' || $fld->field_name == 'Home Church')
+				if($fld->field_name == 'Password'||  $fld->field_name == 'Timezone')
 				{
 					unset($field_arr[$ky]);
 				}

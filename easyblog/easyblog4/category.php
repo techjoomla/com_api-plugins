@@ -24,17 +24,25 @@ class EasyblogApiResourceCategory extends ApiResource
 	}
 	
 	public function get() {
+
 		$input = JFactory::getApplication()->input;
 		$model = EasyBlogHelper::getModel( 'Blog' );
 		$category = EasyBlogHelper::getTable( 'Category', 'Table' );
 		$id = $input->get('id', null, 'INT');
 		$search = $input->get('search', null, 'STRING');
+
+		$limitstart = $input->get('limitstart',0,'INT');
+		$limit = $input->get('limit',10,'INT');
+
 		$posts = array();
 		
 		
 		if (!isset($id)) {
 			$categoriesmodel = EasyBlogHelper::getModel( 'Categories' );
 			$categories = $categoriesmodel->getCategoryTree('ordering');
+
+			$categories = array_slice($categories, $limitstart,$limit);
+
 			$this->plugin->setResponse( $categories );
 			return;
 		}
@@ -85,7 +93,7 @@ class EasyblogApiResourceCategory extends ApiResource
 			
 			$posts[] = $item;
 		}
-		
+		$posts = array_slice($posts, $limitstart,$limit);
 		$this->plugin->setResponse( $posts );
 	}
 	

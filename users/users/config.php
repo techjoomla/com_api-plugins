@@ -43,7 +43,8 @@ class UsersApiResourceConfig extends ApiResource
 		}
 
 		$obj->global_config = $this->getJoomlaConfig();
-		//	
+		$obj->plugin_config = $this->getpluginConfig();
+			
 
 		$this->plugin->setResponse($obj);	
 	}
@@ -109,6 +110,24 @@ class UsersApiResourceConfig extends ApiResource
 		}
 		return $cdata;
 	}
+	
+		// get fb plugin config
+	public function getpluginConfig()
+	{
+		$data = array();
+		$plugin = JPluginHelper::getPlugin('api', 'users');
+		$pluginParams = new JRegistry($plugin->params);
+		//code for future use
+		/*$plugin_es = JPluginHelper::getPlugin('api', 'easysocial');
+		$pluginParams_es = new JRegistry($plugin_es->params);*/
+		
+		$data['fb_login'] = $pluginParams->get('fb_login');
+		$data['fb_app_id'] = $pluginParams->get('fb_app_id');
+		$data['quick2art'] = $pluginParams->get('quick2art');
+		
+		return $data;
+	}
+
 	
 	//get joomla config changes
 	public function getJoomlaConfig()

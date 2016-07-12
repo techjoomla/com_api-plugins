@@ -226,10 +226,10 @@ class EasysocialApiResourceGroup_members extends ApiResource
                {                        
                        $obj->message = 'Welcome to the group, since this is an open group, you are automatically a member of the group now.';
                }
-		elseif($group->type == 3 && $obj->state == 1 )
-		{
-			$obj->message = 'Great! Your joined group.';
-		}	
+			   elseif(($group->type == 3 || $group->type == 2) && $obj->state == 1 )
+				{
+					$obj->message = 'Great! Your joined group.';
+				}	
                else if($obj->state == 2)
                {
                        $obj->message = 'Great! Your request has been sent successfully and it is pending approval from the  group administrator.';

@@ -30,8 +30,8 @@ class EasysocialApiResourceVideos extends ApiResource
 	}
 	
 	public function post()
-	{
-		$app = JFactory::getApplication();	
+	{       
+        	$app = JFactory::getApplication();	
 		$type =  $app->input->get('source','upload','STRING');		
 		$result = ($type=='link')?$this->processVideo():$this->upload_videos($type);
 		$this->plugin->setResponse($result);
@@ -42,22 +42,32 @@ class EasysocialApiResourceVideos extends ApiResource
 		$log_user= $this->plugin->get('user')->id;
 		$model = FD::model( 'Videos' );
 				
-		$result=array();
-		$options=array();
+		$result = array();
+		$options = array();
+		$data = array();
 		
 		$app = JFactory::getApplication();		
+		$video_id = $app->input->get('video_id',0,'INT');			
+	
+				
 		$limitstart=  $app->input->get('limitstart',0,'INT');
 		$limit=  $app->input->get('limit',0,'INT');
 		$filter = $app->input->get('filter','','STRING');
 		$categoryid = $app->input->get('categoryid',0,'INT');
-		$sort = $app->input->get('sort','','STRING');
+		$sort = $app->input->get('sort','latest','STRING');
 		
 		$ordering = $this->plugin->get('ordering', '', 'STRING');
 		$userObj = FD::user($log_user);
 		
-		$options = array('limitstart'=>$limitstart,'limit'=>$limit,'sort'=>$sort,'filter'=>$filter,'category'=>$categoryid,'state' => SOCIAL_STATE_PUBLISHED, 'ordering' => $ordering,'type' => $userObj->isSiteAdmin() ? 'all' : 'user');			
-		$data = $model->getVideos($options);		
-	
+		$options = array('limitstart'=>$limitstart,'limit'=>$limit,'sort'=>$sort,'filter'=>$filter,'category'=>$categoryid,'state' => SOCIAL_STATE_PUBLISHED, 'ordering' => $ordering); /* ,'type' => $userObj->isSiteAdmin() ? 'all' : 'user' */		
+		if($video_id)
+		{
+			$data[] = $this->getVideoDetails($video_id);
+		}
+		else
+		{		
+			$data = $model->getVideos($options);		
+		}
 		$mapp = new EasySocialApiMappingHelper();
 		$all_videos = $mapp->mapItem($data,'videos',$log_user);
 		
@@ -73,109 +83,27 @@ class EasysocialApiResourceVideos extends ApiResource
 		
 		return $result;
 	}
+
+	public function getVideoDetails($vid = 0)
+	{
+		if(!$vid)
+		{
+			return 0;
+		}
+		else
+		{
+
+			$table = ES::table('Video');
+			$table->load($vid);
+			return $video = ES::video($table->uid, $table->type, $table);
+
+		}
+
+	}	
 	
 	//upload video in throught api
 	public function upload_videos($type)
-	{
-						
-		/*
-		// Check for request forgeries
-		//ES::checkToken();
-		$app = JFactory::getApplication();
-		$res = new stdClass;
-		$es_config = ES::config();
-		$log_user = $this->plugin->get('user')->id;	
-		$action = $app->input->get('action', '', 'STRING');	
-		
-		// Get the file data
-		$file = $app->input->files->get('video');
-
-		if (!isset($file['tmp_name']) || empty($file['tmp_name'])) {
-			$file = null;
-		}
-
-		$post["category_id"] = $app->input->get('category_id', 1, 'INT');
-		$post["title"] = $app->input->get('title', '', 'STRING');
-		$post["description"] = $app->input->get('description', '', 'STRING');
-		$post["source"] = $app->input->get('source', '', 'STRING');
-		$post["link"] = $app->input->get('link', '', 'STRING');
-		$post["location"] = $app->input->get('location', '', 'STRING');
-		$post["latitude"] = $app->input->get('latitude', '', 'STRING');
-		$post["longitude"] = $app->input->get('longitude', '', 'STRING'); 
-		$post["privacy"] = $app->input->get('privacy', 'public', 'STRING');
-		$post["privacyCustom"] = $app->input->get('privacyCustom', '', 'STRING');
-		$post["id"] = $app->input->get('id', 0, 'INT');
-
-		
-		// This video could be edited
-		$id = $post["id"];
-		$uid = $log_user;
-		$type = $app->input->get('type', SOCIAL_TYPE_USER, 'word');
-
-		$table = ES::table('Video');
-		$table->load($id);
-
-		$video = ES::video($uid, $type, $table);
-
-		// Determines if this is a new video
-		$isNew = $video->isNew();
-
-		// If this is a new video, we should check against their permissions to create
-		if (!$video->allowCreation() && $video->isNew()) {
-			$res->success = 0;
-			$res->message = JText::_('COM_EASYSOCIAL_VIDEOS_NOT_ALLOWED_ADDING_VIDEOS');
-		}
-
-		// Ensure that the user can really edit this video
-		if (!$isNew && !$video->canEdit()) {
-			$res->success = 0;
-			$res->message = JText::_('COM_EASYSOCIAL_VIDEOS_NOT_ALLOWED_EDITING');
-		}
-
-		$options = array();
-
-		// Video upload will create stream once it is published.
-		// We will only create a stream here when it is an external link.
-		if ($post['source'] != SOCIAL_VIDEO_UPLOAD) {
-			$options = array('createStream' => true);
-		}
-
-		// Save the video
-		$state = $video->save($post, $file, $options);
-
-		// Load up the session
-		$session = JFactory::getSession();
-
-		if($state)
-		{
-			$res->success = 1;
-			$res->message = JText::_('COM_EASYSOCIAL_VIDEOS_UPLOADED_SUCCESS');
-		}	
- 
-		/*if($action=="featured"){
-			$video->setFeatured();
-		} elseif($action=="unfeatured") {
-			$video->removeFeatured();
-		}elseif($action=="delete") {
-			$state = $video->delete();
-		}*/
-
-
-		// Determines if the video should be processed immediately or it should be set under pending mode
-		/*if ($es_config->config->get('video.autoencode')) {
-			// After creating the video, process it
-			$video->process();
-		} else {
-			// Just take a snapshot of the video
-			$video->snapshot();
-		}*/
-
-		//$mapp = new EasySocialApiMappingHelper();		
-		//$video=$mapp->videoMap($video);
-		//return $res;	
-		
-		/* featured,unfeatured delete */		
-		
+	{				
 		$app = JFactory::getApplication();
 		$res = new stdClass;
 		$es_config = ES::config();
@@ -194,74 +122,33 @@ class EasysocialApiResourceVideos extends ApiResource
 			$video->setFeatured();
 		} elseif($action=="unfeatured") {
 			$video->removeFeatured();
-		}elseif($action=="delete") {
+		} elseif($action=="delete") {
 			$state = $video->delete();
-		}		
-		print_r();
-		die("Hi");	
-		$res->view->setMessage(JText::_('COM_EASYSOCIAL_VIDEOS_FEATURED_SUCCESS'), SOCIAL_MSG_SUCCESS);
-		return $es_config->view->call(__FUNCTION__, $video, $callback);						
-	}
+		} elseif($action=="edit") {
+			$video 	= FD::table('Video');				
+            $video->load($id);	            
+            return $video;
+		} elseif($action=="update") {
+            $video 	= FD::table('Video');				
+            $video->load($id);	                    
+    		$videoEdit = ES::video($video);
 
-	//function for create new group
-	function processVideo()
-	{
-		//init variable
-		$mainframe = JFactory::getApplication();
-		$log_user = $this->plugin->get('user')->id;
-		// Load the discussion
-		$link 	= $mainframe->input->get('link','','STRING');
-		$process 	= $mainframe->input->get('process','get','STRING');
-		$state 	= $mainframe->input->get('state',1,'INT');
-		
-		$result = new stdClass;
-		
-		if($process == 'get' )
-		{
-			$crawler = ES::crawler();
-			$crawler->crawl($link);
+    		// Save the video
+            $post['category_id'] = $app->input->get('category_id', 0, 'INT');
+            $post['uid'] = $app->input->get('uid', 0, 'INT');
+       		$post['title'] = $app->input->get('title', '', 'STRING');
+            $post['description'] = $app->input->get('description', '', 'STRING');
+    		$post['link'] = $app->input->get('path', '', 'STRING');
+      		$post['tags'] = $app->input->get('tags', '', 'ARRAY');
+            $post['location'] = $app->input->get('location', '', 'STRING');
+            $post['privacy'] = $app->input->get('privacy', '', 'STRING');
 
-			$result->data = (object) $crawler->getData();
-		}		
-		return $result;	
+		    $state = $videoEdit->save($post);
+
+            $videoEdit->success = 1;
+            $videoEdit->message = JText::_( 'Video updated successfully' );	
+        	return $videoEdit;
+        }										
 	}	
-	
-	public function delete_videos()
-	{		
-		$app = JFactory::getApplication();
-		$res = new stdClass;
-		$es_config = ES::config();
-		
-		$id = $app->input->get('id', 0, 'int');
-		$action = $app->input->get('action', '', 'STRING');
-				
-		$table = ES::table('Video');
-		$table->load($id);
-
-		$video = ES::video($table->uid, $table->type, $table);
-
-		// Get the callback url
-		$callback = $app->input->get('return', '', 'default');
-
-		// Ensure that the video can be featured
-		//~ if (!$video->canFeature()) {
-			//~ return JError::raiseError(500, JText::_('COM_EASYSOCIAL_VIDEOS_NOT_ALLOWED_TO_FEATURE'));
-		//~ }
-
-		// Feature the video
-		
-		if($action=="featured"){
-			$video->setFeatured();
-		} elseif($action=="unfeatured") {
-			$video->removeFeatured();
-		}elseif($action=="delete") {
-			$state = $video->delete();
-		}		
-		print_r($video);
-		die("Hi");	
-		$res->view->setMessage(JText::_('COM_EASYSOCIAL_VIDEOS_FEATURED_SUCCESS'), SOCIAL_MSG_SUCCESS);
-		return $es_config->view->call(__FUNCTION__, $video, $callback);	
-		
-	}
 }
 

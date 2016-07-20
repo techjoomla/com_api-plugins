@@ -17,7 +17,7 @@ class EasysocialApiResourceStreams extends ApiResource
 		$this->plugin->setResponse($this->processAction());
 	}
 
-    public function processAction()
+	public function processAction()
 	{
 		$app = JFactory::getApplication();
 		$target_id = $app->input->get('target_id',0,'INT');
@@ -25,36 +25,36 @@ class EasysocialApiResourceStreams extends ApiResource
 		return $res = ($action == "hide")?$this->hide($target_id):$this->delete($target_id);
 	}
 
-    public function hide($target_id)
+	public function hide($target_id)
 	{
 		$res = new stdClass();
 
-        // If id is null, throw an error.
+		// If id is null, throw an error.
 		if(!$target_id)
 		{
 			$res->success = 0;
 			$res->message = JText::_('COM_EASYSOCIAL_ERROR_UNABLE_TO_LOCATE_ID');
 		}
 
-        // Get logged in user
-        $my = FD::user();
+		// Get logged in user
+		$my = FD::user();
 
 		// Load the stream item.
 		$item = FD::table( 'Stream' );
 		$item->load( $target_id );
 
-        // Check if the user is allowed to hide this item
-        if( !$item->hideable() )
+		// Check if the user is allowed to hide this item
+		if( !$item->hideable() )
 		{
-            $res->success = 0;
+			$res->success = 0;
 			$res->message = JText::_('COM_EASYSOCIAL_STREAM_NOT_ALLOWED_TO_HIDE');
 		}
 
-        // Get the model
-        $model = FD::model( 'Stream' );
+		// Get the model
+		$model = FD::model( 'Stream' );
 		$state = $model->hide( $target_id , $my->id );
     
-        if($state)
+		if($state)
 		{
 			$res->success = 1;
 			$res->message = JText::_('PLG_API_EASYSOCIAL_HIDE_NEWSFEED_ITEM');
@@ -67,12 +67,12 @@ class EasysocialApiResourceStreams extends ApiResource
 		return $res;
 	}
 
-    public function delete($target_id)
+	public function delete($target_id)
 	{
-        $res = new stdClass();
-        
-        // If id is invalid, throw an error.
-        if(!$target_id)
+		$res = new stdClass();
+
+		// If id is invalid, throw an error.
+		if(!$target_id)
 		{
 			$res->success = 0;
 			$res->message = JText::_('COM_EASYSOCIAL_ERROR_UNABLE_TO_LOCATE_ID');
@@ -80,12 +80,12 @@ class EasysocialApiResourceStreams extends ApiResource
 
 		// Get logged in user
 		$my = FD::user();
-        $access = $my->getAccess();
+		$access = $my->getAccess();
 
 		// Load the stream item.
 		$item = FD::table('Stream');
 		$item->load($target_id);
-        $state = $item->delete();
+		$state = $item->delete();
 
 		if($state)
 		{
@@ -98,6 +98,5 @@ class EasysocialApiResourceStreams extends ApiResource
 			$res->message = JText::_('PLG_API_EASYSOCIAL_DELETE_NEWSFEED_ITEM_ERROR');
 		}
 		return $res;
-    }
+	}
 }
-?>

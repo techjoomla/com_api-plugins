@@ -22,5 +22,6 @@ class userSimpleSchema {
 	public $more_info;
 	public $isOwner;
 	public $isrequestor;
-	
+	public $display_name;
+
 }

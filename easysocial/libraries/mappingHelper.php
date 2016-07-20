@@ -1105,18 +1105,18 @@ class EasySocialApiMappingHelper
 		$image = new stdClass;
 		
 		$actor->id = $id;
-		
+		$actor->username = $user->username;
+		$actor->name = $user->name;
+
 		//ES config dependent username
 		if($es_params->get('users')->displayName == 'username')
 		{
-			$actor->username = $user->username;
+			$actor->display_name = $user->username;
 		}
 		else
 		{
-			$actor->username = $user->name;
+			$actor->display_name = $user->name;
 		}
-
-		$actor->name = $user->name;
 
 		$image->image_small = $user->getAvatar('small');
 		$image->image_medium = $user->getAvatar();

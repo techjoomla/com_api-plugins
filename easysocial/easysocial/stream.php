@@ -20,17 +20,18 @@ class EasysocialApiResourceStreams extends ApiResource
 	public function processAction()
 	{
 		$app = JFactory::getApplication();
-		$target_id = $app->input->get('target_id',0,'INT');
-		$action = $app->input->get('action',0,'STRING');
+		$target_id = $app->input->get('target_id', 0, 'INT');
+		$action = $app->input->get('action', 0, 'STRING');
+
 		return $res = ($action == "hide")?$this->hide($target_id):$this->delete($target_id);
 	}
 
 	public function hide($target_id)
 	{
-		$res = new stdClass();
+		$res = new stdClass;
 
 		// If id is null, throw an error.
-		if(!$target_id)
+		if (!$target_id)
 		{
 			$res->success = 0;
 			$res->message = JText::_('COM_EASYSOCIAL_ERROR_UNABLE_TO_LOCATE_ID');
@@ -40,21 +41,21 @@ class EasysocialApiResourceStreams extends ApiResource
 		$my = FD::user();
 
 		// Load the stream item.
-		$item = FD::table( 'Stream' );
-		$item->load( $target_id );
+		$item = FD::table('Stream');
+		$item->load($target_id);
 
 		// Check if the user is allowed to hide this item
-		if( !$item->hideable() )
+		if (!$item->hideable())
 		{
 			$res->success = 0;
 			$res->message = JText::_('COM_EASYSOCIAL_STREAM_NOT_ALLOWED_TO_HIDE');
 		}
 
 		// Get the model
-		$model = FD::model( 'Stream' );
-		$state = $model->hide( $target_id , $my->id );
-    
-		if($state)
+		$model = FD::model('Stream');
+		$state = $model->hide($target_id, $my->id);
+
+		if ($state)
 		{
 			$res->success = 1;
 			$res->message = JText::_('PLG_API_EASYSOCIAL_HIDE_NEWSFEED_ITEM');
@@ -64,15 +65,16 @@ class EasysocialApiResourceStreams extends ApiResource
 			$res->success = 0;
 			$res->message = JText::_('PLG_API_EASYSOCIAL_HIDE_NEWSFEED_ITEM_ERROR');
 		}
+
 		return $res;
 	}
 
 	public function delete($target_id)
 	{
-		$res = new stdClass();
+		$res = new stdClass;
 
 		// If id is invalid, throw an error.
-		if(!$target_id)
+		if (!$target_id)
 		{
 			$res->success = 0;
 			$res->message = JText::_('COM_EASYSOCIAL_ERROR_UNABLE_TO_LOCATE_ID');
@@ -87,7 +89,7 @@ class EasysocialApiResourceStreams extends ApiResource
 		$item->load($target_id);
 		$state = $item->delete();
 
-		if($state)
+		if ($state)
 		{
 			$res->success = 1;
 			$res->message = JText::_('PLG_API_EASYSOCIAL_DELETE_NEWSFEED_ITEM');
@@ -97,6 +99,7 @@ class EasysocialApiResourceStreams extends ApiResource
 			$res->success = 0;
 			$res->message = JText::_('PLG_API_EASYSOCIAL_DELETE_NEWSFEED_ITEM_ERROR');
 		}
+
 		return $res;
 	}
 }

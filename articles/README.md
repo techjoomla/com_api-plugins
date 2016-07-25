@@ -55,6 +55,7 @@ GET /index.php?option=com_api&app=content&resource=articles&format=raw
 | success | true if the article was created, false if there was a problem |
 | message | Error mesage in case success is false |
 | data.results | Array of [Article Objects](#article-object) in case of success. Empty array in case of failure. |
+| data.total |  Total should be the total count that match the filters, not the total of items in the current set, i.e. if there are 240 articles matching the filters, and the API returns first 20 then the total should contain 240 not 20. |
 
 
 ## Get Single Article 

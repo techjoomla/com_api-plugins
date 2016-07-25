@@ -245,7 +245,7 @@ class EasySocialApiMappingHelper
 					$fobj->field_value = ( $gender->data == 1 )?'male':'female';
 				}
 				
-				if($fobj->field_name == 'Birthday')
+				if($fobj->field_name == 'Birthday' &&  $fobj->field_value != null)
 				{
 					$birthday = $user->getFieldValue('BIRTHDAY');
 					$date = new DateTime($birthday->data);	

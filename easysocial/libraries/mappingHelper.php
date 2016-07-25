@@ -245,7 +245,7 @@ class EasySocialApiMappingHelper
 					$fobj->field_value = ( $gender->data == 1 )?'male':'female';
 				}
 				
-				if($fobj->field_name == 'Birthday')
+				if($fobj->field_name == 'Birthday' &&  $fobj->field_value != null)
 				{
 					$birthday = $user->getFieldValue('BIRTHDAY');
 					$date = new DateTime($birthday->data);	
@@ -400,8 +400,8 @@ class EasySocialApiMappingHelper
 				foreach($row->with as $actor)
 				{
 					$withurl = JURI::root().FRoute::profile( array('id' => $actor->id , 'layout' => 'item', 'sef' => false ));
-					$with_user_url[] = "<a href='".$withurl."'>".$actor->username."</a>";
-					
+					$with_user_url[] = "<a href='".$withurl."'>".$this->createUserObj($actor->id)->display_name."</a>";
+
 					//$with_url = $with_url." and ".
 					
 					//$with_user_url[] = $this->createUserObj($actor->id); 

@@ -69,6 +69,29 @@ class EasysocialApiResourceFriends extends ApiResource
 							$flag=0;						
 							$mssg=JText::_( 'PLG_API_EASYSOCIAL_NOT_SENT_REQUEST' );	
 			break;
+			case 'blocked': //getting block friends	added by pratiksha 						
+							$blk_list = $frnd_mod->getFriends($userid);
+							foreach($blk_list as $sfnd)
+							{
+								$other_user_obj = FD::user($sfnd->id);
+								$model = FD::model('Blocks');
+								$res = (bool) $model->isBlocked($userid, $sfnd->id);
+								if($res)
+								{
+									$ttl_list[] = $other_user_obj;
+								}
+							}
+							if(!empty($ttl_list))
+							{	
+								$flag=1;
+							}
+							else
+							{
+								$flag=1;
+								$mssg=JText::_( 'No block user' );
+							}
+
+			break;
 			
 			case 'suggest': //getting suggested friends							
 							$sugg_list = $frnd_mod->getSuggestedFriends($userid);

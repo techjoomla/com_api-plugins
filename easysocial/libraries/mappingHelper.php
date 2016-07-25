@@ -1208,12 +1208,15 @@ class EasySocialApiMappingHelper
 		$list = array();
 		foreach($data as $k=>$node)
 		{
+			$model = FD::model('Blocks');
+			$res = (bool) $model->isBlocked($user->id, $node->id);
 
 			if($node->id != $user->id)
 			{								
 				$node->mutual = $frnd_mod->getMutualFriendCount($user->id,$node->id);
 				$node->isFriend = $frnd_mod->isFriends($user->id,$node->id);
 				$node->approval_pending = $frnd_mod->isPendingFriends($user->id,$node->id);			
+				$node->isBlock = $res;			
 			}
 		}		
 		return $data;	

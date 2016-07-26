@@ -54,7 +54,7 @@ class EasysocialApiResourceGroups extends ApiResource
 		{
 			$userid = $filters['uid'];
 		}
-
+			
 		$filters['types'] = $app->input->get('type',0,'INT');
 		$filters['state'] = $app->input->get('state',0,'INT');
 		
@@ -74,16 +74,21 @@ class EasysocialApiResourceGroups extends ApiResource
 		if($filters['featured'])
 		{
 			$options['featured']	= true;
-			$featured = $model->getGroups($filters);
+
+			$featured = $model->getGroups($options);
 			$featured_grps = $mapp->mapItem($featured,'group',$log_user->id);
-			
-			if(count($featured_grps) > 0 && $featured_grps != false)
+		
+			/*if(is_array($featured_grps))
+				$featured_grps = array_slice($featured_grps,$limitstart,$limit);
+			*/
+			if(count($featured_grps) > 0 && $featured_grps != false && is_array($featured_grps))
 			{
+				$featured_grps = array_slice($featured_grps,$limitstart,$limit);
 				return $featured_grps;
 			}
 			else
 			{
-				return 0;
+				return $featured_grps;
 			}
 		}
 		else

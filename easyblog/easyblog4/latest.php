@@ -31,6 +31,8 @@ class EasyblogApiResourceLatest extends ApiResource
 		$search = $input->get('search', null, 'STRING');
 		$featured = $input->get('featured',0,'INT');
 		$tags = $input->get('tags',0,'INT');
+		$limitstart = $input->get('limitstart',0,'INT');
+		$limit = $input->get('limit',10,'INT');
 		$user_id = $input->get('user_id',0,'INT');
 		$posts = array();
 		// If we have an id try to fetch the user
@@ -93,6 +95,7 @@ class EasyblogApiResourceLatest extends ApiResource
 			
 			$posts[] = $item;
 		}
+		$posts = array_slice($posts, $limitstart,$limit);
 		$this->plugin->setResponse( $posts );
 	}
 	// get feature blog function.

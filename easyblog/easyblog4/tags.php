@@ -33,9 +33,13 @@ class EasyblogApiResourceTags extends ApiResource
 	//get tags
 	public function getTags()
 	{
+		$app = JFactory::getApplication();
+		$limitstart = $app->input->get('limitstart',0,'INT');
+	   	$limit =  $app->input->get('limit',20,'INT');
 		$Tagmodel = EasyBlogHelper::getModel( 'Tags' );
 		//$allTags = $Tagmodel->getTags();
 		$allTags = $Tagmodel->getTagCloud();
+		$allTags = array_slice($allTags, $limitstart, $limit);
 		return $allTags;	
 	}
 	//future requirement.
@@ -50,7 +54,7 @@ class EasyblogApiResourceTags extends ApiResource
 	public function searchTag()
 	{
 	   $app = JFactory::getApplication();
-	   $limitstart = $app->input->get('limitstart',5,'INT');
+	   $limitstart = $app->input->get('limitstart',0,'INT');
 	   $limit =  $app->input->get('limit',20,'INT');
 	   $Tagmodel = EasyBlogHelper::getModel( 'Tags' );
 	   $input = JFactory::getApplication()->input;

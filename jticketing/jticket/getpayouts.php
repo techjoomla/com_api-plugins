@@ -9,18 +9,19 @@
 
 defined('_JEXEC') or die;
 jimport('joomla.plugin.plugin');
+require_once JPATH_ADMINISTRATOR . '/components/com_jticketing/models/mypayouts.php';
 
 /**
- * Class for getting ticket types based on event id
+ * Class for getting user events based on user id
  *
  * @package     JTicketing
  * @subpackage  component
  * @since       1.0
  */
-class JticketApiResourceGettickettypes extends ApiResource
+class JticketApiResourceGetPayouts extends ApiResource
 {
 	/**
-	 * Get ticket types based on event id
+	 * Get Event data
 	 *
 	 * @return  json user list
 	 *
@@ -28,62 +29,62 @@ class JticketApiResourceGettickettypes extends ApiResource
 	 */
 	public function get()
 	{
+		$com_params  = JComponentHelper::getParams('com_jticketing');
+		$integration = $com_params->get('integration');
+		$input       = JFactory::getApplication()->input;
 		$lang      = JFactory::getLanguage();
 		$extension = 'com_jticketing';
 		$base_dir  = JPATH_SITE;
-		$input     = JFactory::getApplication()->input;
 		$lang->load($extension, $base_dir);
-		$eventid = $input->get('eventid', '0', 'INT');
+		$obj_merged = array();
+
+		$userid = $input->get('userid', '', 'INT');
 		$search = $input->get('search', '', 'STRING');
 
-		if (empty($eventid))
+		if (empty($userid))
 		{
 			$obj->success = 0;
-			$obj->message = JText::_("COM_JTICKETING_INVALID_EVENT");
+			$obj->message = JText::_("COM_JTICKETING_INVALID_USER");
 			$this->plugin->setResponse($obj);
 
 			return;
 		}
 
 		$jticketingmainhelper = new jticketingmainhelper;
-		$tickettypes          = $jticketingmainhelper->GetTicketTypes($eventid, '', $search);
+		$plugin = JPluginHelper::getPlugin('api', 'jticket');
 
-		if ($tickettypes)
+		// Check if plugin is enabled
+		if ($plugin)
 		{
-			foreach ($tickettypes as &$tickettype)
-			{
-				if ($tickettype->available == 0 || $tickettype->unlimited_seats == 1)
-				{
-					$tickettype->available = JText::_('COM_JTICKETING_UNLIMITED_SEATS');
-				}
-
-				$tickettype->soldticket = (int) $jticketingmainhelper->GetTicketTypessold($tickettype->id);
-
-				if (empty($tickettype->soldticket) or $tickettype->soldticket < 0)
-				{
-					$tickettype->soldticket = 0;
-				}
-
-				$tickettype->checkins = (int) $jticketingmainhelper->GetTicketTypescheckin($tickettype->id);
-
-				if (empty($tickettype->checkins) or $tickettype->checkins < 0)
-				{
-					$tickettype->checkins = 0;
-				}
-			}
+			// Get plugin params
+			$pluginParams = new JRegistry($plugin->params);
+			$users_allow_access_app = $pluginParams->get('users_allow_access_app');
 		}
 
-		$obj = new Stdclass;
-
-		if (isset($tickettypes))
+		// If user is in allowed user to access APP show all events to that user
+		if (is_array($users_allow_access_app) and in_array($userid, $users_allow_access_app))
 		{
-			$obj->success = "1";
-			$obj->data    = $tickettypes;
+			$eventdatapaid        = $jticketingmainhelper->getMypayoutData();
+		}
+		else
+		{
+			$eventdatapaid        = $jticketingmainhelper->getMypayoutData($userid, $search);
+		}
+
+		$db = JFactory::getDBO();
+		$db->setQuery($eventdatapaid);
+		$obj_merged = $db->loadObjectlist();
+
+		$obj = new stdClass;
+
+		if ($obj_merged)
+		{
+			$obj = $obj_merged;
 		}
 		else
 		{
 			$obj->success = "0";
-			$obj->message = JText::_("COM_JTICKETING_INVALID_EVENT");
+			$obj->message = JText::_("COM_JTICKETING_NO_EVENT_DATA_USER");
 		}
 
 		$this->plugin->setResponse($obj);

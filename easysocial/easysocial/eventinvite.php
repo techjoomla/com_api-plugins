@@ -35,7 +35,7 @@ class EasysocialApiResourceEventinvite extends ApiResource
 		$target_users = $app->input->get('target_users',null,'ARRAY'); 
 		$user = FD::user($log_user->id);
 		$event = FD::event($event_id);
-		$guest = $event->getGuest($log_user);
+		$guest = $event->getGuest($log_user->id);
 		if (empty($event) || empty($event->id))
 		{
 			$result->message=JText::_( 'PLG_API_EASYSOCIAL_EVENT_NOT_FOUND_MESSAGE' );
@@ -46,22 +46,29 @@ class EasysocialApiResourceEventinvite extends ApiResource
 		{			
 			$not_invi = array();
 			$invited = array();	
-			
+			$es_params = FD::config();
 			foreach ($target_users as $id)
 			{
+				$username = JFactory::getUser($id)->name;
+
+				if($es_params->get('users')->displayName == 'username')
+				{
+					$username = $user->username;
+				}
+				
 				$guest = $event->getGuest($id);
 				if (!$guest->isGuest() && empty($guest->invited_by)) {					
 					//invite friend to  event
 					$state = $event->invite($id,$log_user->id);
 					$result->message=JText::_( 'PLG_API_EASYSOCIAL_INVITED_MESSAGE' );
 					$result->status=$state;
-					$invited[] = JFactory::getUser($id)->username;					
+					$invited[] = $username;					
 				}
 				else
 				{
 					$result->message=JText::_( 'PLG_API_EASYSOCIAL_GUEST_CANT_INVITED_MESSAGE' );
 					$result->status=$state;
-					$not_invi[] = JFactory::getUser($id)->username;					
+					$not_invi[] = $username;						
 				}
 			}
 			$result->status = 1;

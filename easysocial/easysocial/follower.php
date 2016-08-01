@@ -223,10 +223,10 @@ class EasysocialApiResourceFollower extends ApiResource
 		$foll_model 	= FD::model( 'Followers' );
 		$frnd_mod 	= FD::model( 'Friends' );
 		
-		$main_mod = new EasySocialModel();
+		//$main_mod = new EasySocialModel();
 
 		//set limitstart
-		$main_mod->setUserState( 'limitstart' , $options['limitstart'] );
+		//$main_mod->setUserState( 'limitstart' , $options['limitstart'] );
 		$foll_model->setUserState( 'limitstart' , $options['limitstart'] );
 		
 		if(!$target_user)

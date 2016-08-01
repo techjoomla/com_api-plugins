@@ -33,25 +33,26 @@ class EasysocialApiResourceGcm extends ApiResource
 		$state = false;
 		$app = JFactory::getApplication();
 		$log_user = $this->plugin->get('user')->id;
-		$dev_id = $app->input->get('device_id','','STRING');
+		$dev_id = $app->input->get('device_id','','RAW');
 		$nval = $app->input->get('notify_val',1,'INT');
 		
 		//DB Create steps
 		$db = FD::db();
-		
-		/*if( $reg_id == "null" || $reg_id == null )
+
+		if( $dev_id == "null" || $dev_id == null )
 		{
 			$result->message = JText::_( 'PLG_API_EASYSOCIAL_NO_DEVICE_ID' );
 			$result->success = $state;
 		}
 		else
-		{*/
+		{
 
 		$state = $this->tnotify($log_user, $dev_id, $nval);
 		$result->success= $state;
 		$result->message = ( $state && $nval )?JText::_( 'PLG_API_EASYSOCIAL_NOTIFICATION_ON' ):JText::_( 'PLG_API_EASYSOCIAL_NOTIFICATION_OFF' );
-
-		//}	
+		//For conversion of special character to utf-8 characters
+		//$result->message = utf8_encode($result->message);
+		}	
 		
 		return $result;
 	}
@@ -65,8 +66,8 @@ class EasysocialApiResourceGcm extends ApiResource
 		$db->setQuery($query1);
 		$db->query();
 		$id = $db->loadResult();
-		
-		$query_a = "UPDATE #__acpush_users SET active = '".$val." WHERE id = '".$id;
+	
+		$query_a = "UPDATE #__acpush_users SET active = ".$val." WHERE id = ".$id;
 
 		$db->setQuery($query_a);
 		return $val = $db->query();
@@ -121,7 +122,7 @@ class EasysocialApiResourceGcm extends ApiResource
 			}
 		}*/
 		
-		if($ids_dev && $ids_dev == null )
+		if($ids_dev)
 		{
 			$res->message = JText::_( 'PLG_API_EASYSOCIAL_DEVICE_ALREADY_REGISTERED_MESSAGE' );
 			$res->status=false;
@@ -147,7 +148,14 @@ class EasysocialApiResourceGcm extends ApiResource
 	public function delete_notif()
 	{
 		$app = JFactory::getApplication();
-		$reg_id = $app->input->get('reg_id','','STRING');
+		$reg_id = $app->input->get('device_id','','STRING');
+			
+		//not allow empty device id for registration
+		if( $reg_id == "null" || $reg_id == null )
+		{
+			return false;
+		}
+		
 		//DB steps
 		$db = FD::db();
 		//Getting database values to check current user is login again or he change his device then only adding device to database

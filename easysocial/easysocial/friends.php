@@ -117,9 +117,12 @@ class EasysocialApiResourceFriends extends ApiResource
 
 	if(count($ttl_list)>'0')
 	{	
+
 	    $frnd_list['data'] = $mapp->mapItem( $ttl_list,'user',$userid);
 
 	    $frnd_list['data'] = $mapp->frnd_nodes( $frnd_list['data'],$user);
+
+
 	    
 	    $myoptions[ 'state' ]	= SOCIAL_FRIENDS_STATE_PENDING;
 	    $myoptions[ 'isRequest' ]	= true;		

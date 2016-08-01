@@ -52,11 +52,10 @@ class EasyBlogSimpleSchema_plg
 			$item->textplain = strip_tags($blog->text, $strip_tags);
 		}
 		
-		/*if ($text_length > 0) {
+		if ($text_length > 0) {
 			$pos = JString::strpos(strip_tags($item->textplain), ' ', false);
 			$item->textplain = JString::substr(strip_tags($blog->text), 0, $pos);
-		}*/
-	
+		}	
 		//$image_data = json_decode($blog->image);
 
 		$item->postid = $blog->id;
@@ -98,8 +97,19 @@ class EasyBlogSimpleSchema_plg
 		foreach ($skip as $v) {
 			unset($item->$v);
 		}
+
+		if(empty($item->introtext) && !empty($item->text))
+		{	
+			//need dynamic value here
+			$num_words = 6;
+			$words = array();
+			$words = explode(" ", $item->text, $num_words);
+			$item->introtext = strip_tags(implode(" " ,array_slice($words,0,$num_words-1)));
+			
+		}
+		
 		//handle image path	
-		if(strpos($item->text,'src="data:image') == false)
+		if(isset($item->text) && strpos($item->text,'src="data:image') == false)
 		{	
 			
 			if (strpos($item->text,'href="index'))

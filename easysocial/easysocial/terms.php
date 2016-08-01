@@ -15,35 +15,31 @@
 	class EasysocialApiResourceTerms extends ApiResource
 	{
 		public function get()
-		{		
-		$this->plugin->setResponse($this->content());		
+		{
+		$this->plugin->setResponse("Use method post");		
+			
 		}
 	
 		public function post()
 		{
-			$this->plugin->setResponse("Use method get");
+			$this->plugin->setResponse($this->content());	
 		}
 	
 		public function content()
 		{		
 			$res = new stdClass();						
-			$app = 'aaa';
-			//print_r($app);die();
-			$company = Appcarverse;
+			//$app = 'Easysocial';
+			//$company = 'Appcarvers';
+			//$day = 30;	
 
-			//$res->message = JText::sprintf(
-			//	'PLG_API_EASYSOCIAL_APP_TERM_TWO',
-			//	$app
-			//);
+			$jinput = JFactory::getApplication();
+                               
+			$app = $jinput->input->get('appname',null,'STRING');	
 
+			$company = $jinput->input->get('company','Appcarvers','STRING');
+			$day = $jinput->input->get('day',30,'INT');		
 
-
-			//$res->message = JText::sprintf('PLG_API_EASYSOCIAL_APP_TERM_TWO %s', $app);
-			//$res->message = JText::printf('PLG_API_EASYSOCIAL_APP_TERM_TWO', $app);
-			//print_r($res->message);die();
-		
-
-			$res->message = "<h3>".JText::sprintf('PLG_API_EASYSOCIAL_APP_TERM_ONE', $app).JText::sprintf('PLG_API_EASYSOCIAL_APP_TERM_TWO', $app).JText::sprintf('PLG_API_EASYSOCIAL_APP_TERM_THREE', $app).JText::sprintf('PLG_API_EASYSOCIAL_APP_TERM_FOUR', $app)."</h3>";
+			$res->message = "<h3>".JText::sprintf('PLG_API_EASYSOCIAL_APP_TERM_ONE', $company).JText::sprintf('PLG_API_EASYSOCIAL_APP_TERM_TWO', $app, $company).JText::sprintf('PLG_API_EASYSOCIAL_APP_TERM_THREE', $company).JText::sprintf('PLG_API_EASYSOCIAL_APP_TERM_FOUR', $company, $day)."</h3>";
 		
 			return $res;		
 		}		

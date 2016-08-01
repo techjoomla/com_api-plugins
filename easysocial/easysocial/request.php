@@ -68,7 +68,7 @@ class EasysocialApiResourceRequest extends ApiResource
 		{
 			$group = FD::$type($group_id);
 
-			if($group->isAdmin() != $log_user && ($req_val != 'withdraw'))
+			if($group->isAdmin() != $log_user && ($req_val != 'withdraw') && ($req_val != 'reject'))
 			{
 				$res->success = 0;
 				$res->message = JText::_( 'PLG_API_EASYSOCIAL_UNAUTHORISED_USER_MESSAGE' );
@@ -102,7 +102,7 @@ class EasysocialApiResourceRequest extends ApiResource
 			
 				// Get the event object
         			$event = FD::event($group_id);
-				$my = FD::user($log_user);
+				$my = FD::user($log_user->id);
 
         			$myGuest = $event->getGuest();
 				

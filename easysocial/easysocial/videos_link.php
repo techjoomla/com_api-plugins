@@ -16,135 +16,105 @@ require_once JPATH_SITE.'/plugins/api/easysocial/libraries/mappingHelper.php';
 require_once JPATH_SITE.'/components/com_easysocial/controllers/videos.php';
 
 class EasysocialApiResourceVideos_link extends ApiResource
-{
-	
-	public function get()
-	{
-		$this->plugin->setResponse($this->get_videos());	
-	}
-	
+{	
 	public function post()
 	{
-		$this->plugin->setResponse($this->save_video());				
+        $this->plugin->setResponse($this->save_video());				        
 	}
 				
-	public function get_videos()
-	{
-		$log_user= $this->plugin->get('user')->id;
-		$model = FD::model( 'Videos' );
-				
-		$result=array();
-		$options=array();
-		
-		$app = JFactory::getApplication();		
-		$limitstart=  $app->input->get('limitstart',0,'INT');
-		$limit=  $app->input->get('limit',0,'INT');
-		$filter = $app->input->get('filter','','STRING');
-		$categoryid = $app->input->get('categoryid',0,'INT');
-		$sort = $app->input->get('sort','','STRING');
-		
-		$ordering = $this->plugin->get('ordering', '', 'STRING');
-		$userObj = FD::user($log_user);
-		
-		$options = array('limitstart'=>$limitstart,'limit'=>$limit,'sort'=>$sort,'filter'=>$filter,'category'=>$categoryid,'state' => SOCIAL_STATE_PUBLISHED, 'ordering' => $ordering,'type' => $userObj->isSiteAdmin() ? 'all' : 'user');			
-		$data = $model->getVideos($options);		
-	
-		$mapp = new EasySocialApiMappingHelper();
-		$all_videos = $mapp->mapItem($data,'videos',$log_user);
-		
-		$cats = $model->getCategories();
-
-		foreach($cats as $k=>$row)
-		{
-			$row->uid = $row->user_id;
-		}					
-		$result['video'] = $mapp->mapItem($data,'videos',$log_user);
-		$result['categories'] = $mapp->categorySchema($cats);
-		
-		return $result;
-	}
-	
 	public function save_video()
-	{
-        // Check for request forgeries
+	{          	
+		// Check for request forgeries
 		//ES::checkToken();
-		$app = JFactory::getApplication();	
+
+		$app = JFactory::getApplication();
 		$res = new stdClass;
 		$es_config = ES::config();
 		$log_user = $this->plugin->get('user')->id;	
+        
+		$post['category_id'] = $app->input->get('category_id', 0, 'INT');
+        $post['uid'] = $app->input->get('uid', $log_user, 'INT');
+   		$post['title'] = $app->input->get('title', '', 'STRING');
+        $post['description'] = $app->input->get('description', '', 'STRING');
+		$post['link'] =  $app->input->get('path', '', 'STRING');
+  		$post['tags'] = $app->input->get('tags', '', 'ARRAY');
+        $post['location'] = $app->input->get('location', '', 'STRING');
+        $post['privacy'] = $app->input->get('privacy', '', 'STRING');
+        
 
-        $post["category_id"] = $app->input->get('category_id', 0, 'INT');
-		$post["title"] = $app->input->get('title', '', 'STRING');
-		$post["description"] = $app->input->get('description', '', 'STRING');
-		$post["source"] = $app->input->get('source', '', 'STRING');
-		$post["link"] = $app->input->get('link', '', 'STRING');
-		$post["location"] = $app->input->get('location', '', 'STRING');
-		$post["latitude"] = $app->input->get('latitude', '', 'STRING');
-		$post["longitude"] = $app->input->get('longitude', '', 'STRING'); 
-		$post["privacy"] = $app->input->get('privacy', 'public', 'STRING');
-		$post["privacyCustom"] = $app->input->get('privacyCustom', '', 'STRING');
-		$post["id"] = $app->input->get('id', 0, 'INT');        
+        $video = ES::video();
+        //$video->load($row->id);
+//$post['link'] = "https://www.youtube.com/watch?v=CLNXXcfcX1g";
+	if($post['link'])
+	{
 
-		//$type =  $app->input->get('source','','STRING');		
-		//$result = ($type=='link')?$result = $this->processVideo($post):$result = $this->upload_videos($post);
+		$rx = '~
+	    ^(?:https?://)?              # Optional protocol
+	     (?:www\.)?                  # Optional subdomain
+	     (?:youtube\.com|youtu\.be|vimeo\.com)  # Mandatory domain name
+	     /watch\?v=([^&]+)           # URI with video id as capture group 1
+	     ~x';
 
-        $crawler = ES::crawler();
-		$crawler->crawl($post["link"]);
-		$result->data = (object) $crawler->getData();
+		$has_match = preg_match($rx, $post['link'], $matches);
 
-		$table = ES::table('Video');
-		$table->load($id);
+		if(!$has_match && count($matches) <= 1 )
+		{
+			$res->success = 0;
+			$res->message = JText::_('PLG_API_EASYSOCIAL_VIDEO_LNK_INVALID');
+			return $res;
+		}
+		
+	}		
+		
+ 
+        $isNew = $video->isNew();
 
-		$video = ES::video($table);
-
-		$options = array();
-
-		// Video upload will create stream once it is published.
-		// We will only create a stream here when it is an external link.
-		if ($post['source'] != SOCIAL_VIDEO_UPLOAD) {
-			$options = array('createStream' => true);
+		// Set the current user id only if this is a new video, otherwise whenever the video is edited,
+		// the owner get's modified as well.
+		if ($isNew) {
+			$video->table->user_id = $video->my->id;
 		}
 
-		// Save the video
-		$state = $video->save($post, $file, $options);
+		// Video links
+		if ($video->table->isLink()) {
 
-		// Load up the session
-		$session = JFactory::getSession();
+			$video->table->path = $post['link'];
 
-		if (!$state) {
+			// Grab the video data
+			$crawler = ES::crawler();
+			$crawler->crawl($video->table->path);
 
-			// Store the data in the session so that we can repopulate the values again
-			$data = json_encode($video->export());
+			$scrape = (object) $crawler->getData();
 
-			$session->set('videos.form', $data, SOCIAL_SESSION_NAMESPACE);
+			// Set the video params with the scraped data
+			$video->table->params = json_encode($scrape);
 
-			$this->view->setMessage($video->getError(), SOCIAL_MSG_ERROR);
-			return $this->view->call(__FUNCTION__, $video, $this->getTask());
-		}
+			// Set the video's duration
+			$video->table->duration = @$scrape->oembed->duration;
+    		$video->processLinkVideo();
+    		$video->save($post);
+    		$video->table->hit();
 
-		// Once a video is created successfully, remove any data associated from the session
-		$session->set('videos.form', null, SOCIAL_SESSION_NAMESPACE);
-		$message = 'COM_EASYSOCIAL_VIDEOS_CREATED_SUCCESS';
+			// Save the video
+			$state = $video->table->store();
 
 		if ($id) {
 			$message = 'COM_EASYSOCIAL_VIDEOS_UPDATED_SUCCESS';
 		}
 
-		$this->view->setMessage($message, SOCIAL_MSG_SUCCESS);
+		// Bind the video location
+		if (isset($post['location']) && $post['location'] && isset($post['latitude']) && $post['latitude'] && isset($post['longitude']) && $post['longitude']) {
 
-print_r($result);
-die("Hello");
-	}	
+			// Create a location for this video
+			$location = ES::table('Location');
 
-	//upload video in throught api
-	public function upload_videos($post)
-	{	
-			
-		// Get the file data
-		$file = $app->input->files->get('video');
-
-		if (!isset($file['tmp_name']) || empty($file['tmp_name'])) {
-			$file = null;
+			$location->uid = $video->table->id;
+			$location->type = SOCIAL_TYPE_VIDEO;
+			$location->user_id = $video->my->id;
+			$location->address = $video['location'];
+			$location->latitude = $video['latitude'];
+			$location->longitude = $video['longitude'];
+			$location->store();
 		}
 		
 		// This video could be edited
@@ -152,80 +122,35 @@ die("Hello");
 		$uid = $log_user;
 		$type = $app->input->get('type', SOCIAL_TYPE_USER, 'word');
 
+        /*
+		// Bind the tags
+		if (isset($post['tags'])) {
+			$video->insertTags($post['tags']);
+		}*/
+        
 
-		$table = ES::table('Video');
-		$table->load($id);
+		$privacyData = 'public';
+		if (isset($post['privacy'])) {
 
-		$video = ES::video($uid, $type, $table);
+			$privacyData = new stdClass();
+			$privacyData->rule = 'videos.view';
+			$privacyData->value = $post['privacy'];
+			$privacyData->custom = $post['privacyCustom'];
 
-		// Determines if this is a new video
-		$isNew = $video->isNew();
-
-		// If this is a new video, we should check against their permissions to create
-		if (!$video->allowCreation() && $video->isNew()) {
-			$res->success = 0;
-			$res->message = JText::_('COM_EASYSOCIAL_VIDEOS_NOT_ALLOWED_ADDING_VIDEOS');
+			$video->insertPrivacy($privacyData);
 		}
 
-		// Ensure that the user can really edit this video
-		if (!$isNew && !$video->canEdit()) {
-			$res->success = 0;
-			$res->message = JText::_('COM_EASYSOCIAL_VIDEOS_NOT_ALLOWED_EDITING');
-		}
-
-		$options = array();
-
-		// Video upload will create stream once it is published.
-		// We will only create a stream here when it is an external link.
-		if ($post['source'] != SOCIAL_VIDEO_UPLOAD) {
-			$options = array('createStream' => true);
-		}
-
-		// Save the video
-		$state = $video->save($post, $file, $options);
-
-		// Load up the session
-		$session = JFactory::getSession();
-
-		if($state)
-		{
-			$res->success = 1;
-			$res->message = JText::_('COM_EASYSOCIAL_VIDEOS_UPLOADED_SUCCESS');
+		// check if we should create stream or not.
+		$createStream = ($isNew) ? true : false;
+		if ($createStream) {
+			$video->createStream('create', $privacyData);
 		}	
- 
-		// Determines if the video should be processed immediately or it should be set under pending mode
-		if ($es_config->config->get('video.autoencode')) {
-			// After creating the video, process it
-			$video->process();
-		} else {
-			// Just take a snapshot of the video
-			$video->snapshot();
-		}
 
-		$mapp = new EasySocialApiMappingHelper();		
-		$video=$mapp->videoMap($video);
-		return $res;						
-	}
-
-	//function for create new group
-	function processVideo($post)
-	{	
-		//init variable
-		$mainframe = JFactory::getApplication();
-		$log_user = $this->plugin->get('user')->id;
-		// Load the discussion
-		$link 	= $mainframe->input->get('link','','STRING');
-		$process 	= $mainframe->input->get('process','get','STRING');
-		$state 	= $mainframe->input->get('state',1,'INT');
-		        
-		$result = new stdClass;		
-		if($process == 'get' )
-		{
-			$crawler = ES::crawler();
-			$crawler->crawl($link);
-			$result->data = (object) $crawler->getData();
-		}		
-		return $result;	
-	}	
+        $video->success = 1;
+        $video->message = JText::_( 'PLG_API_EASYSOCIAL_VIDEO_LNK_UPLOAD_SUCCESS' );	
+    	return $video;
+		}	
+    }
 }
+
 

@@ -40,15 +40,6 @@ class EasyblogApiResourceBlog extends ApiResource
 		$createTag = array();
 		$res = new stdClass;
 
-		/*		
-		//format date as per easyblog
-		$date = EB::date($data['created'], true);
-		$data['created'] = $date->toSQL(true);
-		
-		$date = EB::date($data['publish_up'], true);
-		$data['publish_up'] = $date->toSQL(true);
-		//
-		*/
 		//to create revision and uid
 		$post = EB::post(NULL);
 		$post->create();
@@ -58,7 +49,7 @@ class EasyblogApiResourceBlog extends ApiResource
 		
 		$data['image'] = '';
 		
-		if($file['name'])
+		if(isset($file['name']))
 		{
 		  $image_obj = $this->uploadImage($key);
 		  $data['image'] = $image_obj->media->uri; 
@@ -68,6 +59,7 @@ class EasyblogApiResourceBlog extends ApiResource
 		$data['document'] = null;
 		$data['published'] = $input->get('published', 1, 'INT');
 		$data['created_by'] = $log_user;
+		$data['doctype'] = 'legacy';
 		
 		$uid = $post->uid;
 		// Load up the post library

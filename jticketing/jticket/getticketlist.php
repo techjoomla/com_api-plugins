@@ -36,11 +36,14 @@ class JticketApiResourceGetticketlist extends ApiResource
 		$eventid              = $input->get('eventid', '0', 'INT');
 		$var['attendtype']    = $input->get('attendtype', 'all', 'STRING');
 		$var['tickettypeid']  = $input->get('tickettypeid', '0', 'INT');
+		$search = $input->get('search', '', 'STRING');
 		$jticketingmainhelper = new jticketingmainhelper;
-		$results              = $jticketingmainhelper->GetOrderitemsAPI($eventid, $var);
 
+		$results              = $jticketingmainhelper->GetOrderitemsAPI($eventid, $var);
+		
 		if (empty($results))
 		{
+			$obj          = new stdClass;
 			$obj->success = "0";
 			$obj->message = JText::_("COM_JTICKETING_INVALID_EVENT");
 			$this->plugin->setResponse($obj);
@@ -61,20 +64,32 @@ class JticketApiResourceGetticketlist extends ApiResource
 				{
 					$field_array      = array(
 						'first_name',
-						'last_name'
+						'last_name',
+						'phone',
+						'email'
 					);
 
 					// Get Attendee Details
-					$attendee_details = $jticketingmainhelper->getAttendees_details($orderitem->attendee_id, $field_array);
+					$attendee_details = $jticketingmainhelper->getAttendees_details($orderitem->attendee_id, $field_array, $search);					
 				}
 
 				if (!empty($attendee_details['first_name']))
 				{
-					$attendee_nm = implode(" ", $attendee_details);
+					$attendee_nm = $attendee_details['first_name'] . " " . $attendee_details['last_name'];
 				}
 				else
 				{
 					$attendee_nm = $orderitem->name;
+				}
+
+				if (!empty($attendee_details['phone']))
+				{
+					$attendee_phone = $attendee_details['phone'];
+				}
+
+				if (!empty($attendee_details['email']))
+				{
+					$attendee_email = $attendee_details['email'];
 				}
 
 				$obj->ticketid          = $orderitem->oid . '-' . $orderitem->order_items_id;
@@ -83,6 +98,11 @@ class JticketApiResourceGetticketlist extends ApiResource
 				$obj->ticket_type_title = $orderitem->ticket_type_title;
 				$obj->event_title       = $orderitem->event_title;
 				$obj->ticket_prefix     = JText::_("TICKET_PREFIX");
+				$obj->bought_on       	= $orderitem->cdate;
+				$obj->price_per_ticket  = $orderitem->amount;
+				$obj->original_amount   = $orderitem->totalamount;
+				$obj->email   			= $attendee_email;
+				$obj->phone   			= $attendee_phone;
 
 				if ($var['attendtype'] == "all")
 				{
@@ -106,6 +126,7 @@ class JticketApiResourceGetticketlist extends ApiResource
 		}
 		else
 		{
+			$fobj          = new stdClass;
 			$fobj->success = "0";
 			$fobj->message = JText::_("COM_JTICKETING_INVALID_EVENT");
 		}

@@ -34,6 +34,7 @@ class JticketApiResourceGettickettypes extends ApiResource
 		$input     = JFactory::getApplication()->input;
 		$lang->load($extension, $base_dir);
 		$eventid = $input->get('eventid', '0', 'INT');
+		$search = $input->get('search', '', 'STRING');
 
 		if (empty($eventid))
 		{
@@ -45,7 +46,7 @@ class JticketApiResourceGettickettypes extends ApiResource
 		}
 
 		$jticketingmainhelper = new jticketingmainhelper;
-		$tickettypes          = $jticketingmainhelper->GetTicketTypes($eventid, '');
+		$tickettypes          = $jticketingmainhelper->GetTicketTypes($eventid, '', $search);
 
 		if ($tickettypes)
 		{

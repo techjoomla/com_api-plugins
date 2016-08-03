@@ -39,6 +39,14 @@ class EasysocialApiResourceTags extends ApiResource
         $video->load($videoid);
 
         $tag_peoples = $video->getTags();
+	$mapp = new EasySocialApiMappingHelper();
+
+	foreach( $tag_peoples as $tusr )
+	{
+
+		$tusr->target_user_obj = $mapp->mapItem($tusr->target_id,'profile',$log_user);
+	}		
+
         return $tag_peoples;
     }    
 
@@ -66,7 +74,16 @@ class EasysocialApiResourceTags extends ApiResource
         $video->load($cluster);
         $tag_peoples=$video->getTags();
 
+        /*$data=array(); 
+        $userObj = FD::user($friends_tags);
+          
+        foreach($userObj as $ky=>$row)
+        {
+            $data['name'] = $row->username;
+        }
+        $data['data'] = $tag_peoples;  */  
         $this->plugin->setResponse($tag_peoples);
 	}
 }
+
 

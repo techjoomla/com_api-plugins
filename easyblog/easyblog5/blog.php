@@ -49,7 +49,7 @@ class EasyblogApiResourceBlog extends ApiResource
 		
 		$data['image'] = '';
 		
-		if($file['name'])
+		if(isset($file['name']))
 		{
 		  $image_obj = $this->uploadImage($key);
 		  $data['image'] = $image_obj->media->uri; 
@@ -59,6 +59,7 @@ class EasyblogApiResourceBlog extends ApiResource
 		$data['document'] = null;
 		$data['published'] = $input->get('published', 1, 'INT');
 		$data['created_by'] = $log_user;
+		$data['doctype'] = 'legacy';
 		
 		$uid = $post->uid;
 		// Load up the post library

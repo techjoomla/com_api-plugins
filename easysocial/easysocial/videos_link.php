@@ -22,42 +22,6 @@ class EasysocialApiResourceVideos_link extends ApiResource
         $this->plugin->setResponse($this->save_video());				        
 	}
 				
-	public function get_videos()
-	{
-		$log_user= $this->plugin->get('user')->id;
-		$model = FD::model( 'Videos' );
-				
-		$result=array();
-		$options=array();
-		
-		$app = JFactory::getApplication();		
-		$limitstart=  $app->input->get('limitstart',0,'INT');
-		$limit=  $app->input->get('limit',0,'INT');
-		$filter = $app->input->get('filter','','STRING');
-		$categoryid = $app->input->get('categoryid',0,'INT');
-		$sort = $app->input->get('sort','','STRING');
-		
-		$ordering = $this->plugin->get('ordering', '', 'STRING');
-		$userObj = FD::user($log_user);
-		
-		$options = array('limitstart'=>$limitstart,'limit'=>$limit,'sort'=>$sort,'filter'=>$filter,'category'=>$categoryid,'state' => SOCIAL_STATE_PUBLISHED, 'ordering' => $ordering,'type' => $userObj->isSiteAdmin() ? 'all' : 'user');			
-		$data = $model->getVideos($options);		
-	
-		$mapp = new EasySocialApiMappingHelper();
-		$all_videos = $mapp->mapItem($data,'videos',$log_user);
-		
-		$cats = $model->getCategories();
-
-		foreach($cats as $k=>$row)
-		{
-			$row->uid = $row->user_id;
-		}					
-		$result['video'] = $mapp->mapItem($data,'videos',$log_user);
-		$result['categories'] = $mapp->categorySchema($cats);
-		
-		return $result;
-	}
-	
 	public function save_video()
 	{          	
 		// Check for request forgeries
@@ -76,9 +40,32 @@ class EasysocialApiResourceVideos_link extends ApiResource
   		$post['tags'] = $app->input->get('tags', '', 'ARRAY');
         $post['location'] = $app->input->get('location', '', 'STRING');
         $post['privacy'] = $app->input->get('privacy', '', 'STRING');
+        
 
         $video = ES::video();
-        //$video->load($row->id);				
+        //$video->load($row->id);
+//$post['link'] = "https://www.youtube.com/watch?v=CLNXXcfcX1g";
+	if($post['link'])
+	{
+
+		$rx = '~
+	    ^(?:https?://)?              # Optional protocol
+	     (?:www\.)?                  # Optional subdomain
+	     (?:youtube\.com|youtu\.be|vimeo\.com)  # Mandatory domain name
+	     /watch\?v=([^&]+)           # URI with video id as capture group 1
+	     ~x';
+
+		$has_match = preg_match($rx, $post['link'], $matches);
+
+		if(!$has_match && count($matches) <= 1 )
+		{
+			$res->success = 0;
+			$res->message = JText::_('PLG_API_EASYSOCIAL_VIDEO_LNK_INVALID');
+			return $res;
+		}
+		
+	}		
+		
  
         $isNew = $video->isNew();
 
@@ -104,14 +91,12 @@ class EasysocialApiResourceVideos_link extends ApiResource
 
 			// Set the video's duration
 			$video->table->duration = @$scrape->oembed->duration;
-            $video->processLinkVideo();
-            $video->save($post);
+    		$video->processLinkVideo();
+    		$video->save($post);
+    		$video->table->hit();
 
-            $video->table->hit();
-		}
-
-		// Save the video
-		$state = $video->table->store();
+			// Save the video
+			$state = $video->table->store();
 
 		if ($id) {
 			$message = 'COM_EASYSOCIAL_VIDEOS_UPDATED_SUCCESS';
@@ -162,43 +147,10 @@ class EasysocialApiResourceVideos_link extends ApiResource
 		}	
 
         $video->success = 1;
-        $video->message = JText::_( 'Video uploaded successfully' );	
+        $video->message = JText::_( 'PLG_API_EASYSOCIAL_VIDEO_LNK_UPLOAD_SUCCESS' );	
     	return $video;
 		}	
- 
-		// Determines if the video should be processed immediately or it should be set under pending mode
-		if ($es_config->config->get('video.autoencode')) {
-			// After creating the video, process it
-			$video->process();
-		} else {
-			// Just take a snapshot of the video
-			$video->snapshot();
-		}
-
-		$mapp = new EasySocialApiMappingHelper();		
-		$video=$mapp->videoMap($video);
-		return $res;						
-	}
-
-	//function for create new group
-	function processVideo($post)
-	{	
-		//init variable
-		$mainframe = JFactory::getApplication();
-		$log_user = $this->plugin->get('user')->id;
-		// Load the discussion
-		$link 	= $mainframe->input->get('link','','STRING');
-		$process 	= $mainframe->input->get('process','get','STRING');
-		$state 	= $mainframe->input->get('state',1,'INT');
-		        
-		$result = new stdClass;		
-		if($process == 'get' )
-		{
-			$crawler = ES::crawler();
-			$crawler->crawl($link);
-			$result->data = (object) $crawler->getData();
-		}		
-		return $result;	
-	}	
+    }
 }
+
 

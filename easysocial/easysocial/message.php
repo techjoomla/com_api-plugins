@@ -271,6 +271,7 @@ class EasysocialApiResourceMessage extends ApiResource
 		$mapp = new EasySocialApiMappingHelper();
 		
 		$data = array();
+		$data['data'] = array();
 		
 		$user = FD::user($log_user->id);
 		
@@ -323,9 +324,12 @@ class EasysocialApiResourceMessage extends ApiResource
 				}*/
 				$data['data'] = $mapp->mapItem($conversion,'conversion',$log_user->id);
 			}
-			
+	
+			if($data['data'])
+			{
 			//manual pagination code
 			$data['data'] = array_slice( $data['data'], $limitstart, $limit );
+			}
 			
 			return( $data );
 		}

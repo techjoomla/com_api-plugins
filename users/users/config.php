@@ -117,11 +117,18 @@ class UsersApiResourceConfig extends ApiResource
 		$data = array();
 		$plugin = JPluginHelper::getPlugin('api', 'users');
 		$pluginParams = new JRegistry($plugin->params);
+		//code for future use
+		/*$plugin_es = JPluginHelper::getPlugin('api', 'easysocial');
+		$pluginParams_es = new JRegistry($plugin_es->params);*/
+		
 		$data['fb_login'] = $pluginParams->get('fb_login');
+		$data['fb_app_id'] = $pluginParams->get('fb_app_id');
+		$data['quick2art'] = $pluginParams->get('quick2art');
 		
 		return $data;
 	}
 
+	
 	//get joomla config changes
 	public function getJoomlaConfig()
 	{

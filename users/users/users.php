@@ -523,6 +523,7 @@ class UsersApiResourceUsers extends ApiResource
 
 		// Send the registration email.
 		$return = JFactory::getMailer()->sendMail($data['mailfrom'], $data['fromname'], $base_dt['email'], $emailSubject, $emailBody);
+//print_r($return);die("in api");
 		return $return;
 		
 	}

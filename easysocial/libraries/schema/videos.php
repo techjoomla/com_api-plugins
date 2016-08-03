@@ -32,5 +32,7 @@ class VideoSimpleSchema {
 	public $comment_element;
 	public $message;
     public $isAdmin;
+    public $location;
+    public $stream_id;
 }
 ?>

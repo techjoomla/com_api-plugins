@@ -111,7 +111,7 @@ class EasysocialApiResourceProfile extends ApiResource
 	
 				if(count($step->fields))
 				{
-					$fields = $mapp->mapItem($step->fields,'fields',$other_user_id);
+					$fields = $mapp->mapItem($step->fields,'fields',$other_user_id,SOCIAL_FIELDS_GROUP_USER);
 					//die("in fields loop");
 					if(empty($field_arr))
 					{
@@ -133,7 +133,7 @@ class EasysocialApiResourceProfile extends ApiResource
 	
 			foreach($field_arr as $ky=>$fld)
 			{
-				if($fld->field_name == 'Password'||  $fld->field_name == 'Timezone' || $fld->field_name == 'Home Church')
+				if($fld->field_name == 'Password'||  $fld->field_name == 'Timezone')
 				{
 					unset($field_arr[$ky]);
 				}

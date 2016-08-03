@@ -57,6 +57,7 @@ class JticketApiResourceGeteventdetails extends ApiResource
 			{
 				$eveidarr[]              = $eventdata->id;
 				$eventdata->totaltickets = $jticketingmainhelper->GetTicketcount($eventdata->id);
+				$eventdata->availabletickets = $eventdata->totaltickets - $eventdata->soldtickets;
 			}
 		}
 
@@ -64,11 +65,12 @@ class JticketApiResourceGeteventdetails extends ApiResource
 
 		if ($eventdataunpaid)
 		{
-			foreach ($eventdataunpaid as &$eventdata3)
+			foreach ($eventdataunpaid as &$eventdata)
 			{
-				$eventdata3->totaltickets = $jticketingmainhelper->GetTicketcount($eventdata3->id);
-				$eventdata3->soldtickets  = 0;
-				$eventdata3->checkin      = 0;
+				$eventdata->totaltickets = $jticketingmainhelper->GetTicketcount($eventdata->id);
+				$eventdata->soldtickets  = 0;
+				$eventdata->checkin      = 0;
+				$eventdata->availabletickets = 0;
 			}
 		}
 
@@ -129,6 +131,11 @@ class JticketApiResourceGeteventdetails extends ApiResource
 			if (empty($obj_merged[0]->checkin))
 			{
 				$obj_merged[0]->checkin = 0;
+			}
+
+			if (empty($obj_merged[0]->availabletickets))
+			{
+				$obj_merged[0]->availabletickets = 0;
 			}
 
 			$obj->success = "1";

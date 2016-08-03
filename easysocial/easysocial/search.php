@@ -133,7 +133,7 @@ class EasysocialApiResourceSearch extends ApiResource
 		{
 			$group_load = FD::group($grp->id);                        
 			$is_inviteonly = $group_load->isInviteOnly();
-			$is_member = $group_load->isMember($log_user);
+			$is_member = $group_load->isMember($log_user->id);
 			if($is_inviteonly && !$is_member)
 			{
 			       if($group_load->creator_uid == $log_user->id)
@@ -150,7 +150,7 @@ class EasysocialApiResourceSearch extends ApiResource
 			       $group[] = FD::group($grp->id);        
 			}
 		}
-		
+	
 		//manual pagination code
 		$group = array_slice( $group, $limitstart, $limit );
 		$list['group'] = $mapp->mapItem($group,'group',$log_user->id);

@@ -22,8 +22,26 @@ class plgapieasyblogInstallerScript
 			JFolder::delete(JPATH_SITE.'/plugins/api/easyblog/libraries');
 
 			//Move helper file to easyblog helpers and delete it from plugin			
-			JFile::move(JPATH_SITE.'/plugins/api/easyblog/components/com_easyblog/helpers/simpleschema.php', JPATH_SITE.'/components/com_easyblog/helpers/simpleschema.php');
-			JFolder::delete(JPATH_SITE.'/plugins/api/easyblog/components');
+			//JFile::move(JPATH_SITE.'/plugins/api/easyblog/components/com_easyblog/helpers/simpleschema.php', JPATH_SITE.'/components/com_easyblog/helpers/simpleschema.php');
+			//JFolder::delete(JPATH_SITE.'/plugins/api/easyblog/components');
+			
+			$db = JFactory::getDbo();
+			$query = $db->getQuery(true);
+
+			$fields = array(
+			$db->quoteName('enabled') . ' = ' . (int) 1,
+			$db->quoteName('ordering') . ' = ' (int) 9999
+			);
+
+			$conditions = array(
+			$db->quoteName('name') . ' = ' . $db->quote('Api - Easyblog'), 
+			$db->quoteName('type') . ' = ' . $db->quote('plugin')
+			);
+
+			$query->update($db->quoteName('#__extensions'))->set($fields)->where($conditions);
+
+			$db->setQuery($query);   
+			$db->execute();	
 		}
 		return true;
 	}

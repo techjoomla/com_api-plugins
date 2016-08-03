@@ -59,7 +59,7 @@ class EasysocialApiResourceBlock extends ApiResource
 		else
 		{
 			$res->success = 0;
-			$res->message = JText::_('Unable to block error');
+			$res->message = JText::_('PLG_API_EASYSOCIAL_BLOCK_USER_ERROR');
 		}
 		return $res;
 	}	

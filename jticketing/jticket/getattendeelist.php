@@ -70,7 +70,9 @@ class JticketApiResourcegetAttendeelist extends ApiResource
 				{
 					$field_array      = array(
 						'first_name',
-						'last_name'
+						'last_name',
+						'phone',
+						'email'
 					);
 
 					// Get Attendee Details
@@ -79,11 +81,21 @@ class JticketApiResourcegetAttendeelist extends ApiResource
 
 				if (!empty($attendee_details['first_name']))
 				{
-					$buyername = implode(" ", $attendee_details);
+					$attendee_nm = $attendee_details['first_name'] . " " . $attendee_details['last_name'];
 				}
 				else
 				{
 					$buyername = $orderitem->name;
+				}
+
+				if (!empty($attendee_details['phone']))
+				{
+					$attendee_phone = $attendee_details['phone'];
+				}
+
+				if (!empty($attendee_details['email']))
+				{
+					$attendee_email = $attendee_details['email'];
 				}
 
 				$obj->checkin           = $jticketingmainhelper->GetCheckinStatusAPI($orderitem->order_items_id);
@@ -93,6 +105,11 @@ class JticketApiResourcegetAttendeelist extends ApiResource
 				$obj->ticket_type_title = $orderitem->ticket_type_title;
 				$obj->event_title       = $orderitem->event_title;
 				$obj->ticket_prefix     = JText::_("TICKET_PREFIX");
+				$obj->bought_on       	= $orderitem->cdate;
+				$obj->price_per_ticket  = $orderitem->amount;
+				$obj->original_amount   = $orderitem->totalamount;
+				$obj->email   			= $attendee_email;
+				$obj->phone   			= $attendee_phone;
 
 				if ($var['attendtype'] == "all")
 				{

@@ -36,9 +36,10 @@ class JticketApiResourceGetuserevents extends ApiResource
 		$base_dir  = JPATH_SITE;
 		$lang->load($extension, $base_dir);
 
+		$search = $input->get('search', '', 'STRING');
 		$userid = $input->get('userid', '', 'INT');
 
-		// $userid = $this->plugin->get('user')->id;
+		$obj_merged = array();
 
 		if (empty($userid))
 		{
@@ -67,7 +68,7 @@ class JticketApiResourceGetuserevents extends ApiResource
 		}
 		else
 		{
-			$eventdatapaid        = $jticketingmainhelper->GetUserEventsAPI($userid, '');
+			$eventdatapaid        = $jticketingmainhelper->GetUserEventsAPI($userid, '', $search);
 		}
 
 		$eveidarr = array();
@@ -106,7 +107,7 @@ class JticketApiResourceGetuserevents extends ApiResource
 			}
 		}
 
-		$eventdataunpaid = $jticketingmainhelper->GetUser_unpaidEventsAPI('', $userid, $eveidarr);
+		$eventdataunpaid = $jticketingmainhelper->GetUser_unpaidEventsAPI('', $userid, $eveidarr, $search);
 
 		if ($eventdataunpaid)
 		{

@@ -50,7 +50,8 @@ class EasysocialApiResourceGcm extends ApiResource
 		$state = $this->tnotify($log_user, $dev_id, $nval);
 		$result->success= $state;
 		$result->message = ( $state && $nval )?JText::_( 'PLG_API_EASYSOCIAL_NOTIFICATION_ON' ):JText::_( 'PLG_API_EASYSOCIAL_NOTIFICATION_OFF' );
-
+		//For conversion of special character to utf-8 characters
+		//$result->message = utf8_encode($result->message);
 		}	
 		
 		return $result;

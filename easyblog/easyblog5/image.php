@@ -24,6 +24,7 @@ require_once( EBLOG_CLASSES . '/mediamanager/types/image.php' );*/
 //for image upload
 require_once( EBLOG_ADMIN_INCLUDES . '/mediamanager/mediamanager.php' );
 //require_once( EBLOG_HELPERS . '/image.php' );
+require_once( EBLOG_ADMIN_INCLUDES . '/image/image.php' );
 require_once( EBLOG_ADMIN_INCLUDES . '/blogimage/blogimage.php' );
 require_once( EBLOG_ADMIN_INCLUDES . '/mediamanager/adapters/local.php' );
 require_once( EBLOG_ADMIN_INCLUDES . '/mediamanager/adapters/post.php' );
@@ -64,20 +65,21 @@ class EasyblogApiResourceImage extends ApiResource
 			//$absolutePath 		= EasyBlogMediaManager::getAbsolutePath( $source , $place );
 			//$absoluteURI		= EasyBlogMediaManager::getAbsoluteURI( $source , $place );
 
-			$absolutePath 		= EasyBlogMediaManager::getPath( $source );
-			$absoluteURI		= EasyBlogMediaManager::getUrl( $source );
+			//$absolutePath 		= EasyBlogMediaManager::getPath( $source );
+			//$absoluteURI		= EasyBlogMediaManager::getUrl( $source );
 
-			$allowed		= EasyImageHelper::canUploadFile( $file , $message );
+			$allowed		= EasyBlogImage::canUploadFile( $file , $message );
 
 			if( $allowed !== true )
 			{
 				$res->status= 0;
-				$res->message = JText::_( 'PLG_API_EASYBLOG_UPLOAD_DENIED_MESSAGE' ));
+				$res->message = JText::_( 'PLG_API_EASYBLOG_UPLOAD_DENIED_MESSAGE' );
 				return $res;
 			}
 
-			$media 				= new EasyBlogMediaManager();
-			$upload_result		= $media->upload( $absolutePath , $absoluteURI , $file , $source , $place );
+			$media 			= new EasyBlogMediaManager();
+			//$upload_result		= $media->upload( $absolutePath , $absoluteURI , $file , $source , $place );
+			$upload_result		= $media->upload( $file ,$place );
 
 			//adjustment
 			$upload_result->key = $place.$source;

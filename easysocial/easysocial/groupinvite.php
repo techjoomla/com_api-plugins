@@ -126,7 +126,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 
 				if($es_params->get('users')->displayName == 'username')
 				{
-					$username = $user->username;
+					$username = JFactory::getUser($id)->username;
 				}
 				// Ensure that the user is not a member or has been invited already
 				if (!$group->isMember( $id ) && !$grp_model->isInvited($id,$group_id))

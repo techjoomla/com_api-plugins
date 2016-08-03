@@ -38,7 +38,7 @@ class EasySocialApiMappingHelper
 {
 	public $log_user = 0;
 	
-	public function mapItem($rows, $obj_type='', $userid = 0 , $strip_tags='', $text_length=0, $skip=array()) {
+	public function mapItem($rows, $obj_type='', $userid = 0 ,$type='', $strip_tags='', $text_length=0, $skip=array()) {
 	
 		$this->log_user = $userid;
 
@@ -54,7 +54,7 @@ class EasySocialApiMappingHelper
 						return $this->profileSchema($rows,$userid);
 						break;
 			case 'fields':
-						return $this->fieldsSchema($rows,$userid);
+						return $this->fieldsSchema($rows,$userid,$type);
 						break;
 			case 'user':
 						return $this->userSchema($rows);
@@ -199,7 +199,7 @@ class EasySocialApiMappingHelper
 	}
 	
 	//To build field object
-	public function fieldsSchema($rows,$userid)
+	public function fieldsSchema($rows,$userid,$type)
 	{
 		if(empty($rows))
 		{
@@ -228,7 +228,7 @@ class EasySocialApiMappingHelper
 				$fobj->title = JText::_($row->title);
 				$fobj->field_name = JText::_($row->title);
 				$fobj->step = $row->step_id;
-				$fobj->field_value = $fmod_obj->getCustomFieldsValue($row->id,$userid , SOCIAL_FIELDS_GROUP_USER);
+				$fobj->field_value = $fmod_obj->getCustomFieldsValue($row->id,$userid, $type);
 				
 				if($fobj->field_name == 'Name' &&  $fobj->field_value != null )
 				{
@@ -269,6 +269,10 @@ class EasySocialApiMappingHelper
 						$fobj->field_value = $date->format('d-m-Y');						
 					}
 				}
+				if($fobj->field_name == 'Website' &&  $fobj->field_value != null)
+				{
+					$fobj->field_value = '<a href="'.$fobj->field_value.'">'.$fobj->field_value.'</a>';
+				}
 				
 				//to manage address as per site
 				/*if( $fobj->unique_key == 'ADDRESS' )
@@ -278,7 +282,7 @@ class EasySocialApiMappingHelper
 				}*/
 
 				//to manage relationship
-				if( $fobj->unique_key == 'RELATIONSHIP' )
+				if(isset($rs_vl->type) && $fobj->unique_key == 'RELATIONSHIP' )
 				{
 					$rs_vl = json_decode($fobj->field_value);
 					$fobj->field_value = $rs_vl->type;
@@ -287,7 +291,39 @@ class EasySocialApiMappingHelper
 				if (preg_match('/[\'^[]/', $fobj->field_value))
 				{
 					$fobj->field_value = implode(" ",json_decode($fobj->field_value));
-				}				
+				}
+
+				//Vishal - code for retrive checkbox value - need ES code 
+				if( $row->element == 'checkbox')
+				{
+
+					//$fldModel = FD::model('fields');
+					//$fldModel->load($fobj->field_id);
+					//$fopt = $fldModel->getOptions($fobj->field_id);
+			
+					$uval = explode(' ',$fobj->field_value);
+
+					$oarr = array();
+					$ftbl = FD::table('field');
+					$ftbl->load($fobj->field_id);
+					$options = $ftbl->getOptions();
+
+
+					//retrive selected option title
+					foreach($options['items'] as $item)
+					{
+	
+						if(in_array(ucfirst($item->value),$uval))
+						{
+							$oarr[] = $item->title;
+						}
+
+					}
+
+					$fobj->field_value = implode(',',$oarr);
+
+				}
+				//end						
 		
 				
 				$fobj->params = json_decode($row->params);
@@ -325,18 +361,13 @@ class EasySocialApiMappingHelper
 				{
 					$item->title = str_replace('href="','href="'.JURI::root(),$item->title);
 				}
-
-				if($row->type == 'polls')
-				{
-					continue;	
-				}
-		
+	
 				$item->type = $row->type;
 				$item->group = $row->cluster_type;
 				$item->element_id = $row->contextId;
 				//
 				$item->content = urldecode(str_replace('href="/index','href="'.JURI::root().'index',$row->content));
-				
+		
 				//$item->preview = $row->preview;
 				
 				//hari - code for build video iframe
@@ -344,8 +375,14 @@ class EasySocialApiMappingHelper
 				$frame_match= preg_match('/;iframe.*?>/', $row->preview);
 				   if($frame_match)
 				   {
-					   $dom = new DOMDocument;
-					   $dom->loadHTML($row->preview);
+						$dom = new DOMDocument('1.0', 'UTF-8');
+						//handle error level
+						$internalErrors = libxml_use_internal_errors(true);
+
+						$dom->loadHTML($row->preview);
+						// Restore error level
+						libxml_use_internal_errors($internalErrors);
+					 
 					   foreach ($dom->getElementsByTagName('a') as $node) {
 							   $first = $node->getAttribute( 'href' );                                        
 							   break;                                
@@ -384,7 +421,9 @@ class EasySocialApiMappingHelper
 				
 				if($row->type != 'links')
 				{				
-					$item->raw_content_url = str_replace('href="','href="'.JURI::root(),$item->raw_content_url);
+					$item->raw_content_url = str_replace('href="/','href="'.JURI::root(),$item->raw_content_url);
+					$item->content = str_replace('href="/','href="'.JURI::root(),$item->content);
+				
 				}
 				// Set the publish date
 				$item->published = $row->created->toMySQL();
@@ -486,6 +525,18 @@ class EasySocialApiMappingHelper
 				$strm_urls = array();
 				
 				$strm_urls['actors'] = $user_url;
+				
+				if($row->type == 'polls')
+				{
+					$pdata = json_decode($row->params)->poll;
+					
+					$item->content = $this->createPollData($pdata->id);
+				}
+
+if($item->id == 11115)
+{		
+//print_r(JPATH_SITE);die("in api");
+}
 								
 				$result[]	= $item;
 				//$result[]	= $row;
@@ -524,6 +575,83 @@ class EasySocialApiMappingHelper
 		}
 		return null;
 	}
+	
+	//to build poll content 
+	public function createPollData($pid)
+	{
+		//$pdata = json_decode($row->params)->poll;
+		$poll = FD::table( 'Polls' );
+		$poll->load($pid);
+		$opts = $poll->getItems();
+		$pollLib = FD::get('Polls');
+	//~ print_r($poll);
+	//~ die('In map');	
+		//new code 
+		$my = ES::user();
+		$privacy = $my->getPrivacy();
+
+		$isVoted = $poll->isVoted($my->id);
+
+		$isExpired = false;
+		$showResult = false;
+		$canVote = false;
+		$canEdit = ($my->id == $poll->created_by || $my->isSiteAdmin()) ? true : false;
+
+		if ($privacy->validate('polls.vote', $poll->created_by, SOCIAL_TYPE_USER) ) {
+			$canVote = true;
+		}
+
+		// check if user has the access to vote on polls or not.
+		if ($canVote) {
+			$access = $my->getAccess();
+			if (! $access->allowed('polls.vote')) {
+				$canVote = false;
+			}
+		}
+
+		if ($poll->expiry_date && $poll->expiry_date != '0000-00-00 00:00:00') {
+			// lets check if this poll already expired or not.
+			$curDateTime = ES::date()->toSql();
+
+			if ($curDateTime >= $poll->expiry_date) {
+				$canVote = false;
+				$isExpired = true;
+			}
+		}
+
+		if ($isVoted || !$canVote) {
+			$showResult = true;	}
+			
+		$poll->isExpired = $isExpired;
+		$poll->canVote = $canVote;
+
+		$content = $this->createPollDataview($poll, $opts);
+		return $content;	
+	}
+	
+	public function createPollDataview($poll, $opts)
+	{
+		//new code end
+		$content = "<div ng-disabled=".!$poll->canVote.">";
+		
+		$content = "<label>".$poll->title."</label>";
+		  $check = array();
+		foreach($opts as $k=>$val)
+		{
+				  $check[] = $val->id;		
+		}
+		$arr = count($check);
+		$check = implode(':',$check);
+		
+		//var_dump($check);die("in api");
+		$obj = new stdClass();
+		$obj->poll = $poll;
+		$obj->opts = $opts;
+		
+		return $content  = $obj;
+		
+	}
+	
 	
 	//server date offset setting
 	public function getOffsetServer($date,$userid)
@@ -833,19 +961,54 @@ class EasySocialApiMappingHelper
 		{
 			$ret_arr = new stdClass;
 			$ret_arr->status = false;
-			$ret_arr->message = "No group found in search";
+			$ret_arr->message = JText::_('PLG_API_EASYSOCIAL_GROUP_NOT_FOUND');
 			
 			return $ret_arr;
 		}
 
 		$result = array();
 		$user = JFactory::getUser($userid);
-
+		$user1 = FD::user($userid);
+		//easysocial default profile
+		$profile = $user1->getProfile();
 		foreach($rows as $ky=>$row)
 		{
 			$fieldsModel = FD::table('FieldData');
 			$fieldsModel->load($row->id);
+			
+			$stepsModel = FD::model('Steps');
+			$steps = $stepsModel->getSteps($row->category_id, SOCIAL_TYPE_CLUSTERS, SOCIAL_PROFILES_VIEW_DISPLAY);
+			
+			// Get custom fields model.
+			$fieldsModel = FD::model('Fields');
+			// Get custom fields library.
+			$fields = FD::fields();
+			$field_arr = array();
+			foreach ($steps as $step)
+			{
 
+				$step->fields = $fieldsModel->getCustomFields(array('step_id' => $step->id, 'data' => true, 'dataId' => $userid, 'dataType' => SOCIAL_TYPE_GROUP, 'visible' => SOCIAL_GROUPS_VIEW_DISPLAY));
+				$fields = null;
+				
+				if(count($step->fields))
+				{
+					$fields = $this->fieldsSchema($step->fields,$row->id,SOCIAL_FIELDS_GROUP_GROUP);
+					//die("in fields loop");
+					if(empty($field_arr))
+					{
+						$field_arr = $fields;
+					}
+					else
+					{
+						foreach($fields as $fld)
+						{
+							array_push( $field_arr,$fld );
+						}
+						//array_merge( $field_arr,$fields );
+					}
+				}
+			}
+			
 			if(isset($row->id))
 			{
 				$grpobj = FD::group( $row->id );
@@ -857,7 +1020,7 @@ class EasySocialApiMappingHelper
 				$item->description = $row->description;
 				$item->hits = $row->hits;
 				$item->state = $row->state;
-                $item->website = $fieldsModel->raw;
+              //$item->website = $fieldsModel->raw;
 				$item->created_date = $this->dateCreate($row->created);
                 				
 				//get category name
@@ -872,7 +1035,9 @@ class EasySocialApiMappingHelper
 				//$item->type = ($row->type == 1 )?'Public':'Public';
 				$item->type = $row->type;
 				$item->params = (!empty($row->params))?$row->params:false;
-			
+				
+				$item->more_info = $field_arr;
+				
 				foreach($row->avatars As $ky=>$avt)
 				{
 					$avt_key = 'avatar_'.$ky;
@@ -1011,7 +1176,7 @@ class EasySocialApiMappingHelper
 				$item->lastreplied_date = $row->lastreplied;
 				$item->isread = $row->isread;
 				$item->messages = $row->message;
-				$item->lapsed = $this->calLaps($row->created);
+				$item->lapsed = $this->calLaps($row->lastreplied);
 				$item->participant = $con_usrs;
 
 				$result[] = $item;
@@ -1122,18 +1287,18 @@ class EasySocialApiMappingHelper
 		$image = new stdClass;
 		
 		$actor->id = $id;
-		
+		$actor->username = $user->username;
+		$actor->name = $user->name;
+
 		//ES config dependent username
 		if($es_params->get('users')->displayName == 'username')
 		{
-			$actor->username = $user->username;
+			$actor->display_name = $user->username;
 		}
 		else
 		{
-			$actor->username = $user->name;
+			$actor->display_name = $user->name;
 		}
-
-		$actor->name = $user->name;
 
 		$image->image_small = $user->getAvatar('small');
 		$image->image_medium = $user->getAvatar();
@@ -1249,6 +1414,8 @@ class EasySocialApiMappingHelper
 		foreach($rows as $ky=>$row)
 		{
 				$item = new VideoSimpleSchema();
+
+                $model = FD::model( 'Videos' );
 				
 				$category 	= FD::table('VideoCategory');				
                 $category->load($row->category_id);				
@@ -1284,6 +1451,7 @@ class EasySocialApiMappingHelper
 				$item->likes = $video->getLikesCount();
                 $item->comments = $video->getCommentsCount();
                 $item->isAdmin = $isRoot;	
+                $item->stream_id = $model->getStreamId($row->id,'create');    
 	
 				$result[] = $item;				
 		}
@@ -1325,3 +1493,4 @@ class EasySocialApiMappingHelper
 	}
 	
 }
+

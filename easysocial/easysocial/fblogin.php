@@ -47,7 +47,9 @@ class EasysocialApiResourceFblogin extends ApiResource
 		$this->provider = $app->input->get('provider', 'facebook' , 'STR');
 		$this->confirmed = $app->input->get('confirmed', '0' , 'INT');
 		$obj = new stdClass();
-	
+
+		$this->is_use_jfb = JComponentHelper::isEnabled('com_jfbconnect', true);
+
 		if( $this->accessToken ) {
 			
 			$objFbProfileData = $this->jfbGetUser( $this->accessToken );
@@ -125,7 +127,7 @@ class EasysocialApiResourceFblogin extends ApiResource
 	    		
 	    		$userId = $this->joomlaCreateUser($username, $objFbProfileData->name, $objFbProfileData->email, $objFbProfileData);
 	    		
-	    		if( $userId ) {
+	    		if( $userId && $this->is_use_jfb) {
 	    			$this->jfbCreateUser( $userId, $objFbProfileData);
 	    		}
 	    		
@@ -140,7 +142,11 @@ class EasysocialApiResourceFblogin extends ApiResource
 	public function jfbGetUserFromMap( $objFbProfileData )
 	{
 		$db = JFactory::getDBO();
-		$query = $db->getQuery(true);
+		$query = $db->getQuery(true);		
+		$userId = 0;		
+
+		if($this->is_use_jfb)
+		{
 		
 		$query->select(' j_user_id ');
 		$query->from('#__jfbconnect_user_map');
@@ -149,7 +155,10 @@ class EasysocialApiResourceFblogin extends ApiResource
 		
 		$userId = $db->loadResult();
 		
-		if( !$userId ) {
+		}
+	
+		if( !$userId )
+		{
 			$query = $db->getQuery(true);			
 			$query->select(' id ');
 			$query->from('#__users');

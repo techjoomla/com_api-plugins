@@ -15,7 +15,7 @@
 		<folder>jticket</folder>
 	</files>
 	<languages>
-		<language tag="en-GB">language/en-GB/en-GB.plg_api_jticket.ini</language>
+		<language tag="en-GB">en-GB/en-GB.plg_api_jticket.ini</language>
 	</languages>
 	<config>
         <fields name="params">

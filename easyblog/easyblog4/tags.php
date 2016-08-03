@@ -42,7 +42,15 @@ class EasyblogApiResourceTags extends ApiResource
 		$allTags = array_slice($allTags, $limitstart, $limit);
 		return $allTags;	
 	}
-	
+	//future requirement.
+	//~ public function searchTag()
+	//~ {
+		//~ $Tagmodel = EasyBlogHelper::getModel( 'Tags' );
+		//~ $input = JFactory::getApplication()->input;
+		//~ $title = $input->get('title', null, 'STRING');
+		//~ $result = $Tagmodel->searchTag($title);
+		//~ return $result;
+	//~ }
 	public function searchTag()
 	{
 	   $app = JFactory::getApplication();

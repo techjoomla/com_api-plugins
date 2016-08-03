@@ -84,7 +84,7 @@ class EasysocialApiResourceFriends extends ApiResource
 								$flag=1;
 							}else{
 								$flag=1;
-								$mssg=JText::_( 'No block user' );
+								$mssg=JText::_( 'PLG_API_EASYSOCIAL_NO_BLOCKED_USER' );
 							}
 			break;
 			

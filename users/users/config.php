@@ -95,6 +95,7 @@ class UsersApiResourceConfig extends ApiResource
 		{
 			require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/foundry.php';
 			$es_params = FD::config();
+			$profiles = FD::model( 'profiles' );
 
 			$cdata['conversations_limit'] = $es_params->get('conversations')->limit;
 			$cdata['activity_limit'] = $es_params->get('activity')->pagination;
@@ -106,7 +107,8 @@ class UsersApiResourceConfig extends ApiResource
 			$cdata['emailasusername'] = $es_params->get('registrations')->emailasusername;
 			$cdata['displayName'] = $es_params->get('users')->displayName;
 			$cdata['groups']['enabled'] = $es_params->get('groups')->enabled;
-
+			$profiles_data = $profiles->getAllProfiles();
+			$cdata['profile_types'] = $profiles_data;
 		}
 		return $cdata;
 	}

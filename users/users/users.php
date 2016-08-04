@@ -64,7 +64,7 @@ class UsersApiResourceUsers extends ApiResource
 		$data['enabled']    = $app->input->get('enabled', 1, 'INT');
 		$data['activation']    = $app->input->get('activation', 0, 'INT');	
 		$data['app']    = $app->input->get('app_name', 'Easysocial App', 'STRING');	
-
+		$data['profile_id']    = $app->input->get('profile_id', 1, 'INT');	
 		global $message;
 
 		$eobj = new stdClass();		
@@ -150,6 +150,16 @@ class UsersApiResourceUsers extends ApiResource
 				
 			}
 			*/
+			/* Update profile type */
+			$profiles = FD::model( 'profiles' );
+			$all_profiles = $profiles->getAllProfiles();
+	
+			foreach ($all_profiles as $key) {
+				if($key->id == $data['profile_id']){
+					$profiles->updateUserProfile($user->id,$data['profile_id']);
+				}
+			}
+			
 			$mail_sent = $this->sendRegisterEmail($data);
 			
 			$easysocial = JPATH_ADMINISTRATOR .'/components/com_easysocial/easysocial.php';
@@ -523,7 +533,6 @@ class UsersApiResourceUsers extends ApiResource
 
 		// Send the registration email.
 		$return = JFactory::getMailer()->sendMail($data['mailfrom'], $data['fromname'], $base_dt['email'], $emailSubject, $emailBody);
-//print_r($return);die("in api");
 		return $return;
 		
 	}

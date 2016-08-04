@@ -150,8 +150,16 @@ class UsersApiResourceUsers extends ApiResource
 				
 			}
 			*/
+			/* Update profile type */
 			$profiles = FD::model( 'profiles' );
-			$profiles->updateUserProfile($user->id,$data['profile_id']);
+			$all_profiles = $profiles->getAllProfiles();
+	
+			foreach ($all_profiles as $key) {
+				if($key->id == $data['profile_id']){
+					$profiles->updateUserProfile($user->id,$data['profile_id']);
+				}
+			}
+			
 			$mail_sent = $this->sendRegisterEmail($data);
 			
 			$easysocial = JPATH_ADMINISTRATOR .'/components/com_easysocial/easysocial.php';

@@ -69,6 +69,27 @@ class EasysocialApiResourceFriends extends ApiResource
 							$flag=0;						
 							$mssg=JText::_( 'PLG_API_EASYSOCIAL_NOT_SENT_REQUEST' );	
 			break;
+			case 'blocked': //getting block friends	added by pratiksha 							
+							$blk_list = $frnd_mod->getFriends($userid);
+							$flag=1;
+							if($blk_list){
+								foreach($blk_list as $sfnd)
+								{
+									$other_user_obj = FD::user($sfnd->id);
+									$model = FD::model('Blocks');
+									$res = (bool) $model->isBlocked($userid, $sfnd->id);
+									if($res)
+									{
+										$ttl_list[] = $other_user_obj;
+									}
+								}
+							}
+							if(empty($ttl_list))
+							{	
+								$mssg=JText::_( 'PLG_API_EASYSOCIAL_NO_BLOCKED_USER' );
+							}
+
+			break;
 			
 			case 'suggest': //getting suggested friends							
 							$sugg_list = $frnd_mod->getSuggestedFriends($userid);
@@ -104,15 +125,28 @@ class EasysocialApiResourceFriends extends ApiResource
 							  return $invites;
 			break;		
 		}		
-		// if search word present then search user as per term and given id
-		if(empty($search) && empty($ttl_list) && $flag!=1 )
+	// if search word present then search user as per term and given id
+	if(empty($search) && empty($ttl_list) && $flag!=1 )
+	{
+		$ttl_list_frnds = $frnd_mod->getFriends($userid,$options); 
+		if($ttl_list_frnds)
 		{
-			$ttl_list = $frnd_mod->getFriends($userid,$options); 
+			foreach($ttl_list_frnds as $sfnd)
+			{
+				$other_user_obj = FD::user($sfnd->id);
+				$model = FD::model('Blocks');
+				$res = (bool) $model->isBlocked($userid, $sfnd->id);
+				if(!$res)
+				{
+					$ttl_list[] = $other_user_obj;
+				}
+			}
 		}
-		else if(!empty($search) && empty($filter)) 
-		{						
-			$ttl_list = $frnd_mod->search($userid,$search,'username');
-		}		
+	}
+	else if(!empty($search) && empty($filter)) 
+	{						
+		$ttl_list = $frnd_mod->search($userid,$search,'username');
+	}		
 	
 
 	if(count($ttl_list)>'0')

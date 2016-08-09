@@ -71,6 +71,7 @@ class EasysocialApiResourceFriends extends ApiResource
 			break;
 			case 'blocked': //getting block friends	added by pratiksha 							
 							$blk_list = $frnd_mod->getFriends($userid);
+							$flag=1;
 							if($blk_list){
 								foreach($blk_list as $sfnd)
 								{
@@ -83,13 +84,8 @@ class EasysocialApiResourceFriends extends ApiResource
 									}
 								}
 							}
-							if(!empty($ttl_list))
+							if(empty($ttl_list))
 							{	
-								$flag=1;
-							}
-							else
-							{
-								$flag=1;
 								$mssg=JText::_( 'PLG_API_EASYSOCIAL_NO_BLOCKED_USER' );
 							}
 

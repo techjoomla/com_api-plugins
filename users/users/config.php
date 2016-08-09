@@ -108,7 +108,15 @@ class UsersApiResourceConfig extends ApiResource
 			$cdata['displayName'] = $es_params->get('users')->displayName;
 			$cdata['groups']['enabled'] = $es_params->get('groups')->enabled;
 			$profiles_data = $profiles->getAllProfiles();
-			$cdata['profile_types'] = $profiles_data;
+
+			/* Check for profile_type is allowed for Registration by vivek*/
+			$allowed_profile_types = array();
+			foreach ($profiles_data as $key ) {
+				if($key->registration == '1'){
+					array_push($allowed_profile_types, $key);
+				}
+			}
+			$cdata['profile_types'] = $allowed_profile_types;
 		}
 		return $cdata;
 	}

@@ -23,10 +23,20 @@ class EasysocialApiResourceStreams extends ApiResource
 		$target_id = $app->input->get('target_id', 0, 'INT');
 		$action = $app->input->get('action', 0, 'STRING');
 
-		return $res = ($action == "hide")?$this->hide($target_id):$this->delete($target_id);
+		switch ($action)
+		{
+			case 'hide' 	: 	return $res = $this->hide($target_id);
+								break;
+
+			case 'unhide' 	: 	return $res = $this->unhide($target_id);
+								break;
+
+			case 'delete' 	:  	return $res = $this->delete($target_id);
+								break;
+		}
 	}
 
-	public function hide($target_id)
+    public function hide($target_id)
 	{
 		$res = new stdClass;
 
@@ -34,7 +44,7 @@ class EasysocialApiResourceStreams extends ApiResource
 		if (!$target_id)
 		{
 			$res->success = 0;
-			$res->message = JText::_('COM_EASYSOCIAL_ERROR_UNABLE_TO_LOCATE_ID');
+			$res->message = JText::_('PLG_API_EASYSOCIAL_ERROR_UNABLE_TO_LOCATE_ID');
 		}
 
 		// Get logged in user
@@ -48,7 +58,7 @@ class EasysocialApiResourceStreams extends ApiResource
 		if (!$item->hideable())
 		{
 			$res->success = 0;
-			$res->message = JText::_('COM_EASYSOCIAL_STREAM_NOT_ALLOWED_TO_HIDE');
+			$res->message = JText::_('PLG_API_EASYSOCIAL_STREAM_NOT_ALLOWED_TO_HIDE');
 		}
 
 		// Get the model
@@ -69,15 +79,15 @@ class EasysocialApiResourceStreams extends ApiResource
 		return $res;
 	}
 
-	public function delete($target_id)
+    public function unhide($target_id)
 	{
 		$res = new stdClass;
 
-		// If id is invalid, throw an error.
+		// If id is null, throw an error.
 		if (!$target_id)
 		{
 			$res->success = 0;
-			$res->message = JText::_('COM_EASYSOCIAL_ERROR_UNABLE_TO_LOCATE_ID');
+			$res->message = JText::_('PLG_API_EASYSOCIAL_ERROR_UNABLE_TO_LOCATE_ID');
 		}
 
 		// Get logged in user
@@ -87,6 +97,86 @@ class EasysocialApiResourceStreams extends ApiResource
 		// Load the stream item.
 		$item = FD::table('Stream');
 		$item->load($target_id);
+
+		// Check if the user is allowed to hide this item
+		if ( !$item->hideable() )
+		{
+			$res->success = 0;
+			$res->message = JText::_('PLG_API_EASYSOCIAL_STREAM_NOT_ALLOWED_TO_UNHIDE');
+		}
+
+		// Get the model
+		$model = FD::model('Stream');
+		$state = $model->unhide($target_id, $my->id);
+
+		if ($state)
+		{
+			$res->success = 1;
+			$res->message = JText::_('PLG_API_EASYSOCIAL_HIDE_NEWSFEED_ITEM');
+		}
+		else
+		{
+			$res->success = 0;
+			$res->message = JText::_('PLG_API_EASYSOCIAL_HIDE_NEWSFEED_ITEM_ERROR');
+		}
+
+		return $res;
+	}
+
+	public function delete($target_id)
+	{
+		$res = new stdClass;
+
+		if (!$target_id)
+		{
+			$res->success = 0;
+			$res->message = JText::_('PLG_API_EASYSOCIAL_ERROR_UNABLE_TO_LOCATE_ID');
+		}
+
+		// Load the stream item.
+		$item = FD::table('Stream');
+		$item->load($target_id);
+		$state = $item->delete();
+
+		$my = FD::user();
+		$access = $my->getAccess();
+
+		// If the user is not a super admin, we need to check their privileges
+		if (!$my->isSiteAdmin())
+		{
+			// Check if the stream item is for groups
+			if ($item->cluster_id)
+			{
+				if ($item->cluster_type == 'group')
+				{
+					$cluster = FD::group($item->cluster_id);
+				}
+
+				if ($item->cluster_type == 'event')
+				{
+					$cluster = FD::event($item->cluster_id);
+				}
+
+				if (!$cluster->isAdmin() && !$access->allowed('stream.delete', false))
+				{
+					$res->success = 0;
+					$res->message = JText::_('PLG_API_EASYSOCIAL_STREAM_NOT_ALLOWED_TO_DELETE');
+
+					return $res;
+				}
+			}
+			else
+			{
+				if (!$access->allowed('stream.delete', false))
+				{
+					$res->success = 0;
+					$res->message = JText::_('PLG_API_EASYSOCIAL_STREAM_NOT_ALLOWED_TO_DELETE');
+
+					return $res;
+				}
+			}
+		}
+
 		$state = $item->delete();
 
 		if ($state)

@@ -1369,15 +1369,18 @@ if($item->id == 11115)
 	{
 		//$user = JFactory::getUser($this->plugin->get('user')->id);
 		$frnd_mod = FD::model( 'Friends' );
+		$model = FD::model('Blocks');
 		$list = array();
 		foreach($data as $k=>$node)
 		{
+			$res = (bool) $model->isBlocked($user->id, $node->id);
 
 			if($node->id != $user->id)
 			{								
 				$node->mutual = $frnd_mod->getMutualFriendCount($user->id,$node->id);
 				$node->isFriend = $frnd_mod->isFriends($user->id,$node->id);
 				$node->approval_pending = $frnd_mod->isPendingFriends($user->id,$node->id);			
+				$node->isBlock = $res;			
 			}
 		}		
 		return $data;	

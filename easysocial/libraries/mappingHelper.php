@@ -1369,10 +1369,10 @@ if($item->id == 11115)
 	{
 		//$user = JFactory::getUser($this->plugin->get('user')->id);
 		$frnd_mod = FD::model( 'Friends' );
+		$model = FD::model('Blocks');
 		$list = array();
 		foreach($data as $k=>$node)
 		{
-			$model = FD::model('Blocks');
 			$res = (bool) $model->isBlocked($user->id, $node->id);
 
 			if($node->id != $user->id)

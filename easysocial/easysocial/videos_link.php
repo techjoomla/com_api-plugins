@@ -98,9 +98,9 @@ class EasysocialApiResourceVideos_link extends ApiResource
 			// Save the video
 			$state = $video->table->store();
 
-		if ($id) {
-			$message = 'COM_EASYSOCIAL_VIDEOS_UPDATED_SUCCESS';
-		}
+			/*if ($id) {
+				$message = 'COM_EASYSOCIAL_VIDEOS_UPDATED_SUCCESS';
+			}*/
 
 		// Bind the video location
 		if (isset($post['location']) && $post['location'] && isset($post['latitude']) && $post['latitude'] && isset($post['longitude']) && $post['longitude']) {
@@ -117,12 +117,12 @@ class EasysocialApiResourceVideos_link extends ApiResource
 			$location->store();
 		}
 		
-		// This video could be edited
+		/* This video could be edited
 		$id = $post["id"];
 		$uid = $log_user;
 		$type = $app->input->get('type', SOCIAL_TYPE_USER, 'word');
 
-        /*
+        
 		// Bind the tags
 		if (isset($post['tags'])) {
 			$video->insertTags($post['tags']);

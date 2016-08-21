@@ -34,7 +34,7 @@ class EasysocialApiResourceEvents extends ApiResource
 		$res = new stdClass;
 		$options = array('state' => SOCIAL_STATE_PUBLISHED, 'ordering' => $ordering);
 		$event	= FD::model( 'events' );
-		$filter = $app->input->get('filter','','STRING');	
+		$filter = $app->input->get('filter','all','STRING');	
 		$dates = $app->input->get('date','','STRING');
 		$cdates = $app->input->get('cdate','','STRING');
 		$start_date = $app->input->get('start_date','','STRING');
@@ -83,23 +83,19 @@ class EasysocialApiResourceEvents extends ApiResource
 			else{
 				$filter='range';
 			}		
-		}	
+		}
+	
 		//get events with filter. 		
 		switch($filter)
 		{
-				case 'all':	$featuredOptions = array(
-								'featured' => true,
-								'type' => array(
-									SOCIAL_EVENT_TYPE_PUBLIC,
-									SOCIAL_EVENT_TYPE_PRIVATE
-							   )
-							);
+				case 'all':		//$options['featured'] = true;
 							  // We do not want to include past events here
 							if (!$includePast) {
 								$options['ongoing'] = true;
 								$options['upcoming'] = true;
 							}
-							
+
+						
 				break;						
 				case 'featured': $options['featured'] = true;
 				break;				
@@ -158,7 +154,7 @@ class EasysocialApiResourceEvents extends ApiResource
 			$options['limitstart'] = $limitstart;
 			$options['limit'] = $limit;
 		}
-			
+		
 		$eventResult = $event->getEvents($options);
 		if(empty($eventResult)){
 			$res->message=JText::_( 'PLG_API_EASYSOCIAL_EVENT_NOT_FOUND_MESSAGE' );

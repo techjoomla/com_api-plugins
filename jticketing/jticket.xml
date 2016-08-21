@@ -1,21 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension version="2.5.0" type="plugin" group="api" method="upgrade">
-    <name>Api - Jticketing</name>
-    <version>1.6</version>
-    <creationDate>10/11/2014</creationDate>
-    <author>Techjoomla</author> 
-    <authorEmail>extensions@techjoomla.com</authorEmail> 
-    <authorUrl>www.techjoomla.com</authorUrl> 
-    <copyright>Techjoomla. All rights reserved.</copyright> 
-    <license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
-    <description>API plugins of Jticketing components of the Joomla! </description>
-
-    <files>
-        <filename plugin="jticket">jticket.php</filename>
-        <filename >jticket/checkin.php</filename>
-        <folder>jticket</folder>
-    </files>
-    <languages>
+<extension version="3.0" type="plugin" group="api" method="upgrade">
+	<name>Api - Jticketing</name>
+	<version>1.7.2</version>
+	<creationDate>12th Feb 2016</creationDate>
+	<author>Tekdi</author>
+	<authorEmail>support@tekdi.com</authorEmail>
+	<authorUrl>http://www.tekdi.com</authorUrl>
+	<copyright>2012 users</copyright>
+	<license>GNU General Public License v2</license>
+	<description>API plugins of Jticketing components of the Joomla!</description>
+	<files>
+		<filename plugin="jticket">jticket.php</filename>
+		<filename>jticket/checkin.php</filename>
+		<folder>jticket</folder>
+	</files>
+	<languages>
 		<language tag="en-GB">en-GB/en-GB.plg_api_jticket.ini</language>
 	</languages>
+	<config>
+        <fields name="params">
+
+	  <fieldset name="users_allow_access_app_fieldset" label="params" description="">
+		  <field name="users_allow_access_app" type="sql" default="" label="Users to allow access to App although not event creator" query="SELECT id, name  FROM #__users" key_field="id" value_field="name" multiple="multiple">
+		</field>
+    </fieldset>
+    </fields>
+    </config>
 </extension>

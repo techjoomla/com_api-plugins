@@ -64,7 +64,7 @@ class UsersApiResourceUsers extends ApiResource
 		$data['enabled']    = $app->input->get('enabled', 1, 'INT');
 		$data['activation']    = $app->input->get('activation', 0, 'INT');	
 		$data['app']    = $app->input->get('app_name', 'Easysocial App', 'STRING');	
-
+		$data['profile_id']    = $app->input->get('profile_id', 1, 'INT');	
 		global $message;
 
 		$eobj = new stdClass();		
@@ -150,6 +150,16 @@ class UsersApiResourceUsers extends ApiResource
 				
 			}
 			*/
+			/* Update profile type */
+			$profiles = FD::model( 'profiles' );
+			$all_profiles = $profiles->getAllProfiles();
+	
+			foreach ($all_profiles as $key) {
+				if($key->id == $data['profile_id']){
+					$profiles->updateUserProfile($user->id,$data['profile_id']);
+				}
+			}
+			
 			$mail_sent = $this->sendRegisterEmail($data);
 			
 			$easysocial = JPATH_ADMINISTRATOR .'/components/com_easysocial/easysocial.php';
@@ -370,23 +380,15 @@ class UsersApiResourceUsers extends ApiResource
 
 		foreach($fields as $field)
 		{
-			//$fld_data[$field->id] = $field->unique_key;
-			$fobj = new stdClass();
-			$fullname = $post['TITLE']." ".$post['first_name']." ".$post['middle_name']." ".$post['last_name']; 
-			$address = $post['STREET_1'].",".$post['STREET_2'].",".$post['CITY'].",".$post['PIN_CODE'].",".$post['STATE'].",".$post['COUNTRY'];
-			// Hari code for address comma remove
-			if($address == ',,,,,'){
-                               $address='';
-                       	}		
-  
-
-			$fld_data['first_name'] = (!empty($post['first_name']))?$post['first_name']:$app->input->get('name', '', 'STRING');
-			$fld_data['middle_name'] = $post['middle_name'];
-			$fld_data['last_name'] = $post['last_name'];
 			
-			$fobj->first = $post['TITLE']." ".$fld_data['first_name'];
-			$fobj->middle = $post['middle_name'];
-			$fobj->last = $post['last_name'];
+			$fobj = new stdClass();
+			$fullname = $app->input->get('name', '', 'STRING');
+			$fld_data['first_name'] = $app->input->get('name', '', 'STRING');
+			
+			
+			$fobj->first = $fld_data['first_name'];
+			$fobj->middle = '';
+			$fobj->last = '';
 			$fobj->name = $fullname;
 
 			switch($field->unique_key)
@@ -401,31 +403,6 @@ class UsersApiResourceUsers extends ApiResource
 								break;
 				case 'JOOMLA_EMAIL':	$fld_data['es-fields-'.$field->id] = $app->input->get('email', '', 'STRING'); 
 								break;
-				case 'JOOMLA_TIMEZONE':	$fld_data['es-fields-'.$field->id] = isset($post['timezone'])?$post['timezone']:null; 
-								break;
-				case 'JOOMLA_USER_EDITOR':	$fld_data['es-fields-'.$field->id] = isset($post['editor'])?$post['editor']:null; 
-								break;
-								
-				case 'PERMALINK':	$fld_data['es-fields-'.$field->id] = isset($post['permalink'])?$post['permalink']:null;
-									break;
-				case 'BIRTHDAY':	$bod =array();
-									if(isset($post['BIRTHDAY']))
-									{
-										$config = JFactory::getConfig();
-										$bod['date'] = $post['BIRTHDAY'];
-										$bod['timezone'] = $config->get('offset');
-									}
-									$fld_data['es-fields-'.$field->id] = isset($post['BIRTHDAY'])?$bod:array();
-									break;
-				case 'GENDER':	$fld_data['es-fields-'.$field->id] = isset($post['GENDER'])?$post['GENDER']:'';
-									break;
-				case 'ADDRESS':	$fld_data['es-fields-'.$field->id] = $address;
-									break;
-				case 'TEXTBOX': $fld_data['es-fields-'.$field->id] = $post['MOBILE'];
-									break;
-				case 'URL': $fld_data['es-fields-'.$field->id] = (isset($post['WEBSITE']))?$post['WEBSITE']:'';
-									break;
-				
 				case 'AVATAR':	$fld_data['es-fields-'.$field->id] = Array
 										(
 											'source' =>$avtar_scr, 
@@ -435,13 +412,6 @@ class UsersApiResourceUsers extends ApiResource
 											'name' => $avatar_file_name
 										);
 								break;
-				/*
-				case 'COVER':	$fld_data['es-fields-'.$field->id] = Array
-										(
-											'data' =>$cover_data,
-											'position' =>'{"x":0.5,"y":0.5}' 
-										);
-								break;*/
 			}
 		}
 
@@ -523,7 +493,6 @@ class UsersApiResourceUsers extends ApiResource
 
 		// Send the registration email.
 		$return = JFactory::getMailer()->sendMail($data['mailfrom'], $data['fromname'], $base_dt['email'], $emailSubject, $emailBody);
-//print_r($return);die("in api");
 		return $return;
 		
 	}

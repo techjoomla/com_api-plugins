@@ -136,8 +136,8 @@ class EasysocialApiResourceShare extends ApiResource
 			$friends = null;
 		}
 
-		$privacyRule = ( $type == 'photos' ) ? 'photos.view' : 'story.view';
-			
+		//$privacyRule = ( $type == 'photos' ) ? 'photos.view' : 'story.view';
+		$privacyRule = "$type".'.view';
 			//for hashtag mentions
 			$mentions = null;
 
@@ -189,7 +189,7 @@ class EasysocialApiResourceShare extends ApiResource
 			}
 
 			$contextIds = 0;
-			if($type == 'photos')
+		/*if($type == 'photos')
 			{
 				$photo_obj = $this->uploadPhoto($log_usr,'user');
 				
@@ -199,7 +199,24 @@ class EasysocialApiResourceShare extends ApiResource
 			else
 			{
 				$type = 'story';
+			}*/
+			
+			//manage type
+			switch($type)
+			{
+			case 'photos':	$photo_obj = $this->uploadPhoto($log_usr,'user');
+					
+							$photo_ids[] = $photo_obj->id;
+							$contextIds = (count($photo_ids))?$photo_ids:null;
+							
+							break;
+			case 'videos':
+			case 'polls': 
+			case 'story': break;
+			
 			}
+			
+			
 			
 			// Process moods here
 			$mood = FD::table('Mood');
@@ -389,6 +406,6 @@ class EasysocialApiResourceShare extends ApiResource
 		$uploader->bindFile( $data );
 
 		$state 	= $uploader->store();
-	}
-	
+	}	
 }
+

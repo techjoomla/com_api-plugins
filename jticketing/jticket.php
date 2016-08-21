@@ -1,51 +1,67 @@
 <?php
 /**
- * @package API plugins
- * @copyright Copyright (C) 2009 2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
- * @license GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
- * @link http://www.techjoomla.com
-*/
-
-defined('_JEXEC') or die( 'Restricted access' );
-
+ * @version    SVN: <svn_id>
+ * @package    JTicketing
+ * @author     Techjoomla <extensions@techjoomla.com>
+ * @copyright  Copyright (c) 2009-2015 TechJoomla. All rights reserved.
+ * @license    GNU General Public License version 2 or later.
+ */
+defined('_JEXEC') or die( 'Restricted access');
 jimport('joomla.plugin.plugin');
 
-class plgAPIJticket extends ApiPlugin
+/**
+ * Base Class for api plugin
+ *
+ * @package     JTicketing
+ * @subpackage  component
+ * @since       1.0
+ */
+class PlgAPIJticket extends ApiPlugin
 {
-	public function __construct()
+	/**
+	 * Jticketing api plugin to load com_api classes
+	 *
+	 * @param   string  $subject  originalamount
+	 * @param   array   $config   coupon_code
+	 *
+	 * @since   1.0
+	 */
+	public function __construct($subject, $config = array())
 	{
-		parent::__construct();
+		parent::__construct($subject, $config = array());
+
 		// Load all required helpers.
-		$component_path=JPATH_ROOT.DS.'components'.DS.'com_jticketing';
-		if(!file_exists($component_path))
+		$component_path = JPATH_ROOT . '/components/com_jticketing';
+
+		if (!file_exists($component_path))
 		{
 			return;
 		}
 
-		$jticketingmainhelperPath = JPATH_ROOT.DS.'components'.DS.'com_jticketing'.DS.'helpers'.DS.'main.php';
+		$jticketingmainhelperPath = JPATH_ROOT . '/components/com_jticketing/helpers/main.php';
 
 		if (!class_exists('jticketingmainhelper'))
 		{
-			JLoader::register('jticketingmainhelper', $jticketingmainhelperPath );
+			JLoader::register('jticketingmainhelper', $jticketingmainhelperPath);
 			JLoader::load('jticketingmainhelper');
 		}
 
-		$jticketingfrontendhelper = JPATH_ROOT.DS.'components'.DS.'com_jticketing'.DS.'helpers'.DS.'frontendhelper.php';
+		$jticketingfrontendhelper = JPATH_ROOT . '/components/com_jticketing/helpers/frontendhelper.php';
 
 		if (!class_exists('jticketingfrontendhelper'))
 		{
-			JLoader::register('jticketingfrontendhelper', $jticketingfrontendhelper );
+			JLoader::register('jticketingfrontendhelper', $jticketingfrontendhelper);
 			JLoader::load('jticketingfrontendhelper');
 		}
 
-		$jteventHelperPath = JPATH_ROOT.DS.'components'.DS.'com_jticketing'.DS.'helpers'.DS.'event.php';
+		$jteventHelperPath = JPATH_ROOT . '/components/com_jticketing/helpers/event.php';
 
 		if (!class_exists('jteventHelper'))
 		{
-			JLoader::register('jteventHelper', $jteventHelperPath );
+			JLoader::register('jteventHelper', $jteventHelperPath);
 			JLoader::load('jteventHelper');
 		}
 
-		ApiResource::addIncludePath(dirname(__FILE__).'/jticket');
+		ApiResource::addIncludePath(dirname(__FILE__) . '/jticket');
 	}
 }

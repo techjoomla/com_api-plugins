@@ -42,7 +42,7 @@ class EasyblogApiResourceEasyblog_users extends ApiResource
 		$ob1  = new EasyBlogModelBlogger();
 		$ob1->setState('limitstart',$limitstart);
 		//$bloggers = $ob1->getAllBloggers('latest',$limit, $filter='showallblogger' , $search );		
-		$bloggers = $ob1->getBloggers('latest',$limit, $filter='showallblogger' , $search );		
+		$bloggers = $ob1->getBloggers('latest',$limit, $filter='showbloggerwithpost' , $search );		
 		$blogger = EasyBlogHelper::table( 'Profile' );		
 		foreach( $bloggers as $usr )
 		{

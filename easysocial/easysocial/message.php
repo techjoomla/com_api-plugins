@@ -264,20 +264,21 @@ class EasysocialApiResourceMessage extends ApiResource
 		
 		$conversation_id = $app->input->get('conversation_id',0,'INT');
 		$limitstart = $app->input->get('limitstart',0,'INT');
-		$limit = $app->input->get('limit',10,'INT'); 
+		$limit = $app->input->get('limit',20,'INT'); 
 		$maxlimit = $app->input->get('maxlimit',100,'INT'); 
 		$filter = $app->input->get('filter',null,'STRING');
 		
 		$mapp = new EasySocialApiMappingHelper();
 		
 		$data = array();
+		$data['data'] = array();
 		
 		$user = FD::user($log_user->id);
 		
 		$mapp = new EasySocialApiMappingHelper();
 		
 		$conv_model = FD::model('Conversations');
-		
+		$conv_model->setState('limitstart', 0);
 		// set the startlimit
 		$conv_model->setState( 'limitstart'	, $limitstart );
 		
@@ -286,7 +287,7 @@ class EasysocialApiResourceMessage extends ApiResource
 			$data['participant'] = $this->getParticipantUsers( $conversation_id );
 			//$msg_data = $conv_model->getMessages($conversation_id,$log_user->id);
 			$msg_data = $conv_model->setLimit( $limit )->getMessages($conversation_id,$log_user->id);
-		
+	
 			$data['data'] = $mapp->mapItem($msg_data,'message',$log_user->id);
 			return $data;
 		}
@@ -323,9 +324,12 @@ class EasysocialApiResourceMessage extends ApiResource
 				}*/
 				$data['data'] = $mapp->mapItem($conversion,'conversion',$log_user->id);
 			}
-			
+	
+			if($data['data'])
+			{
 			//manual pagination code
 			$data['data'] = array_slice( $data['data'], $limitstart, $limit );
+			}
 			
 			return( $data );
 		}

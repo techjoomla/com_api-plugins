@@ -43,7 +43,8 @@ class UsersApiResourceConfig extends ApiResource
 		}
 
 		$obj->global_config = $this->getJoomlaConfig();
-		//	
+		$obj->plugin_config = $this->getpluginConfig();
+			
 
 		$this->plugin->setResponse($obj);	
 	}
@@ -94,6 +95,7 @@ class UsersApiResourceConfig extends ApiResource
 		{
 			require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/foundry.php';
 			$es_params = FD::config();
+			$profiles = FD::model( 'profiles' );
 
 			$cdata['conversations_limit'] = $es_params->get('conversations')->limit;
 			$cdata['activity_limit'] = $es_params->get('activity')->pagination;
@@ -105,10 +107,37 @@ class UsersApiResourceConfig extends ApiResource
 			$cdata['emailasusername'] = $es_params->get('registrations')->emailasusername;
 			$cdata['displayName'] = $es_params->get('users')->displayName;
 			$cdata['groups']['enabled'] = $es_params->get('groups')->enabled;
+			$profiles_data = $profiles->getAllProfiles();
 
+			/* Check for profile_type is allowed for Registration by vivek*/
+			$allowed_profile_types = array();
+			foreach ($profiles_data as $key ) {
+				if($key->registration == '1'){
+					array_push($allowed_profile_types, $key);
+				}
+			}
+			$cdata['profile_types'] = $allowed_profile_types;
 		}
 		return $cdata;
 	}
+	
+		// get fb plugin config
+	public function getpluginConfig()
+	{
+		$data = array();
+		$plugin = JPluginHelper::getPlugin('api', 'users');
+		$pluginParams = new JRegistry($plugin->params);
+		//code for future use
+		/*$plugin_es = JPluginHelper::getPlugin('api', 'easysocial');
+		$pluginParams_es = new JRegistry($plugin_es->params);*/
+		
+		$data['fb_login'] = $pluginParams->get('fb_login');
+		$data['fb_app_id'] = $pluginParams->get('fb_app_id');
+		$data['quick2art'] = $pluginParams->get('quick2art');
+		
+		return $data;
+	}
+
 	
 	//get joomla config changes
 	public function getJoomlaConfig()

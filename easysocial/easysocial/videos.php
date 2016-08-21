@@ -48,8 +48,7 @@ class EasysocialApiResourceVideos extends ApiResource
 		
 		$app = JFactory::getApplication();		
 		$video_id = $app->input->get('video_id',0,'INT');			
-	
-				
+					
 		$limitstart=  $app->input->get('limitstart',0,'INT');
 		$limit=  $app->input->get('limit',0,'INT');
 		$filter = $app->input->get('filter','','STRING');

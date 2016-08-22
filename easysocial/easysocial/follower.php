@@ -228,7 +228,7 @@ class EasysocialApiResourceFollower extends ApiResource
 
 		//set limitstart
 		//$main_mod->setUserState( 'limitstart' , $options['limitstart'] );
-		//$foll_model->setUserState( 'limitstart' , $options['limitstart'] );
+		$foll_model->setUserState( 'limitstart' , $options['limitstart'] );
 		
 		if(!$target_user)
 		$target_user = $user;

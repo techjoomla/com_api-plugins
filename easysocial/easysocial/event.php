@@ -360,9 +360,8 @@ class EasysocialApiResourceEvent extends ApiResource
 					case 'ADDRESS':	$ev_data['es-fields-'.$field->id] = $post['location'];
 									unset($post['location']);
 									break;
-					case 'RECURRING'://$post['repeat'] = (array)json_decode($post['repeat']);
-									$post['repeat'] = json_encode($post['repeat'], JSON_FORCE_OBJECT);	
-									$ev_data['es-fields-'.$field->id] = $post['repeat'];
+					case 'RECURRING':$post['repeat'] = (array)json_decode($post['repeat']);	
+							$ev_data['es-fields-'.$field->id] = $post['repeat'];
 									unset($post['repeat']);
 									break;
 					case 'AVATAR':	$ev_data['es-fields-'.$field->id] = Array

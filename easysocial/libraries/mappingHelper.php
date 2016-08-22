@@ -84,14 +84,14 @@ class EasySocialApiMappingHelper
 						return $this->photosSchema($rows,$userid);
 						break;
 			case 'event':
-                        return $this->eventsSchema($rows,$userid);                                                
-                        break;
-            case 'videos':
-                        return $this->videosSchema($rows,$userid);                                                
-                        break;
-            case 'polls':
+						return $this->eventsSchema($rows,$userid);                                                
+						break;
+			case 'videos':
+						return $this->videosSchema($rows,$userid);                                                
+						break;
+			case 'polls':
 						return $this->pollsSchema($rows);                                                
-                        break;
+						break;
 		}
 		
 		return $item;
@@ -179,8 +179,6 @@ class EasySocialApiMappingHelper
 				if(!$comments->stream_id)
 				$comments->element=$item->comment_element;
 
-				
-			
 				//$comments->element=$item->comment_element;				
 				$item->comments = $this->createCommentsObj($comments);				
 				$options = array('uid' => $comments->uid, 'element' => $item->comment_element, 'stream_id' => $comments->stream_id);				
@@ -218,7 +216,7 @@ class EasySocialApiMappingHelper
 			$fmod_obj = new EasySocialModelFields();
 			foreach($rows as $row)
 			{
-//print_r($row);die("in map");
+
 				$fobj = new fildsSimpleSchema();
 				
 				//$fobj->id = $row->id;
@@ -229,8 +227,8 @@ class EasySocialApiMappingHelper
 				$fobj->field_name = JText::_($row->title);
 				$fobj->step = $row->step_id;
 				$fobj->field_value = $fmod_obj->getCustomFieldsValue($row->id,$userid, $type);
-				
-				if($fobj->field_name == 'Name' &&  $fobj->field_value != null )
+
+				if($fobj->field_name == 'Name' && $fobj->field_value == null )
 				{
 					
 					$fobj->field_value = $user->name;
@@ -324,7 +322,7 @@ class EasySocialApiMappingHelper
 
 				}
 				//end						
-		
+
 				
 				$fobj->params = json_decode($row->params);
 				
@@ -347,7 +345,8 @@ class EasySocialApiMappingHelper
 		{
 			if(isset($row->uid))
 			{
-
+				$user = JFactory::getUser();
+				$isRoot = $user->authorise('core.admin');
 				$item = new streamSimpleSchema();
 
 				//new code
@@ -365,7 +364,7 @@ class EasySocialApiMappingHelper
 				$item->type = $row->type;
 				$item->group = $row->cluster_type;
 				$item->element_id = $row->contextId;
-				//
+
 				$item->content = urldecode(str_replace('href="/index','href="'.JURI::root().'index',$row->content));
 		
 				//$item->preview = $row->preview;
@@ -373,40 +372,41 @@ class EasySocialApiMappingHelper
 				//hari - code for build video iframe
 				//check code optimisation
 				$frame_match= preg_match('/;iframe.*?>/', $row->preview);
-				   if($frame_match)
-				   {
-						$dom = new DOMDocument('1.0', 'UTF-8');
+					if($frame_match)
+					{
+						$dom = new DOMDocument;						
+						//$dom = new DOMDocument('1.0', 'UTF-8');
 						//handle error level
-						$internalErrors = libxml_use_internal_errors(true);
+						//$internalErrors = libxml_use_internal_errors(true);
 
 						$dom->loadHTML($row->preview);
 						// Restore error level
-						libxml_use_internal_errors($internalErrors);
+						//libxml_use_internal_errors($internalErrors);
 					 
-					   foreach ($dom->getElementsByTagName('a') as $node) {
+						foreach ($dom->getElementsByTagName('a') as $node) {
 							   $first = $node->getAttribute( 'href' );                                        
 							   break;                                
-					   }
-					   if(strstr($first,"youtu.be"))        
-					   {
-							   $first=preg_replace("/\s+/",'',$first);
-							   $first=preg_replace("/youtu.be/","youtube.com/embed",$first);                                        
-							   $abc=$first."?feature=oembed";
-							   $item->preview ='<div class="video-container"><iframe src="'.$abc.'" frameborder="0" allowfullscreen=""></iframe></div>';
-					   }                                        
-					   else
-					   {
-					   $df=preg_replace("/\s+/",'',$first);                                        
-					   $df=preg_replace("/watch\?v=([a-zA-Z0-9\]+)([a-zA-Z0-9\/\\\\?\&\;\%\=\.])/i","embed/$1 ",$first);
-					   $abc=$df."?feature=oembed";
-					   $df=preg_replace("/\s+/",'',$abc);
-					   $item->preview ='<div class="video-container"><iframe src="'.$df.'" frameborder="0" allowfullscreen=""></iframe></div>';        
-					   }
+						}
+						if(strstr($first,"youtu.be"))        
+						{
+								$first=preg_replace("/\s+/",'',$first);
+								$first=preg_replace("/youtu.be/","youtube.com/embed",$first);                                        
+								$abc=$first."?feature=oembed";
+								$item->preview ='<div class="video-container"><iframe src="'.$abc.'" frameborder="0" allowfullscreen=""></iframe></div>';
+						}                                        
+						else
+						{
+								$df=preg_replace("/\s+/",'',$first);                                        
+								$df=preg_replace("/watch\?v=([a-zA-Z0-9\]+)([a-zA-Z0-9\/\\\\?\&\;\%\=\.])/i","embed/$1 ",$first);
+								$abc=$df."?feature=oembed";
+								$df=preg_replace("/\s+/",'',$abc);
+								$item->preview ='<div class="video-container"><iframe src="'.$df.'" frameborder="0" allowfullscreen=""></iframe></div>';        
+						}
 				   }
-				   else
-				   {
-						   $item->preview = $row->preview;
-				   }
+					else
+					{
+							$item->preview = $row->preview;
+					}
 				//end
 				
 				// Set the stream content
@@ -465,25 +465,23 @@ class EasySocialApiMappingHelper
 				//to maintain site view for with url
 				if( !empty($with_user_url) )
 			   {
-				   $cnt = sizeof($with_user_url);                                                                                
-				   $item->with = 'with '.$with_user_url[0];
+					$cnt = sizeof($with_user_url);                                                                                
+					$item->with = 'with '.$with_user_url[0];
 																				   
-				   for($i=0;$i<$cnt-2;$i++)
-				   {                                                
-						   $item->with = $item->with.', '.$with_user_url[$i+1];                                        
-				   }
-				   if($cnt-1 != 0)
-				   {
-						   $item->with =  $item->with.' and '.$with_user_url[$cnt-1];                                        
-				   }  
-			   }
+					for($i=0;$i<$cnt-2;$i++)
+					{                                                
+							$item->with = $item->with.', '.$with_user_url[$i+1];                                        
+					}
+					if($cnt-1 != 0)
+					{
+							$item->with =  $item->with.' and '.$with_user_url[$cnt-1];                                        
+					}  
+				}
 				
-                //
-				$item->actor = $actors;
-				//This node is for Report-flag for the posts.
+				$item->actor = $actors;	
 				$item->isself = ( $actors[0]->id == $userid )?true:false;
-
 				$item->likes = (!empty($row->likes))?$this->createlikeObj($row->likes,$userid):null;
+				$item->isAdmin = $isRoot;
 				
 				if(!empty($row->comments->element))
 				{
@@ -531,16 +529,10 @@ class EasySocialApiMappingHelper
 					
 					$item->content = $this->createPollData($pdata->id);
 				}
-
-if($item->id == 11115)
-{		
-//print_r(JPATH_SITE);die("in api");
-}
 								
 				$result[]	= $item;
-				//$result[]	= $row;
+
 				//end new
-			
 			}
 		}
 
@@ -583,8 +575,7 @@ if($item->id == 11115)
 		$poll->load($pid);
 		$opts = $poll->getItems();
 		$pollLib = FD::get('Polls');
-	//~ print_r($poll);
-	//~ die('In map');	
+
 		//new code 
 		$my = ES::user();
 		$privacy = $my->getPrivacy();
@@ -634,15 +625,14 @@ if($item->id == 11115)
 		$content = "<div ng-disabled=".!$poll->canVote.">";
 		
 		$content = "<label>".$poll->title."</label>";
-		  $check = array();
+		$check = array();
 		foreach($opts as $k=>$val)
 		{
-				  $check[] = $val->id;		
+			$check[] = $val->id;		
 		}
 		$arr = count($check);
 		$check = implode(':',$check);
 		
-		//var_dump($check);die("in api");
 		$obj = new stdClass();
 		$obj->poll = $poll;
 		$obj->opts = $opts;
@@ -655,39 +645,27 @@ if($item->id == 11115)
 	//server date offset setting
 	public function getOffsetServer($date,$userid)
 	{
-			
-		/*$date = new DateTime($date);
-		$config = JFactory::getConfig();
-		$date->setTimezone(new DateTimeZone($config->get('offset')));
-		$date =  $date->format('Y-m-d H:i:s a');*/
-		
 		$config = JFactory::getConfig();
 		$user   = JFactory::getUser($userid);
                	$offset = $user->getParam('timezone', $config->get('offset'));
 
 		if (!empty($date) && $date != '0000-00-00 00:00:00')
 		{
-		       $udate = JFactory::getDate($date, $offset);
-		       //$date = $udate->toSQL();
+			$udate = JFactory::getDate($date, $offset);
 			$date =  $udate->format('Y-m-d H:i:s a');
 		}
-
                return $date;
-
 	}			
 
 	//create comments object
 	public function createCommentsObj($row,$limitstart=0,$limit=10)
 	{
-
 		if (!is_bool($row->uid))
 		{
 			$options = array('uid' => $row->uid, 'element' => $row->element, 'stream_id' => $row->stream_id, 'start' => $limitstart, 'limit' => $limit);
-
 			$model  = FD::model('Comments');
-
 			$result = $model->getComments($options);
-
+			
 			$data = array();
 			$data['total'] = 0;
 			$data['base_obj'] = $row;
@@ -722,11 +700,8 @@ if($item->id == 11115)
 				$item->likes->hasLiked = $likesModel->hasLiked($item->uid,'comments.' . 'user' . '.like',$cdt->created_by);
 				$data['data'][] = $item;
 			}
-			
-			//$data['total'] = count($data['data']);
 			$comcount = $model->getCommentCount($options);        
-                    
-                       	$data['total']=$comcount;
+			$data['total']=$comcount;
 			return $data;
 		}
 		
@@ -765,7 +740,6 @@ if($item->id == 11115)
 				$result[] = $item;
 			}
 		}
-
 		return $result;
 	}
 	
@@ -865,7 +839,7 @@ if($item->id == 11115)
 				if( $item->details->end == "0000-00-00 00:00:00")
 				{
 					$item->details->ios_end = null;
-                    		$item->end_date = null;
+					$item->end_date = null;
 					$item->end_date_unix = null;
 				
 				/*	
@@ -878,7 +852,7 @@ if($item->id == 11115)
 				else				
 				{
 					$item->details->ios_end = $this->listDate($item->details->end);
-                               		$item->end_date = date('D M j Y h:i a ',strtotime($row->meta->end));
+					$item->end_date = date('D M j Y h:i a ',strtotime($row->meta->end));
 					$item->end_date_unix = strtotime($row->meta->end);
 				}
 				//ios format date					
@@ -909,12 +883,12 @@ if($item->id == 11115)
 				$item->isPendingMember = $eventobj->isPendingMember($userid);
 				$item->isMember=$eventobj->isMember($userid);	
 				$item->isRecurring=$eventobj->isRecurringEvent();                                
-                               	$item->hasRecurring=$eventobj->hasRecurringEvents();				
+				$item->hasRecurring=$eventobj->hasRecurringEvents();				
 				
 				$event_owner = reset($row->admins);
-                             	if($event_owner)
+				if($event_owner)
 				{
-                		$item->owner = $this->createUserObj($event_owner)->username;
+				$item->owner = $this->createUserObj($event_owner)->username;
 				$item->owner_id = $event_owner;
 				}                		
 				//$item->owner=$user->username;
@@ -1175,7 +1149,7 @@ if($item->id == 11115)
 				$item->lastreplied_date = $row->lastreplied;
 				$item->isread = $row->isread;
 				$item->messages = $row->message;
-				$item->lapsed = $this->calLaps($row->lastreplied);
+				$item->lapsed = $this->calLaps($row->created);
 				$item->participant = $con_usrs;
 
 				$result[] = $item;
@@ -1416,15 +1390,17 @@ if($item->id == 11115)
 
                 $model = FD::model( 'Videos' );
 				
-				$category 	= FD::table('VideoCategory');				
-                $category->load($row->category_id);				
+				$category 	= FD::table('VideoCategory');
+				$likesModel = FD::model('Likes');
 				
-                //$video = FD::video($row->id);
-                $video = ES::video();
-                $video->load($row->id);			
+				$category->load($row->category_id);	
+				$item->hasLiked = $likesModel->hasLiked($row->uid,$key,$userid,$model->getStreamId($row->id,'create'));			
+				
+				$video = ES::video();
+				$video->load($row->id);			
 
-                $user = JFactory::getUser();
-                $isRoot = $user->authorise('core.admin');
+				$user = JFactory::getUser();
+				$isRoot = $user->authorise('core.admin');
 																	
 				$item->id = $row->id;
 				$item->title = $row->title;
@@ -1448,9 +1424,21 @@ if($item->id == 11115)
 				$item->source = $row->source;	
 				$item->thumbnail = $row->thumbnail;
 				$item->likes = $video->getLikesCount();
-                $item->comments = $video->getCommentsCount();
-                $item->isAdmin = $isRoot;	
-                $item->stream_id = $model->getStreamId($row->id,'create');    
+				$item->comments = $video->getCommentsCount();
+				$item->isAdmin = $isRoot;	
+				$item->stream_id = $model->getStreamId($row->id,'create');
+
+				$comments = FD::comments($row->id, SOCIAL_TYPE_VIDEOS , 'create', SOCIAL_APPS_GROUP_USER , array('url' => $row->getPermalink()));				
+				$item->comment_element = $comments->element.".".$comments->group.".".$comments->verb;	
+
+				if(!$stream_id)
+				{
+					$item->commentsobj = $this->createCommentsObj($comments);								
+					$options = array('uid' => $comments->uid, 'element' => $item->comment_element, 'stream_id' => $item->stream_id);			
+					$item->base_obj = $item->commentsobj['base_obj'];						
+				}
+				$model  = FD::model('Comments');
+				$comcount = $model->getCommentCount($options);
 	
 				$result[] = $item;				
 		}

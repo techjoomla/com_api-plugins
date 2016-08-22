@@ -97,7 +97,7 @@ class UsersApiResourceLogin extends ApiResource
 			$obj->auth = $key;
 			$obj->code = '200';
 			//$obj->id = $user->id;
-            $obj->id = $id;
+			$obj->id = $id;
 		}
 		else
 		{

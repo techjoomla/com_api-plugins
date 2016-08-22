@@ -26,7 +26,6 @@ class UsersApiResourceLogin extends ApiResource
 {
 	public function get()
 	{
-
 		$this->plugin->setResponse( JText::_( 'PLG_API_USERS_GET_METHOD_NOT_ALLOWED_MESSAGE' ));	
 	}
 
@@ -40,18 +39,26 @@ class UsersApiResourceLogin extends ApiResource
 		//init variable
 		$obj = new stdclass;
 		$umodel = new JUser;
-		$user = $umodel->getInstance();
+		//$user = $umodel->getInstance();       
 
-		if( !$user->id )
+		$app = JFactory::getApplication();
+		$username = $app->input->get('username', 0, 'STRING');
+
+		$user = JFactory::getUser();
+		$id = JUserHelper::getUserId($username);
+
+		if($id == null)
 		{
-			$user = JFactory::getUser($this->plugin->get('user')->id);
-		}
+			$model = FD::model('Users');
+			$id = $model->getUserId('email', $username);            
+		}       
 
 		$kmodel = new ApiModelKey;
 		$model = new ApiModelKeys;
 		$key = null;
 		// Get login user hash
-		$kmodel->setState('user_id', $user->id);
+		//$kmodel->setState('user_id', $user->id);
+        $kmodel->setState('user_id', $id);
 		$log_hash = $kmodel->getList();
 		$log_hash = $log_hash[count($log_hash) - count($log_hash)];
 
@@ -89,7 +96,8 @@ class UsersApiResourceLogin extends ApiResource
 		{
 			$obj->auth = $key;
 			$obj->code = '200';
-			$obj->id = $user->id;
+			//$obj->id = $user->id;
+            $obj->id = $id;
 		}
 		else
 		{

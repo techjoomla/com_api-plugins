@@ -86,10 +86,10 @@ class EasySocialApiMappingHelper
 			case 'event':
 						return $this->eventsSchema($rows,$userid);                                                
 						break;
-            case 'videos':
+			case 'videos':
 						return $this->videosSchema($rows,$userid);                                                
 						break;
-            case 'polls':
+			case 'polls':
 						return $this->pollsSchema($rows);                                                
 						break;
 		}
@@ -396,11 +396,11 @@ class EasySocialApiMappingHelper
 						}                                        
 						else
 						{
-						$df=preg_replace("/\s+/",'',$first);                                        
-						$df=preg_replace("/watch\?v=([a-zA-Z0-9\]+)([a-zA-Z0-9\/\\\\?\&\;\%\=\.])/i","embed/$1 ",$first);
-						$abc=$df."?feature=oembed";
-						$df=preg_replace("/\s+/",'',$abc);
-						$item->preview ='<div class="video-container"><iframe src="'.$df.'" frameborder="0" allowfullscreen=""></iframe></div>';        
+								$df=preg_replace("/\s+/",'',$first);                                        
+								$df=preg_replace("/watch\?v=([a-zA-Z0-9\]+)([a-zA-Z0-9\/\\\\?\&\;\%\=\.])/i","embed/$1 ",$first);
+								$abc=$df."?feature=oembed";
+								$df=preg_replace("/\s+/",'',$abc);
+								$item->preview ='<div class="video-container"><iframe src="'.$df.'" frameborder="0" allowfullscreen=""></iframe></div>';        
 						}
 				   }
 					else
@@ -481,7 +481,7 @@ class EasySocialApiMappingHelper
 				$item->actor = $actors;	
 				$item->isself = ( $actors[0]->id == $userid )?true:false;
 				$item->likes = (!empty($row->likes))?$this->createlikeObj($row->likes,$userid):null;
-                $item->isAdmin = $isRoot;
+				$item->isAdmin = $isRoot;
 				
 				if(!empty($row->comments->element))
 				{
@@ -663,11 +663,9 @@ class EasySocialApiMappingHelper
 		if (!is_bool($row->uid))
 		{
 			$options = array('uid' => $row->uid, 'element' => $row->element, 'stream_id' => $row->stream_id, 'start' => $limitstart, 'limit' => $limit);
-
 			$model  = FD::model('Comments');
-
 			$result = $model->getComments($options);
-
+			
 			$data = array();
 			$data['total'] = 0;
 			$data['base_obj'] = $row;
@@ -854,7 +852,7 @@ class EasySocialApiMappingHelper
 				else				
 				{
 					$item->details->ios_end = $this->listDate($item->details->end);
-                               		$item->end_date = date('D M j Y h:i a ',strtotime($row->meta->end));
+					$item->end_date = date('D M j Y h:i a ',strtotime($row->meta->end));
 					$item->end_date_unix = strtotime($row->meta->end);
 				}
 				//ios format date					
@@ -1393,7 +1391,7 @@ class EasySocialApiMappingHelper
                 $model = FD::model( 'Videos' );
 				
 				$category 	= FD::table('VideoCategory');
-                $likesModel = FD::model('Likes');
+				$likesModel = FD::model('Likes');
 				
 				$category->load($row->category_id);	
 				$item->hasLiked = $likesModel->hasLiked($row->uid,$key,$userid,$model->getStreamId($row->id,'create'));			
@@ -1426,11 +1424,11 @@ class EasySocialApiMappingHelper
 				$item->source = $row->source;	
 				$item->thumbnail = $row->thumbnail;
 				$item->likes = $video->getLikesCount();
-                $item->comments = $video->getCommentsCount();
-                $item->isAdmin = $isRoot;	
-                $item->stream_id = $model->getStreamId($row->id,'create');
+				$item->comments = $video->getCommentsCount();
+				$item->isAdmin = $isRoot;	
+				$item->stream_id = $model->getStreamId($row->id,'create');
 
-                $comments = FD::comments($row->id, SOCIAL_TYPE_VIDEOS , 'create', SOCIAL_APPS_GROUP_USER , array('url' => $row->getPermalink()));				
+				$comments = FD::comments($row->id, SOCIAL_TYPE_VIDEOS , 'create', SOCIAL_APPS_GROUP_USER , array('url' => $row->getPermalink()));				
 				$item->comment_element = $comments->element.".".$comments->group.".".$comments->verb;	
 
 				if(!$stream_id)

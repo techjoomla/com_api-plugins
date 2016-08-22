@@ -199,7 +199,7 @@ class EasysocialApiResourceSearch extends ApiResource
 				$myarr[]= $row->id;
 			}
 		}
-
+		$model = FD::model('Blocks');
 		foreach($data as $k=>$node)
 		{
 			if($node->id != $user->id)
@@ -208,6 +208,7 @@ class EasysocialApiResourceSearch extends ApiResource
 				$node->mutual = $frnd_mod->getMutualFriendCount($user->id,$node->id);
 				$node->isFriend = $frnd_mod->isFriends($user->id,$node->id);
 				$node->approval_pending = $frnd_mod->isPendingFriends($user->id,$node->id);
+				$node->isBlock = (bool) $model->isBlocked($user->id, $node->id);
 				if(in_array($node->id,$myarr))
 				{
 					$node->isinitiator=true;

@@ -214,11 +214,10 @@ class EasysocialApiResourceFollower extends ApiResource
 		$user = $this->plugin->get('user')->id;
 		$target_user = $app->input->get('target_user',0,'INT');
 		$type = $app->input->get('type','follower','STRING');
-		$limitstart = $app->input->get('limitstart',0,'INT');
-		$limit = $app->input->get('limit',10,'INT');
+		
 		$options = array();
-		//$options['limitstart'] = $app->input->get('limitstart',0,'INT');
-		//$options['limit'] = $app->input->get('limit',10,'INT');
+		$options['limitstart'] = $app->input->get('limitstart',0,'INT');
+		$options['limit'] = $app->input->get('limit',10,'INT');
 
 		// Load friends model.
 		$foll_model 	= FD::model( 'Followers' );
@@ -228,7 +227,7 @@ class EasysocialApiResourceFollower extends ApiResource
 
 		//set limitstart
 		//$main_mod->setUserState( 'limitstart' , $options['limitstart'] );
-		//$foll_model->setUserState( 'limitstart' , $options['limitstart'] );
+		$foll_model->setUserState( 'limitstart' , $options['limitstart'] );
 		
 		if(!$target_user)
 		$target_user = $user;
@@ -256,8 +255,6 @@ class EasysocialApiResourceFollower extends ApiResource
 			$lval->mutual = $frnd_mod->getMutualFriendCount($user,$lval->id);
 			$lval->isFriend = $frnd_mod->isFriends($users,$lval->id);
 		}
-		// For pagination
-		$fllowers_list = array_slice($fllowers_list, $limitstart, $limit);
 		
 		$data['data'] = $fllowers_list; 
 

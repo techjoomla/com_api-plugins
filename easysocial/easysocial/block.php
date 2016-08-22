@@ -54,7 +54,7 @@ class EasysocialApiResourceBlock extends ApiResource
 		if($result->id)
 		{
 			$res->success = 1;
-			$res->message = JText::_('COM_EASYSOCIAL_USER_BLOCKED_SUCCESSFULLY');
+			$res->message = JText::_('PLG_API_EASYSOCIAL_BLOCK_USER');
 		}
 		else
 		{
@@ -83,7 +83,7 @@ class EasysocialApiResourceBlock extends ApiResource
 		if($result)
 		{
 			$res->success = 1;
-			$res->message = JText::_('COM_EASYSOCIAL_USER_UNBLOCKED_SUCCESSFULLY');
+			$res->message = JText::_('PLG_API_EASYSOCIAL_UNBLOCK_USER');
 		}
 		else
 		{

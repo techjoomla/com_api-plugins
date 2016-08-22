@@ -39,7 +39,7 @@ class UsersApiResourceLogin extends ApiResource
 		//init variable
 		$obj = new stdclass;
 		$umodel = new JUser;
-		//$user = $umodel->getInstance();       
+		$user = $umodel->getInstance();       
 
 		$app = JFactory::getApplication();
 		$username = $app->input->get('username', 0, 'STRING');
@@ -58,7 +58,7 @@ class UsersApiResourceLogin extends ApiResource
 		$key = null;
 		// Get login user hash
 		//$kmodel->setState('user_id', $user->id);
-        $kmodel->setState('user_id', $id);
+		$kmodel->setState('user_id', $id);
 		$log_hash = $kmodel->getList();
 		$log_hash = $log_hash[count($log_hash) - count($log_hash)];
 
@@ -120,7 +120,7 @@ class UsersApiResourceLogin extends ApiResource
 		$user->alias = $user->username;
 		$user->auth = $key;
 		$user->store();
-	
+
 		return $id;
 	}
 }

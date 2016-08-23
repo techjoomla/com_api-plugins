@@ -4,7 +4,7 @@
  * @copyright Copyright (C) 2009 2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
  * @license GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
  * @link http://www.techjoomla.com
-*/
+ */
 
 defined('_JEXEC') or die( 'Restricted access' );
 
@@ -16,22 +16,22 @@ jimport('joomla.user.helper');
 jimport('joomla.user.user');
 jimport('joomla.application.component.helper');
 
-JModelLegacy::addIncludePath(JPATH_SITE.'components/com_api/models');
-require_once JPATH_SITE.'/components/com_api/libraries/authentication/user.php';
-require_once JPATH_SITE.'/components/com_api/libraries/authentication/login.php';
-require_once JPATH_SITE.'/components/com_api/models/key.php';
-require_once JPATH_SITE.'/components/com_api/models/keys.php';
+JModelLegacy::addIncludePath(JPATH_SITE . 'components/com_api/models');
+require_once JPATH_SITE . '/components/com_api/libraries/authentication/user.php';
+require_once JPATH_SITE . '/components/com_api/libraries/authentication/login.php';
+require_once JPATH_SITE . '/components/com_api/models/key.php';
+require_once JPATH_SITE . '/components/com_api/models/keys.php';
 
 class UsersApiResourceLogin extends ApiResource
 {
 	public function get()
 	{
-		$this->plugin->setResponse( JText::_( 'PLG_API_USERS_GET_METHOD_NOT_ALLOWED_MESSAGE' ));	
+		$this->plugin->setResponse( JText::_('PLG_API_USERS_GET_METHOD_NOT_ALLOWED_MESSAGE'));
 	}
 
 	public function post()
 	{
-	   $this->plugin->setResponse($this->keygen());
+		$this->plugin->setResponse($this->keygen());
 	}
 
 	public function keygen()
@@ -51,7 +51,7 @@ class UsersApiResourceLogin extends ApiResource
 		{
 			$model = FD::model('Users');
 			$id = $model->getUserId('email', $username);            
-		}       
+		}
 
 		$kmodel = new ApiModelKey;
 		$model = new ApiModelKeys;

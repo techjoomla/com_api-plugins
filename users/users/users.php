@@ -64,7 +64,7 @@ class UsersApiResourceUsers extends ApiResource
 		$data['email']         = $app->input->get('email', '', 'STRING');
 		$data['block']         = $app->input->get('block', '', 'INT');
 		$data['name']     	   = $app->input->get('name', '', 'STRING');
-		$data['sendEmail']     = $app->input->get('sendEmail', '', 'STRING');
+		$data['sendEmail']     = $app->input->get('sendEmail', '', 'INT');
 		$data['password']      = $app->input->get('password', '', 'STRING');
 	
 		// Check username or user_id to edit the details of user

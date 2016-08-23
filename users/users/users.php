@@ -79,7 +79,7 @@ class UsersApiResourceUsers extends ApiResource
 			$data['block']         = $app->input->get('block', '', 'INT');
 		}
 		
-		if ($app->input->get('name', '', 'INT'))
+		if ($app->input->get('name', '', 'STRING'))
 		{
 			$data['name']     	   = $app->input->get('name', '', 'STRING');
 		}

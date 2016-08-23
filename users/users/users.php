@@ -45,6 +45,115 @@ class UsersApiResourceUsers extends ApiResource
 	 *
 	 * @return void
 	 */
+	 
+	 /**
+	 * Function for edit user record.
+	 *
+	 * @return void
+	 */
+	public function put()
+	{
+		$app              = JFactory::getApplication();
+		$db 			  = JFactory::getDbo();
+		$data             = array();
+		$eobj             = new stdClass();	
+		
+		// Get user details to update
+		$data['username']      = $app->input->get('username', '', 'STRING');
+		$data['user_id']       = $app->input->get('user_id', '', 'INT');
+		$data['email']         = $app->input->get('email', '', 'STRING');
+		$data['block']         = $app->input->get('block', '', 'INT');
+		$data['name']     	   = $app->input->get('name', '', 'STRING');
+		$data['sendEmail']     = $app->input->get('sendEmail', '', 'STRING');
+		$data['password']      = $app->input->get('password', '', 'STRING');
+	
+		// Check username or user_id to edit the details of user
+		if (!empty($data['username']) || !empty($data['user_id']))
+		{
+			if (empty($data['user_id']) && !empty($data['username']))
+			{
+				// Get user_id with the help of username
+				$query = $db->getQuery(true);
+				$query->select('id');
+				$query->from('#__users');
+				$query->where($db->quoteName('username') . '=' .  $db->quote($data['username']));
+				$db->setQuery($query);
+				$user_id = $db->loadResult();
+				$data['user_id'] = $user_id;
+			}
+			
+				$user = JFactory::getUser($data['user_id']);
+				
+				if (!isset($user->id))
+				{
+					// Not given username or user_id to edit the details of user
+					$eobj->status = false;
+					$eobj->id = 0;
+					$eobj->code = '404';
+					$eobj->message = JText::_( 'PLG_API_USERS_REQUIRED_USER_NOTEXIST_MESSAGE' );	
+					$this->plugin->setResponse($eobj);
+					return;
+				}
+				
+				if (!empty($data['block'] ))
+				{
+					$user->set('block',$data['block']);
+				}
+				
+				if (!empty($data['email'] ))
+				{
+					$user->set('email', $data['email']);
+				}
+				
+				if (!empty($data['sendEmail'] ))
+				{
+					$user->set('sendEmail', $data['sendEmail']);
+				}
+				
+				if (!empty($data['password'] ))
+				{
+					// Password encryption
+					$salt             = JUserHelper::genRandomPassword(32);
+					$crypt            = JUserHelper::getCryptedPassword($data['password'], $salt);
+					$data['password'] = "$crypt:$salt";
+					$user->set('password', $data['password']);
+				}
+				
+				if (!$user->save())
+				{
+					// User deatils are not updated
+					$message = $user->getError();
+					$eobj->status = false;
+					$eobj->id = 0;
+					$eobj->code = '402';
+					$eobj->message = $message;	
+					$this->plugin->setResponse($eobj);
+					return;
+				}
+				else
+				{
+					// Updated records updated successsfully
+					$eobj->status = false;
+					$eobj->id = 0;
+					$eobj->code = '401';
+					$eobj->message = JText::_( 'PLG_API_USERS_ACCOUNT_EDITED_SUCCESSFULLY_MESSAGE' );	
+					$this->plugin->setResponse($eobj);
+					return;
+				}
+		}
+		else
+		{
+			// Not given username or user_id to edit the details of user
+			$eobj->status = false;
+			$eobj->id = 0;
+			$eobj->code = '403';
+			$eobj->message = JText::_( 'PLG_API_USERS_REQUIRED_DATA_EMPTY_MESSAGE' );	
+			
+			$this->plugin->setResponse($eobj);
+			return;
+		}
+	}
+
 	public function post()
 	{
 		$error_messages = array();

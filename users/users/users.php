@@ -59,13 +59,43 @@ class UsersApiResourceUsers extends ApiResource
 		$eobj             = new stdClass();	
 		
 		// Get user details to update
-		$data['username']      = $app->input->get('username', '', 'STRING');
-		$data['user_id']       = $app->input->get('user_id', '', 'INT');
-		$data['email']         = $app->input->get('email', '', 'STRING');
-		$data['block']         = $app->input->get('block', '', 'INT');
-		$data['name']     	   = $app->input->get('name', '', 'STRING');
-		$data['sendEmail']     = $app->input->get('sendEmail', '', 'INT');
-		$data['password']      = $app->input->get('password', '', 'STRING');
+		if ($app->input->get('username', '', 'STRING'))
+		{
+			$data['username']      = $app->input->get('username', '', 'STRING');
+		}
+		
+		if ($app->input->get('user_id', '', 'INT'))
+		{
+			$data['user_id']       = $app->input->get('user_id', '', 'INT');
+		}
+		
+		if ($app->input->get('email', '', 'STRING'))
+		{
+			$data['email']         = $app->input->get('email', '', 'STRING');
+		}
+		
+		if ($app->input->get('block', '', 'INT'))
+		{
+			$data['block']         = $app->input->get('block', '', 'INT');
+		}
+		
+		if ($app->input->get('name', '', 'INT'))
+		{
+			$data['name']     	   = $app->input->get('name', '', 'STRING');
+		}
+		
+		if ($app->input->get('sendEmail', '', 'INT'))
+		{
+			$data['sendEmail']     = $app->input->get('sendEmail', '', 'INT');
+		}
+		
+		if ($app->input->get('password', '', 'STRING'))
+		{
+			 // Password encryption
+			$salt             = JUserHelper::genRandomPassword(32);
+			$crypt            = JUserHelper::getCryptedPassword($data['password'], $salt);
+			$data['password'] = "$crypt:$salt";
+		}
 	
 		// Check username or user_id to edit the details of user
 		if (!empty($data['username']) || !empty($data['user_id']))
@@ -84,7 +114,7 @@ class UsersApiResourceUsers extends ApiResource
 			
 				$user = JFactory::getUser($data['user_id']);
 				
-				if (!isset($user->id))
+				if (!$user->id)
 				{
 					// Not given username or user_id to edit the details of user
 					$eobj->status = false;
@@ -95,28 +125,17 @@ class UsersApiResourceUsers extends ApiResource
 					return;
 				}
 				
-				if (!empty($data['block'] ))
+				// Bind the data.
+				if (!$user->bind($data))
 				{
-					$user->set('block',$data['block']);
-				}
-				
-				if (!empty($data['email'] ))
-				{
-					$user->set('email', $data['email']);
-				}
-				
-				if (!empty($data['sendEmail'] ))
-				{
-					$user->set('sendEmail', $data['sendEmail']);
-				}
-				
-				if (!empty($data['password'] ))
-				{
-					// Password encryption
-					$salt             = JUserHelper::genRandomPassword(32);
-					$crypt            = JUserHelper::getCryptedPassword($data['password'], $salt);
-					$data['password'] = "$crypt:$salt";
-					$user->set('password', $data['password']);
+					// User deatils are not updated
+					$message = $user->getError();
+					$eobj->status = false;
+					$eobj->id = 0;
+					$eobj->code = '402';
+					$eobj->message = $message;	
+					$this->plugin->setResponse($eobj);
+					return;
 				}
 				
 				if (!$user->save())
@@ -153,6 +172,7 @@ class UsersApiResourceUsers extends ApiResource
 			return;
 		}
 	}
+
 
 	public function post()
 	{

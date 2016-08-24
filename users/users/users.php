@@ -17,6 +17,9 @@ jimport('joomla.application.component.helper');
 jimport('joomla.application.component.model');
 jimport('joomla.database.table.user');
 
+// Load com_users language file
+$language = JFactory::getLanguage();
+$language->load('com_users', JPATH_SITE, 'en-GB', true);
 require_once JPATH_SITE . '/libraries/joomla/filesystem/folder.php';
 require_once JPATH_ROOT . '/administrator/components/com_users/models/users.php';
 
@@ -40,12 +43,6 @@ class UsersApiResourceUsers extends ApiResource
 		$this->plugin->setResponse( JText::_( 'PLG_API_USERS_IN_DELETE_FUNCTION_MESSAGE' ));
 	}
 
-	/**
-	 * Function post for create user record.
-	 *
-	 * @return void
-	 */
-	 
 	 /**
 	 * Function for edit user record.
 	 *
@@ -58,45 +55,9 @@ class UsersApiResourceUsers extends ApiResource
 		$data             = array();
 		$eobj             = new stdClass();	
 		
-		// Get user details to update
-		if ($app->input->get('username', '', 'STRING'))
-		{
-			$data['username']      = $app->input->get('username', '', 'STRING');
-		}
+		// Get values paased by put in the url
+		$data = JRequest::get( 'put');
 		
-		if ($app->input->get('user_id', '', 'INT'))
-		{
-			$data['user_id']       = $app->input->get('user_id', '', 'INT');
-		}
-		
-		if ($app->input->get('email', '', 'STRING'))
-		{
-			$data['email']         = $app->input->get('email', '', 'STRING');
-		}
-		
-		if ($app->input->get('block', '', 'INT'))
-		{
-			$data['block']         = $app->input->get('block', '', 'INT');
-		}
-		
-		if ($app->input->get('name', '', 'STRING'))
-		{
-			$data['name']     	   = $app->input->get('name', '', 'STRING');
-		}
-		
-		if ($app->input->get('sendEmail', '', 'INT'))
-		{
-			$data['sendEmail']     = $app->input->get('sendEmail', '', 'INT');
-		}
-		
-		if ($app->input->get('password', '', 'STRING'))
-		{
-			 // Password encryption
-			$salt             = JUserHelper::genRandomPassword(32);
-			$crypt            = JUserHelper::getCryptedPassword($data['password'], $salt);
-			$data['password'] = "$crypt:$salt";
-		}
-	
 		// Check username or user_id to edit the details of user
 		if (!empty($data['username']) || !empty($data['user_id']))
 		{
@@ -112,19 +73,19 @@ class UsersApiResourceUsers extends ApiResource
 				$data['user_id'] = $user_id;
 			}
 			
-				$user = JFactory::getUser($data['user_id']);
-				
-				if (!$user->id)
+			// Given username or user_id not exist
+				if (!$data['user_id'])
 				{
-					// Not given username or user_id to edit the details of user
 					$eobj->status = false;
 					$eobj->id = 0;
 					$eobj->code = '404';
-					$eobj->message = JText::_( 'PLG_API_USERS_REQUIRED_USER_NOTEXIST_MESSAGE' );	
+					$eobj->message = JText::_('COM_USERS_USER_NOT_FOUND');	
 					$this->plugin->setResponse($eobj);
 					return;
 				}
 				
+				$user = JFactory::getUser($data['user_id']);
+			
 				// Bind the data.
 				if (!$user->bind($data))
 				{
@@ -138,6 +99,7 @@ class UsersApiResourceUsers extends ApiResource
 					return;
 				}
 				
+				//Save the user data
 				if (!$user->save())
 				{
 					// User deatils are not updated

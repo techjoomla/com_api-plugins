@@ -218,7 +218,6 @@ class EasySocialApiMappingHelper
 			$fmod_obj = new EasySocialModelFields();
 			foreach($rows as $row)
 			{
-//print_r($row);die("in map");
 				$fobj = new fildsSimpleSchema();
 				
 				//$fobj->id = $row->id;
@@ -347,7 +346,8 @@ class EasySocialApiMappingHelper
 		{
 			if(isset($row->uid))
 			{
-
+				$user = JFactory::getUser();
+                $isRoot = $user->authorise('core.admin');
 				$item = new streamSimpleSchema();
 
 				//new code
@@ -365,7 +365,6 @@ class EasySocialApiMappingHelper
 				$item->type = $row->type;
 				$item->group = $row->cluster_type;
 				$item->element_id = $row->contextId;
-				//
 				$item->content = urldecode(str_replace('href="/index','href="'.JURI::root().'index',$row->content));
 		
 				//$item->preview = $row->preview;
@@ -375,13 +374,8 @@ class EasySocialApiMappingHelper
 				$frame_match= preg_match('/;iframe.*?>/', $row->preview);
 				   if($frame_match)
 				   {
-						$dom = new DOMDocument('1.0', 'UTF-8');
-						//handle error level
-						$internalErrors = libxml_use_internal_errors(true);
-
+						$dom = new DOMDocument;
 						$dom->loadHTML($row->preview);
-						// Restore error level
-						libxml_use_internal_errors($internalErrors);
 					 
 					   foreach ($dom->getElementsByTagName('a') as $node) {
 							   $first = $node->getAttribute( 'href' );                                        
@@ -484,6 +478,7 @@ class EasySocialApiMappingHelper
 				$item->isself = ( $actors[0]->id == $userid )?true:false;
 
 				$item->likes = (!empty($row->likes))?$this->createlikeObj($row->likes,$userid):null;
+				$item->isAdmin = $isRoot;
 				
 				if(!empty($row->comments->element))
 				{
@@ -719,7 +714,7 @@ if($item->id == 11115)
 				$item->likes->verb    = 'like';
 				$item->likes->stream_id = $cdt->stream_id;
 				$item->likes->total   = $likesModel->getLikesCount($item->uid, 'comments.' . 'user' . '.like');
-				$item->likes->hasLiked = $likesModel->hasLiked($item->uid,'comments.' . 'user' . '.like',$cdt->created_by);
+				$item->likes->hasLiked = $likesModel->hasLiked($item->uid,'comments.' . 'user' . '.like',$row->userid);
 				$data['data'][] = $item;
 			}
 			
@@ -1175,7 +1170,7 @@ if($item->id == 11115)
 				$item->lastreplied_date = $row->lastreplied;
 				$item->isread = $row->isread;
 				$item->messages = $row->message;
-				$item->lapsed = $this->calLaps($row->lastreplied);
+				$item->lapsed = $this->calLaps($row->created);
 				$item->participant = $con_usrs;
 
 				$result[] = $item;
@@ -1369,15 +1364,18 @@ if($item->id == 11115)
 	{
 		//$user = JFactory::getUser($this->plugin->get('user')->id);
 		$frnd_mod = FD::model( 'Friends' );
+		$model = FD::model('Blocks');
 		$list = array();
 		foreach($data as $k=>$node)
 		{
-
+			$res = (bool) $model->isBlocked($user->id, $node->id);
+			
 			if($node->id != $user->id)
 			{								
 				$node->mutual = $frnd_mod->getMutualFriendCount($user->id,$node->id);
 				$node->isFriend = $frnd_mod->isFriends($user->id,$node->id);
-				$node->approval_pending = $frnd_mod->isPendingFriends($user->id,$node->id);			
+				$node->approval_pending = $frnd_mod->isPendingFriends($user->id,$node->id);	
+				$node->isBlock = $res;		
 			}
 		}		
 		return $data;	
@@ -1416,8 +1414,11 @@ if($item->id == 11115)
 
                 $model = FD::model( 'Videos' );
 				
-				$category 	= FD::table('VideoCategory');				
-                $category->load($row->category_id);				
+				$category 	= FD::table('VideoCategory');
+				$likesModel = FD::model('Likes');
+								
+                $category->load($row->category_id);
+                $item->hasLiked = $likesModel->hasLiked($row->uid,$key,$userid,$model->getStreamId($row->id,'create'));				
 				
                 //$video = FD::video($row->id);
                 $video = ES::video();
@@ -1451,6 +1452,19 @@ if($item->id == 11115)
                 $item->comments = $video->getCommentsCount();
                 $item->isAdmin = $isRoot;	
                 $item->stream_id = $model->getStreamId($row->id,'create');    
+				
+				$comments = FD::comments($row->id, SOCIAL_TYPE_VIDEOS , 'create', SOCIAL_APPS_GROUP_USER , array('url' => $row->getPermalink()));				
+				$item->comment_element = $comments->element.".".$comments->group.".".$comments->verb;	
+
+				if(!$stream_id) 
+				{
+					$item->commentsobj = $this->createCommentsObj($comments);								
+					$options = array('uid' => $comments->uid, 'element' => $item->comment_element, 'stream_id' => $item->stream_id);			
+					$item->base_obj = $item->commentsobj['base_obj'];						
+				}
+
+				$model  = FD::model('Comments');
+				$comcount = $model->getCommentCount($options);
 	
 				$result[] = $item;				
 		}

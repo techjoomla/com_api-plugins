@@ -110,6 +110,8 @@ class UsersApiResourceUsers extends ApiResource
 				else
 				{
 					// Updated records updated successsfully
+					$eobj->status     = true;
+					$eobj->id         = $data['user_id'];
 					$eobj->code = '405';
 					$eobj->message = JText::_( 'PLG_API_USERS_ACCOUNT_EDITED_SUCCESSFULLY_MESSAGE' );	
 					$this->plugin->setResponse($eobj);

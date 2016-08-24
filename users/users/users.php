@@ -50,7 +50,6 @@ class UsersApiResourceUsers extends ApiResource
 	 */
 	public function put()
 	{
-		$app              = JFactory::getApplication();
 		$db 			  = JFactory::getDbo();
 		$data             = array();
 		$eobj             = new stdClass();	
@@ -99,7 +98,7 @@ class UsersApiResourceUsers extends ApiResource
 					return;
 				}
 				
-				//Save the user data
+				// Save the user data
 				if (!$user->save())
 				{
 					// User deatils are not updated
@@ -129,7 +128,6 @@ class UsersApiResourceUsers extends ApiResource
 			$eobj->id = 0;
 			$eobj->code = '403';
 			$eobj->message = JText::_( 'PLG_API_USERS_REQUIRED_DATA_EMPTY_MESSAGE' );	
-			
 			$this->plugin->setResponse($eobj);
 			return;
 		}

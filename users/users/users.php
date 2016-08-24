@@ -78,7 +78,7 @@ class UsersApiResourceUsers extends ApiResource
 			// Given username or user_id not exist
 				if (!$data['user_id'])
 				{
-					$eobj->code = '401';
+					$eobj->code = '400';
 					$eobj->message = JText::_('COM_USERS_USER_NOT_FOUND');	
 					$this->plugin->setResponse($eobj);
 					return;
@@ -91,7 +91,7 @@ class UsersApiResourceUsers extends ApiResource
 				{
 					// User deatils are not updated
 					$message = $user->getError();
-					$eobj->code = '402';
+					$eobj->code = '400';
 					$eobj->message = $message;	
 					$this->plugin->setResponse($eobj);
 					return;
@@ -102,7 +102,7 @@ class UsersApiResourceUsers extends ApiResource
 				{
 					// User deatils are not updated
 					$message = $user->getError();
-					$eobj->code = '404';
+					$eobj->code = '400';
 					$eobj->message = $message;	
 					$this->plugin->setResponse($eobj);
 					return;
@@ -112,8 +112,8 @@ class UsersApiResourceUsers extends ApiResource
 					// Updated records updated successsfully
 					$eobj->status     = true;
 					$eobj->id         = $data['user_id'];
-					$eobj->code = '405';
-					$eobj->message = JText::_( 'PLG_API_USERS_ACCOUNT_EDITED_SUCCESSFULLY_MESSAGE' );	
+					$eobj->code       = '200';
+					$eobj->message    = JText::_( 'PLG_API_USERS_ACCOUNT_EDITED_SUCCESSFULLY_MESSAGE' );	
 					$this->plugin->setResponse($eobj);
 					return;
 				}
@@ -121,8 +121,9 @@ class UsersApiResourceUsers extends ApiResource
 		else
 		{
 			// Not given username or user_id to edit the details of user
-			$eobj->code = '403';
+			$eobj->code = '400';
 			$eobj->message = JText::_( 'PLG_API_USERS_REQUIRED_DATA_EMPTY_MESSAGE' );	
+			
 			$this->plugin->setResponse($eobj);
 			return;
 		}

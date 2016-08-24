@@ -50,9 +50,12 @@ class UsersApiResourceUsers extends ApiResource
 	 */
 	public function put()
 	{
+		$app              = JFactory::getApplication();
 		$db 			  = JFactory::getDbo();
 		$data             = array();
 		$eobj             = new stdClass();	
+		$eobj->status     = false;
+		$eobj->id         = 0;
 		
 		// Get values paased by put in the url
 		$data = JRequest::get( 'put');
@@ -75,9 +78,7 @@ class UsersApiResourceUsers extends ApiResource
 			// Given username or user_id not exist
 				if (!$data['user_id'])
 				{
-					$eobj->status = false;
-					$eobj->id = 0;
-					$eobj->code = '404';
+					$eobj->code = '401';
 					$eobj->message = JText::_('COM_USERS_USER_NOT_FOUND');	
 					$this->plugin->setResponse($eobj);
 					return;
@@ -90,22 +91,18 @@ class UsersApiResourceUsers extends ApiResource
 				{
 					// User deatils are not updated
 					$message = $user->getError();
-					$eobj->status = false;
-					$eobj->id = 0;
 					$eobj->code = '402';
 					$eobj->message = $message;	
 					$this->plugin->setResponse($eobj);
 					return;
 				}
 				
-				// Save the user data
+				//Save the user data
 				if (!$user->save())
 				{
 					// User deatils are not updated
 					$message = $user->getError();
-					$eobj->status = false;
-					$eobj->id = 0;
-					$eobj->code = '402';
+					$eobj->code = '404';
 					$eobj->message = $message;	
 					$this->plugin->setResponse($eobj);
 					return;
@@ -113,9 +110,7 @@ class UsersApiResourceUsers extends ApiResource
 				else
 				{
 					// Updated records updated successsfully
-					$eobj->status = false;
-					$eobj->id = 0;
-					$eobj->code = '401';
+					$eobj->code = '405';
 					$eobj->message = JText::_( 'PLG_API_USERS_ACCOUNT_EDITED_SUCCESSFULLY_MESSAGE' );	
 					$this->plugin->setResponse($eobj);
 					return;
@@ -124,15 +119,12 @@ class UsersApiResourceUsers extends ApiResource
 		else
 		{
 			// Not given username or user_id to edit the details of user
-			$eobj->status = false;
-			$eobj->id = 0;
 			$eobj->code = '403';
 			$eobj->message = JText::_( 'PLG_API_USERS_REQUIRED_DATA_EMPTY_MESSAGE' );	
 			$this->plugin->setResponse($eobj);
 			return;
 		}
 	}
-
 
 	public function post()
 	{

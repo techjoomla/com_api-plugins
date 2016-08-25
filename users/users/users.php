@@ -43,7 +43,7 @@ class UsersApiResourceUsers extends ApiResource
 		$this->plugin->setResponse( JText::_( 'PLG_API_USERS_IN_DELETE_FUNCTION_MESSAGE' ));
 	}
 
-	 /**
+	  /**
 	 * Function for edit user record.
 	 *
 	 * @return void
@@ -58,7 +58,7 @@ class UsersApiResourceUsers extends ApiResource
 		$eobj->id         = 0;
 		
 		// Get values paased by put in the url
-		$data = JRequest::get( 'put');
+		$data = $app->input->getArray(array());
 		
 		// Check username or user_id to edit the details of user
 		if (!empty($data['username']) || !empty($data['user_id']))
@@ -128,7 +128,12 @@ class UsersApiResourceUsers extends ApiResource
 			return;
 		}
 	}
-
+	
+	/**
+	 * Function post for create user record.
+	 *
+	 * @return void
+	 */
 	public function post()
 	{
 		$error_messages = array();

@@ -54,7 +54,7 @@ class UsersApiResourceUsers extends ApiResource
 		// Check username or user_id to edit the details of user
 		if (isset($data['username']) || isset($data['user_id']))
 		{
-			if (!$data['user_id'] && isset($data['username']))
+			if (!$data['user_id'] && $data['username'])
 			{
 				// Get user_id with the help of username
 				$query = $db->getQuery(true);

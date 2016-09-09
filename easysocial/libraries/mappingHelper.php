@@ -1451,7 +1451,7 @@ if($item->id == 11115)
 				$item->likes = $video->getLikesCount();
                 $item->comments = $video->getCommentsCount();
                 
-                if($userid == $row->user_id)
+                if(($userid == $row->user_id)||$isRoot)
                 	$item->isAdmin = true;	
                 	
                 $item->stream_id = $model->getStreamId($row->id,'create');    

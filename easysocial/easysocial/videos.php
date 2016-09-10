@@ -65,7 +65,8 @@ class EasysocialApiResourceVideos extends ApiResource
 			$data[] = $this->getVideoDetails($video_id);
 		}
 		else
-		{		
+		{	
+			if($options['limitstart'] <= $model->getTotalVideos($options))	
 			$data = $model->getVideos($options);		
 		}
 		$mapp = new EasySocialApiMappingHelper();

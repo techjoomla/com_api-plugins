@@ -194,7 +194,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 		}
 
 		// Process any files that needs to be created.
-		$discussion->mapFiles();
+		//$discussion->mapFiles();
 
 		// Get the app
 		//$app 	= $this->getApp();

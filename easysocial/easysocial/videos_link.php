@@ -37,7 +37,7 @@ class EasysocialApiResourceVideos_link extends ApiResource
    		$post['title'] = $app->input->get('title', '', 'STRING');
         $post['description'] = $app->input->get('description', '', 'STRING');
 		$post['link'] =  $app->input->get('path', '', 'STRING');
-  		$post['tags'] = $app->input->get('tags', '', 'ARRAY');
+  		//$post['tags'] = $app->input->get('tags', '', 'ARRAY');
         $post['location'] = $app->input->get('location', '', 'STRING');
         $post['privacy'] = $app->input->get('privacy', '', 'STRING');
         

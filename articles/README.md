@@ -3,11 +3,11 @@ API to create and get content
 ## Create / Update Content
 
 ```http
-POST /index.php?option=com_api&app=content&resource=articles&format=raw
+POST /index.php?option=com_api&app=articles&resource=article&format=raw
 ```
 OR update an existing article
 ```http
-POST /index.php?option=com_api&app=content&resource=articles&format=raw&id=:id
+POST /index.php?option=com_api&app=articles&resource=article&format=raw&id=:id
 ```
 
 #### Request Params
@@ -35,7 +35,7 @@ POST /index.php?option=com_api&app=content&resource=articles&format=raw&id=:id
 
 ## Get Articles List
 ```http
-GET /index.php?option=com_api&app=content&resource=articles&format=raw
+GET /index.php?option=com_api&app=articles&resource=article&format=raw
 ```
 #### Request Params
 
@@ -60,7 +60,7 @@ GET /index.php?option=com_api&app=content&resource=articles&format=raw
 
 ## Get Single Article 
 ```http
-GET /index.php?option=com_api&app=content&resource=articles&format=raw&id=:id
+GET /index.php?option=com_api&app=articles&resource=article&format=raw&id=:id
 ```
 
 #### Request Params

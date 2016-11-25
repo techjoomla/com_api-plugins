@@ -23,15 +23,15 @@ class EasysocialApiResourceAlbum extends ApiResource
 {
 	public function get()
 	{
-	$this->plugin->setResponse($this->get_album_images());			
+		$this->plugin->setResponse($this->get_album_images());			
 	}	
 	public function post()
 	{
-	$this->plugin->setResponse($this->create_album());	
+		$this->plugin->setResponse($this->create_album());	
 	}
 	public function delete()
 	{
-	$this->plugin->setResponse($this->delete_check());
+		$this->plugin->setResponse($this->delete_check());
 	}
 	//switch case for photo delete or album delete.
 	public function delete_check()
@@ -57,31 +57,31 @@ class EasysocialApiResourceAlbum extends ApiResource
 		$id = $app->input->get('id',0,'INT');
 		$res = new stdClass();	       
         // Load the photo table
-        $photo  = FD::table( 'Photo' );
-        $photo->load( $id );		
-	$lib = FD::photo( $photo->uid , $photo->type , $photo );		
-        if( !$id && !$photo->id )
-        {
+		$photo  = FD::table( 'Photo' );
+		$photo->load( $id );		
+		$lib = FD::photo( $photo->uid , $photo->type , $photo );		
+		if( !$id && !$photo->id )
+		{
 		$res->state = false;
 		$res->message = JText::_( 'COM_EASYSOCIAL_PHOTOS_INVALID_ID_PROVIDED' );	
-            	return $res;
+		return $res;
         }
         // Load the photo library
         // Test if the user is allowed to delete the photo
         if( !$lib->deleteable() )
         {
-            $res->state = false;
-	    $res->message = JText::_( 'COM_EASYSOCIAL_PHOTOS_NO_PERMISSION_TO_DELETE_PHOTO' );	
-            return $res;
+			$res->state = false;
+			$res->message = JText::_( 'COM_EASYSOCIAL_PHOTOS_NO_PERMISSION_TO_DELETE_PHOTO' );	
+			return $res;
         }
         // Try to delete the photo
-        $state      = $photo->delete();
-        if( !$state )
-        {            
-            return false;
-        }
-        else
-        return $state;	
+		$state      = $photo->delete();
+		if( !$state )
+		{            
+			return false;
+		}
+		else
+		return $state;	
 	}	
 	//this function is used to get the photos from particular album
 	public function get_album_images()
@@ -101,28 +101,23 @@ class EasysocialApiResourceAlbum extends ApiResource
 		$mydata['start']=$limitstart;
 		$mydata['limit']=$limit;	
 
-		
 		$ob = new EasySocialModelPhotos();		
 		$photos = $ob->getPhotos($mydata);				
 		//loading photo table	
 		$photo  = FD::table( 'Photo' );
 		foreach($photos as $pnode )
 		{		 
-         $photo->load($pnode->id);
-
-	$pht_lib = FD::photo($pnode->id,'event',$album_id);
-
-	 $photo->cluser_user = $pht_lib->creator()->id;	
-         $pnode->image_large = $photo->getSource('large');
-         $pnode->image_square = $photo->getSource('square');
-         $pnode->image_thumbnail = $photo->getSource('thumbnail');
-         $pnode->image_featured = $photo->getSource('featured');		
-
+		$photo->load($pnode->id);
+		$pht_lib = FD::photo($pnode->id,'event',$album_id);
+		$photo->cluser_user = $pht_lib->creator()->id;	
+		$pnode->image_large = $photo->getSource('large');
+		$pnode->image_square = $photo->getSource('square');
+		$pnode->image_thumbnail = $photo->getSource('thumbnail');
+		$pnode->image_featured = $photo->getSource('featured');		
 		}
 		//mapping function
 		$all_photos = $mapp->mapItem($photos,'photos',$log_user);		
 		return $all_photos;					
-		// return $photos;
 	}
 	//this function is used to delete photos from album	
 	public function delete_album()
@@ -140,10 +135,10 @@ class EasysocialApiResourceAlbum extends ApiResource
 		}
 		else
 		{
-			$val =$album->delete();	
+			$val = $album->delete($id);
 			$album->assignPoints( 'photos.albums.delete' , $album->uid );
-			$val->message = JText::_( 'PLG_API_EASYSOCIAL_ALBUM_DELETE_SUCCESS_MESSAGE' );		
-			return $val;
+			$val = JText::_( 'PLG_API_EASYSOCIAL_ALBUM_DELETE_SUCCESS_MESSAGE' );		
+			return $val;          
 		}
 	}	
 	//this function is used to create album	
@@ -207,12 +202,11 @@ class EasysocialApiResourceAlbum extends ApiResource
 		$photodata = $photo_obj->albumPhotoUpload($uid,$type,$album->id);				
 		$album->params=$photodata;
 		if(!$album->cover_id) 
-        {	
-            $album->cover_id  = $photodata->id;
+		{	
+			$album->cover_id  = $photodata->id;
 			// Store the album
-            $album->store();
-        }
+			$album->store();
+		}
 	return $album;
     }
-
 }

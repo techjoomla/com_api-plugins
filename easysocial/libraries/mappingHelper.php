@@ -171,7 +171,7 @@ class EasySocialApiMappingHelper
 				$item->count=$row->count;				
 				$likes = FD::likes($row->id, SOCIAL_TYPE_ALBUM , 'create', SOCIAL_APPS_GROUP_USER );				
 				$item->likes = $this->createlikeObj($likes,$userid);
-			    //$item->total=$item->likes->total;			
+			    	//$item->total=$item->likes->total;			
 				
 				// Get album comments
 				$comments = FD::comments($row->id, SOCIAL_TYPE_ALBUM , 'create', SOCIAL_APPS_GROUP_USER , array('url' => $row->getPermalink()));				
@@ -179,9 +179,6 @@ class EasySocialApiMappingHelper
 				if(!$comments->stream_id)
 				$comments->element=$item->comment_element;
 
-				
-			
-				//$comments->element=$item->comment_element;				
 				$item->comments = $this->createCommentsObj($comments);				
 				$options = array('uid' => $comments->uid, 'element' => $item->comment_element, 'stream_id' => $comments->stream_id);				
 				$item->comments['base_obj']->element="albums";						

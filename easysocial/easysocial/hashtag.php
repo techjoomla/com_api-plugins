@@ -13,7 +13,6 @@ jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/stream.php';
 require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/hashtags.php';
-
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/mappingHelper.php';
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/uploadHelper.php';
 
@@ -28,9 +27,11 @@ class EasysocialApiResourceHashtag extends ApiResource
 	{	
 		/*search for hashtag */
 		$app = JFactory::getApplication();
+		
 		/*accepting input*/
 		$word = $app->input->get('tag',NULL,'STRING');
 		$obj = new EasySocialModelHashtags();
+		
 		/*calling method and return result*/
 		$result = $obj->search($word);
 		return $result;	

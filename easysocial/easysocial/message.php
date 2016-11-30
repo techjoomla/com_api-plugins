@@ -128,7 +128,7 @@ class EasysocialApiResourceMessage extends ApiResource
 							$mailParams['authorLink'] = $log_obj->getPermalink(true, true);
 							$mailParams['message'] = $message->message;
 							$mailParams['messageDate'] = $message->created;
-							$mailParams['conversationLink']	= $conversation->getPermalink(true, true);
+							//$mailParams['conversationLink']	= $conversation->getPermalink(true, true);
 
 							// Send a notification for all participants in this thread.
 							FD::notify('conversations.reply', array($recipient), $mailParams, false);
@@ -160,7 +160,7 @@ class EasysocialApiResourceMessage extends ApiResource
 							$mailParams['authorLink'] = $log_obj->getPermalink(true, true);
 							$mailParams['message'] = $message->getContents();
 							$mailParams['messageDate'] = $message->created;
-							$mailParams['conversationLink']	= $conversation->getPermalink(true, true);
+							//$mailParams['conversationLink']	= $conversation->getPermalink(true, true);
 
 							// Send a notification for all participants in this thread.
 							$state 	= FD::notify('conversations.new', array($recipientId) , $mailParams, false );
@@ -175,8 +175,7 @@ class EasysocialApiResourceMessage extends ApiResource
 				}
 			}
 		}
-		
-	   $this->plugin->setResponse($result);
+		$this->plugin->setResponse($result);
 	}
 	
 	//function for upload file
@@ -196,7 +195,6 @@ class EasysocialApiResourceMessage extends ApiResource
 
 		// Pass uploaded data to the uploader.
 		$uploader->bindFile( $data );
-
 		$state 	= $uploader->store();
 	}
 	
@@ -205,7 +203,6 @@ class EasysocialApiResourceMessage extends ApiResource
 	{
 			// Get the conversation table.
 			$conversation = FD::table('Conversation');
-			
 			$type = (count($recipients)>1)?2:1;
 			if($type==1)
 			{
@@ -220,39 +217,30 @@ class EasysocialApiResourceMessage extends ApiResource
 			$conversation->created_by = $log_usr;
 			$conversation->lastreplied = FD::date()->toMySQL();
 			$conversation->type = $type;
-			
 			$state = $conversation->store();
-			
 			return $conversation->id;
-
 	}
-	
-	
+
 	public function delete()
 	{
 		$app = JFactory::getApplication();
-		
 		$conversion_id = $app->input->get('conversation_id',0,'INT');
 		$valid = 1;
 		$result = new stdClass;
 
 		if( !$conversion_id )
 		{
-			
 			$result->status = 0;
 			$result->message = JText::_( 'PLG_API_EASYSOCIAL_INVALID_CONVERSATION_MESSAGE' );
 			$valid = 0;
-
 		}
 		else
 		{
 			// Try to delete the group
 			$conv_model = FD::model('Conversations');
-			//$my 	= FD::user($this->plugin->get('user')->id);
 			$result->status = $conv_model->delete( $conversion_id , $this->plugin->get('user')->id );
 			$result->message = JText::_( 'PLG_API_EASYSOCIAL_CONVERSATION_DELETED_MESSAGE' );
 		}
-	
 		$this->plugin->setResponse($result);
 	}
 	//function use for get friends data
@@ -267,12 +255,10 @@ class EasysocialApiResourceMessage extends ApiResource
 		$limit = $app->input->get('limit',20,'INT'); 
 		$maxlimit = $app->input->get('maxlimit',100,'INT'); 
 		$filter = $app->input->get('filter',null,'STRING');
-		
 		$mapp = new EasySocialApiMappingHelper();
 		
 		$data = array();
 		$data['data'] = array();
-		
 		$user = FD::user($log_user->id);
 		
 		$mapp = new EasySocialApiMappingHelper();
@@ -285,7 +271,6 @@ class EasysocialApiResourceMessage extends ApiResource
 		if($conversation_id)
 		{
 			$data['participant'] = $this->getParticipantUsers( $conversation_id );
-			//$msg_data = $conv_model->getMessages($conversation_id,$log_user->id);
 			$msg_data = $conv_model->setLimit( $limit )->getMessages($conversation_id,$log_user->id);
 	
 			$data['data'] = $mapp->mapItem($msg_data,'message',$log_user->id);
@@ -302,36 +287,22 @@ class EasysocialApiResourceMessage extends ApiResource
 			}
 			
 			$conversion = $conv_model->getConversations( $log_user->id , $options );
-	
+			//$conversation->conversation->isparticipant = $row->isparticipant;
+			//~ $conversation = ES::conversation($row->id);
+			//~ $msg = $conversation->getMessages();
 			if(count($conversion)>0)
 			{
-				/*foreach($conversion as $key=>$node)
-				{
-
-					$cobj = new stdClass;
-					$cobj->conversion_id = $node->id;
-					$cobj->created_date = $node->created;
-					$cobj->lastreplied_date = $node->lastreplied;
-					$cobj->isread = $node->isread;
-					$cobj->messages = $node->message;
-					$cobj->participant = $this->getParticipantUsers( $node->id );
-					
-					$raw_msg = $conv_model->getMessages($node->id , $log_user->id );
-					
-					$cobj->messages = $mapp->mapItem($raw_msg,'message',$log_user->id);
-					
-					$data['data'][] = $cobj;
-				}*/
 				$data['data'] = $mapp->mapItem($conversion,'conversion',$log_user->id);
+				$data['data'] = array_slice( $data['data'], $limitstart, $limit );
+				$data['status']		=	true;
+				
 			}
-	
-			if($data['data'])
-			{
-			//manual pagination code
-			$data['data'] = array_slice( $data['data'], $limitstart, $limit );
+			else{
+				$data['message']	=	JText::_( 'COM_EASYSOCIAL_CONVERSATION_EMPTY_LIST' );
+				$data['status']		=	false;
 			}
 			
-			return( $data );
+			return $data ;
 		}
 	}
 	
@@ -340,9 +311,7 @@ class EasysocialApiResourceMessage extends ApiResource
 	{
 		$conv_model = FD::model('Conversations');
 		$mapp = new EasySocialApiMappingHelper();
-		
 		$participant_usrs = $conv_model->getParticipants( $con_id );
-		
 		$con_usrs = array();
 
 		foreach($participant_usrs as $ky=>$usrs)
@@ -351,8 +320,5 @@ class EasysocialApiResourceMessage extends ApiResource
 			$con_usrs[] =  $mapp->createUserObj($usrs->id);
 		}
 		return $con_usrs;
-	}
-	
-	
+	}	
 }
-

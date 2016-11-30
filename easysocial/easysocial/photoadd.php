@@ -31,13 +31,14 @@ class EasysocialApiResourcePhotoadd extends ApiResource
 		$app = JFactory::getApplication();
 		$userid = $app->input->get('userid',0,'INT');
 		$album_id = $app->input->get('album_id',0,'INT');
+
 		// Load the album
 		$album	= FD::table( 'Album' );
 		$album->load($album_id);		
 		$photo_obj = new EasySocialApiUploadHelper();
 		$addphoto= $photo_obj->addPhotoAlbum($userid,$album_id);				
 		$album->params=$addphoto;
-        $album->title =  JText::_($album->title);
+		$album->title =  JText::_($album->title);
 		$album->caption =  JText::_($album->caption);
 		return $album;		
 	}

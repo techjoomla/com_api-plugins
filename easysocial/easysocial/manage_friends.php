@@ -24,8 +24,7 @@ class EasysocialApiResourceManage_friends extends ApiResource
 
 	public function post()
 	{
-		
-	   $this->plugin->setResponse($this->manageFriends());
+		$this->plugin->setResponse($this->manageFriends());
 	}
 	//function use for get friends data
 	function manageFriends()
@@ -34,14 +33,11 @@ class EasysocialApiResourceManage_friends extends ApiResource
 		$app = JFactory::getApplication();
 		
 		$log_user = JFactory::getUser($this->plugin->get('user')->id);
-		
 		$db = JFactory::getDbo();
 		
 		$frnd_id = $app->input->post->get('friend_id',0,'INT');
 		$choice = $app->input->post->get('choice',0,'INT');
-		
 		$userid = $log_user->id;
-		
 		$res = new stdClass();
 		
 		if(!$frnd_id)
@@ -52,22 +48,19 @@ class EasysocialApiResourceManage_friends extends ApiResource
 		if( $choice )
 		{
 			$frnds_obj = new EasySocialModelFriends();
-			
 			$result = $frnds_obj->request($frnd_id,$userid);
 			
 			if($result->id)
 			{
 				$res->frnd_id = $frnd_id;
 				$res->code = 200;
-				$res->message = JText::_( 'PLG_API_EASYSOCIAL_REQUEST_SENT_SUCCESS_MESSAGE' );
+				$res->message = JText::_( 'COM_EASYSOCIAL_FRIENDS_REQUEST_SENT' );
 			}
 			else
 			{
 				$res->code = 403;
 				$res->message = $result;
 			}
-			
-			
 		}
 		else
 		{
@@ -86,10 +79,7 @@ class EasysocialApiResourceManage_friends extends ApiResource
 				$res->code = 403;
 				$res->message = JText::_( 'PLG_API_EASYSOCIAL_UNABLE_DELETE_FRIEND_MESSAGE' );
 			}
-			
 		}
-		
-		return $res;
-		
+		return $res;		
 	}
 }

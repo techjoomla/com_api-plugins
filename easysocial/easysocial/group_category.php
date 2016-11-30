@@ -29,8 +29,7 @@ class EasysocialApiResourceGroup_category extends ApiResource
 
 	public function post()
 	{
-		//print_r($FILES);die("in post grp api");
-	   $this->plugin->setResponse(JText::_( 'PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE' ));
+		$this->plugin->setResponse(JText::_( 'PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE' ));
 	}
 	
 	//function use for get friends data
@@ -39,24 +38,16 @@ class EasysocialApiResourceGroup_category extends ApiResource
 		//init variable
 		$app = JFactory::getApplication();
 		$log_user = $this->plugin->get('user')->id;
-		
 		$other_user_id = $app->input->get('user_id',0,'INT'); 
-		
 		$userid = ($other_user_id)?$other_user_id:$log_user;
-		
 		$data = array();
-		
 		$mapp = new EasySocialApiMappingHelper();
-		
 		$user = FD::user($userid);
 		
 		// Get a list of group categories
 		$catModel = FD::model('GroupCategories');
 		$cats = $catModel->getCategories(array('state' => SOCIAL_STATE_PUBLISHED, 'ordering' => 'ordering'));
-
 		$data['data'] = $mapp->mapItem($cats,'category',$log_user);
-		
 		return( $data );
 	}
-	
 }

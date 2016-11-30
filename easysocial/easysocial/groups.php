@@ -54,7 +54,7 @@ class EasysocialApiResourceGroups extends ApiResource
 		{
 			$userid = $filters['uid'];
 		}
-			
+
 		$filters['types'] = $app->input->get('type',0,'INT');
 		$filters['state'] = $app->input->get('state',0,'INT');
 		
@@ -62,7 +62,6 @@ class EasysocialApiResourceGroups extends ApiResource
 		$filters['mygroups'] = $app->input->get('mygroups',false,'BOOLEAN');
 		$filters['invited'] = $app->input->get('invited',false,'BOOLEAN');
 		
-		//$filters['limit'] = $app->input->get('limit',0,'INT');
 		$limit = $app->input->get('limit',10,'INT');
 		$limitstart = $app->input->get('limitstart',0,'INT');
 
@@ -74,13 +73,9 @@ class EasysocialApiResourceGroups extends ApiResource
 		if($filters['featured'])
 		{
 			$options['featured']	= true;
-
 			$featured = $model->getGroups($options);
 			$featured_grps = $mapp->mapItem($featured,'group',$log_user->id);
-		
-			/*if(is_array($featured_grps))
-				$featured_grps = array_slice($featured_grps,$limitstart,$limit);
-			*/
+
 			if(count($featured_grps) > 0 && $featured_grps != false && is_array($featured_grps))
 			{
 				$featured_grps = array_slice($featured_grps,$limitstart,$limit);
@@ -126,15 +121,12 @@ class EasysocialApiResourceGroups extends ApiResource
 				$groups = $model->getUserGroups($filters['uid']);
 			}
 
-			//$groups = $this->baseGrpObj($groups);
 			if($limit)
 			{
 				$groups = array_slice($groups,$limitstart,$limit);	
 			}
-				
 			$groups = $mapp->mapItem($groups,'group',$log_user->id);
 		}
-
 		return( $groups );
 	}
 
@@ -145,13 +137,10 @@ class EasysocialApiResourceGroups extends ApiResource
 		return 0;
 		
 		$user = JFactory::getUser($id);
-		
 		$obj = new stdclass;
-		
 		$obj->id = $user->id; 
 		$obj->username = $user->username; 
 		$obj->url = ''; 
-		
 		return $obj;
 	}
 }

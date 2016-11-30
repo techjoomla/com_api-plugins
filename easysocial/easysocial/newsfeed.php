@@ -26,49 +26,46 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 
 	public function post()
 	{
-	   $this->plugin->setResponse($this->getGroups());
+		$this->plugin->setResponse($this->getGroups());
 	}
 	//function use for get stream data
 	function getStream()
 	{
-	//init variable
-	$app =  JFactory::getApplication();
-	//code for get non sef urls 
-	$jrouter = JFactory::getApplication()->getRouter();
-	$jrouter->setMode(JROUTER_MODE_RAW);
+		//init variable
+		$app =  JFactory::getApplication();
+		//code for get non sef urls 
+		$jrouter = JFactory::getApplication()->getRouter();
+		$jrouter->setMode(JROUTER_MODE_RAW);
 	
-	$log_user = JFactory::getUser($this->plugin->get('user')->id);
-	$group_id = $app->input->get('group_id', 0, 'INT');
-	$event_id = $app->input->get('event_id', 0, 'INT');
-	$view = $app->input->get('view', 'dashboard', 'STRING');	
+		$log_user = JFactory::getUser($this->plugin->get('user')->id);
+		$group_id = $app->input->get('group_id', 0, 'INT');
+		$event_id = $app->input->get('event_id', 0, 'INT');
+		$view = $app->input->get('view', 'dashboard', 'STRING');	
 
-        $id = $this->plugin->get('user')->id;
-        
-        $target_user = $app->input->get('target_user', 0, 'INT');
-        
-        $limit = $app->input->get('limit', 10, 'INT');
-        $startlimit = $app->input->get('limitstart', 0, 'INT');
-        
-        $filter = $app->input->get('filter', 'everyone', 'STRING');
-        //get tag
-        $tag = $app->input->get('tag', '', 'STRING');
-        
-        $config = JFactory::getConfig();
-        $sef = $config->set('sef', 0);
+		$id = $this->plugin->get('user')->id;
+		$target_user = $app->input->get('target_user', 0, 'INT');
+
+		$limit = $app->input->get('limit', 10, 'INT');
+		$startlimit = $app->input->get('limitstart', 0, 'INT');
+		
+		$filter = $app->input->get('filter', 'everyone', 'STRING');
+		//get tag
+		$tag = $app->input->get('tag', '', 'STRING');
+		
+		$config = JFactory::getConfig();
+		$sef = $config->set('sef', 0);
 	
 	//map object
 	$mapp = new EasySocialApiMappingHelper();
 
-        // If user id is not passed in, return logged in user
-        if (!$target_user) {
-            $target_user = $id;
-        }
+		// If user id is not passed in, return logged in user
+		if (!$target_user) {
+			$target_user = $id;
+		}
 
 	// Get the stream library
 	$stream 	= FD::stream();
-
 	$options = array('userId' => $target_user, 'startlimit' => $startlimit, 'limit' => $limit);
-		
 	$clusterType = SOCIAL_TYPE_GROUP;
 	
 	if($event_id)
@@ -88,7 +85,7 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 			case 'everyone':
 				$options['guest'] = true;
 				$options['ignoreUser'] = true;
-				$options['view'] = $view;				
+				$options['view'] = $view;
 				break;
 
 			case 'following':
@@ -99,38 +96,31 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 				$options['guest'] = true;
 				$options['type'] = 'bookmarks';
 			case 'me':
-				$options['view'] = $view;
-				//$options['userId'] = 0;
-				// nohting to set
+				$options['view'] =	$view;
 				break;
 			case 'hashtag':
-				//$tag = '';
 				$options['tag'] = $tag;
 				break;
 			case 'sticky':
-				//$options['guest'] = true;
 				$options['type'] = 'sticky';
 				break;
 			default:
 				$options['context'] = $filter;
+				$options['userId'] = $id;
+				$options['view'] = 'dashboard';
 				break;
 			}
 		}
 
 		$stream->get($options);
-
 		$result = $stream->toArray();
-				
 		$data	= array();
 		if(!is_array($result))
 		{
 			return $data;
 		}
-		$data11 = $mapp->mapItem($result,'stream',$target_user);
-		//set back sef
+		$data = $mapp->mapItem($result,'stream',$target_user);
 		$jrouter->setMode(JROUTER_MODE_SEF);
-		
-		return $data11;
+		return $data;
 	}
-
 }

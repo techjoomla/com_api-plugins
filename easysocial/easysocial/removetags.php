@@ -11,7 +11,6 @@ defined('_JEXEC') or die( 'Restricted access' );
 jimport('joomla.plugin.plugin');
 jimport('joomla.html.html');
 
-//  require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/tag/tag.php';
 require_once JPATH_SITE.'/plugins/api/easysocial/libraries/mappingHelper.php';
 require_once JPATH_SITE.'/components/com_easysocial/controllers/videos.php';
 
@@ -26,11 +25,7 @@ class EasysocialApiResourceRemoveTags extends ApiResource
 	 */
 	public function post()
 	{
-
-		// Check for request forgeries
-		//ES::checkToken();
-
-        $app = JFactory::getApplication();        
+		$app = JFactory::getApplication();        
         
 		// Get the tag id
 		$id = $app->input->get('friends_tagsid', 0, 'int');
@@ -44,21 +39,13 @@ class EasysocialApiResourceRemoveTags extends ApiResource
 		$table->load($tag->target_id);
 
 		$video = ES::video($table->uid, $table->type, $table);
-
-		/*if (!$video->canRemoveTag()) {
-			return JText::_('COM_EASYSOCIAL_VIDEOS_NOT_ALLOWED_TO_REMOVE_TAGS');
-		}*/
+		
 		// Delete the tag
 		$tag->delete();
+		$video = ES::video();
+		$video->load($tag->target_id);
+		$tag_peoples=$video->getTags();
 
-        //$tags->status  =1;
-		//$tags->message = JText::_( 'Tags Removed Successfully' );  
-
-        $video = ES::video();
-        $video->load($tag->target_id);
-        $tag_peoples=$video->getTags();
-
-        $this->plugin->setResponse($tag_peoples);
+		$this->plugin->setResponse($tag_peoples);
 	}
 }
-

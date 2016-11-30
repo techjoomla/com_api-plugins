@@ -29,7 +29,6 @@ class EasysocialApiResourceLike extends ApiResource
 
 	public function post()
 	{
-		//print_r($FILES);die("in post grp api");
 	   $this->plugin->setResponse($this->toggleLike());
 	}	
 	public function delete()
@@ -41,9 +40,7 @@ class EasysocialApiResourceLike extends ApiResource
 	{
 		//init variable
 		$app = JFactory::getApplication();
-		
 		$log_user = JFactory::getUser($this->plugin->get('user')->id);
-		
 		$result = new stdClass;
 		
 		$id = $app->input->get('id',0,'INT');
@@ -69,12 +66,9 @@ class EasysocialApiResourceLike extends ApiResource
 
 		// If user had already liked this item, we need to unlike it.
 		if ($hasLiked) {
-
 			$state 	= $model->unlike( $id , $key , $my->id, $useStreamId );
-
 		} else {
 			$state 	= $model->like( $id , $key , $my->id, $useStreamId );
-
 			//now we need to update the associated stream id from the liked object
 			if ($streamid) {
 				$doUpdate = true;
@@ -96,12 +90,9 @@ class EasysocialApiResourceLike extends ApiResource
 
 		// The current action
 		$verb 	= $hasLiked ? JText::_( 'PLG_API_EASYSOCIAL_UNLIKE' ) : JText::_( 'PLG_API_EASYSOCIAL_LIKE' );
-		
 		$result->status = $state;
 		$result->data = ($state && $verb == 'like')?$model->getLikesCount($id,$type):0;
 		$result->message = ($state)? $verb.JText::_( 'PLG_API_EASYSOCIAL_SUCCESSFULL' ): $verb.JText::_( 'PLG_API_EASYSOCIAL_UNSUCCESSFULL' );
-			
 		return( $result );
-	}
-		
+	}		
 }

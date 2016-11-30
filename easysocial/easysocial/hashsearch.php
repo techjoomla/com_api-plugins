@@ -17,15 +17,17 @@ class EasysocialApiResourceHashsearch extends ApiResource
 {
 	public function get()
 	{
-	$this->plugin->setResponse($this->get_hash_list());			
+		$this->plugin->setResponse($this->get_hash_list());			
 	}	
 	public function get_hash_list()
 	{	
 		/*search for hashtag */
 		$app = JFactory::getApplication();
+		
 		/*accepting input*/
 		$word = $app->input->get('type',NULL,'STRING');
 		$obj = new EasySocialModelHashtags();
+		
 		/*calling method and return result*/	
 		$result = $obj->search($word);
 		return $result;	

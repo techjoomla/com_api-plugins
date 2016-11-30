@@ -33,17 +33,17 @@ class EasysocialApiResourceLeaderboard extends ApiResource
 		$limit = $app->input->get('limit',10,'INT');	
 		$mapp = new EasySocialApiMappingHelper();
 		$model = FD::model( 'Leaderboard' );
-		//$options = array( 'ordering' => 'points' , 'limit' => $limit , 'excludeAdmin' => $excludeAdmin ,'state' => 1);
+		$excludeAdmin	=	true;
 		$options = array( 'ordering' => 'points' , 'excludeAdmin' => $excludeAdmin ,'state' => 1);
 		$users = $model->getLadder( $options , false );
 		
 		if(empty($users))
-        {
-            $res = new stdClass;
-            $res->status = 0;
-            $res->message = JText::_( 'PLG_API_EASYSOCIAL_NO_LEADERS' );
-            return $res;
-        }
+		{
+			$res = new stdClass;
+			$res->status = 0;
+			$res->message = JText::_( 'PLG_API_EASYSOCIAL_NO_LEADERS' );
+			return $res;
+		}
 		
 		$leaderusers=$mapp->mapItem($users,'user');
 		$output = array_slice($leaderusers, $limitstart, $limit);

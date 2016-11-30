@@ -49,11 +49,11 @@ class EasysocialApiResourceEventinvite extends ApiResource
 			$es_params = FD::config();
 			foreach ($target_users as $id)
 			{
-				$username = JFactory::getUser($id)->name;
-
+				
+				$target_username = JFactory::getUser($id)->name;
 				if($es_params->get('users')->displayName == 'username')
 				{
-					$username = $user->username;
+					$target_username = JFactory::getUser($id)->name;
 				}
 				
 				$guest = $event->getGuest($id);
@@ -62,13 +62,13 @@ class EasysocialApiResourceEventinvite extends ApiResource
 					$state = $event->invite($id,$log_user->id);
 					$result->message=JText::_( 'PLG_API_EASYSOCIAL_INVITED_MESSAGE' );
 					$result->status=$state;
-					$invited[] = $username;					
+					$invited[] = $target_username;
 				}
 				else
 				{
 					$result->message=JText::_( 'PLG_API_EASYSOCIAL_GUEST_CANT_INVITED_MESSAGE' );
-					$result->status=$state;
-					$not_invi[] = $username;						
+					$result->status= false;
+					$not_invi[] = $target_username;
 				}
 			}
 			$result->status = 1;

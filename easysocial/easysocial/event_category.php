@@ -19,13 +19,14 @@ class EasysocialApiResourceEvent_category extends ApiResource
 	{
 		$this->plugin->setResponse($this->get_cat());
 	}
+
 	//getting all categories of event
 	public function get_cat()
 	{
 		$app = JFactory::getApplication();
+
 		//getting log_user
-		$log_user = $this->plugin->get('user')->id;
-		//~ $ordering = $this->plugin->get('', '', 'STRING');
+		$log_user = $this->plugin->get('user')->id;		
 		$cat=FD::model( 'eventcategories' );
 		$res=$cat->getCategories();
 		return $res;

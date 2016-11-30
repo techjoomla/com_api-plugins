@@ -62,7 +62,6 @@ class EasysocialApiResourceDiscussion extends ApiResource
 		
 		$group_id = $mainframe->input->get('id',0,'INT');
 		$appId = $mainframe->input->get('discussion_id',0,'INT');
-		//$filter = $mainframe->input->get('filter','all','STRING');
 		
 		$limitstart	= $mainframe->input->get('limitstart',0,'INT');
 		$limit	= $mainframe->input->get('limit',10,'INT');		
@@ -79,10 +78,8 @@ class EasysocialApiResourceDiscussion extends ApiResource
 		else
 		{
 			$group 		= FD::group( $group_id );
-			
 			// Get the current filter type
 			$filter 	= $mainframe->input->get('filter','all','STRING');
-			
 			$options 	= array();
 
 			if( $filter == 'unanswered' )
@@ -100,24 +97,16 @@ class EasysocialApiResourceDiscussion extends ApiResource
 				$options[ 'resolved' ]	= true;
 			}
 			
-			//$options[ 'limitstart' ]	= $mainframe->input->get('limitstart',0,'INT');
-			//$options[ 'limit' ]	= $mainframe->input->get('limit',10,'INT');
-			
-			$mapp = new EasySocialApiMappingHelper();
-			
-			$model 			= FD::model( 'Discussions' );
+			$mapp	= new EasySocialApiMappingHelper();			
+			$model	= FD::model( 'Discussions' );
 
-			$discussions_row	= $model->getDiscussions( $group->id , SOCIAL_TYPE_GROUP , $options );
-			
+			$discussions_row	= $model->getDiscussions( $group->id , SOCIAL_TYPE_GROUP , $options );			
 			if($limitstart)
 			{
 				$discussions_row = array_slice($discussions_row,$limitstart,$limit);
 			}	
-		
 						
 			$data['data'] = $mapp->mapItem($discussions_row,'discussion',$this->plugin->get('user')->id);
-
-			//
 			return( $data );
 		}
 	}
@@ -128,23 +117,20 @@ class EasysocialApiResourceDiscussion extends ApiResource
 		//init variable
 		$mainframe = JFactory::getApplication();
 		$log_user = $this->plugin->get('user')->id;
+		
 		// Load the discussion
 		$discuss_id 	= $mainframe->input->get('discussion_id',0,'INT');
 		$groupId 	= $mainframe->input->get('group_id',0,'INT');
-		
 		$wres = new stdClass;
-		
 		$discussion = FD::table( 'Discussion' );
 		$discussion->load( $discuss_id );
 		
-
 		// Get the current logged in user.
 		$my		= FD::user($log_user);
 
 		// Get the group
 		$group		= FD::group( $groupId );
-
-
+		
 		// Check if the user is allowed to create a discussion
 		if( !$group->isMember() )
 		{
@@ -158,7 +144,15 @@ class EasysocialApiResourceDiscussion extends ApiResource
 		$discussion->type 		= 'group';
 		$discussion->title 		= $mainframe->input->get('title',0,'STRING');
 		$discussion->content 	= $mainframe->input->get('content',0,'RAW');
-
+		
+		//format content
+		$discussion->content = str_replace('<p>','',$discussion->content);
+		$discussion->content = str_replace('</p>','',$discussion->content);
+		$discussion->content = str_replace('<','[',$discussion->content);
+		$discussion->content = str_replace('>',']',$discussion->content);
+				
+				
+				
 		// If discussion is edited, we don't want to modify the following items
 		if( !$discussion->id )
 		{
@@ -184,20 +178,15 @@ class EasysocialApiResourceDiscussion extends ApiResource
 
 		// Lock the discussion
 		$state 	= $discussion->store();
-
 		if( !$state )
 		{
 			$wres->status = 0;
 			$wres->message[] = JText::_( 'PLG_API_EASYSOCIAL_UNABLE_CREATE_DISCUSSION_MESSAGE' );
 			return $wres;
-
 		}
 
 		// Process any files that needs to be created.
 		$discussion->mapFiles();
-
-		// Get the app
-		//$app 	= $this->getApp();
 
 		// If it is a new discussion, we want to run some other stuffs here.
 		if( !$discuss_id && $state)
@@ -235,12 +224,9 @@ class EasysocialApiResourceDiscussion extends ApiResource
 			$tpl->setAccess('core.view');
 
 			// Add the stream
-			$stream->add( $tpl );
-
-			// Set info message
-			//FD::info()->set(false, JText::_( 'APP_GROUP_DISCUSSIONS_DISCUSSION_CREATED_SUCCESS' ), SOCIAL_MSG_SUCCESS );
-
+			//$stream->add( $tpl );
 			// Send notification to group members only if it is new discussion
+			
 			$options 	= array();
 			$options[ 'permalink' ]	= FRoute::apps( array( 'layout' => 'canvas' , 'customView' => 'item' , 'uid' => $group->getAlias() , 'type' => SOCIAL_TYPE_GROUP , 'id' => $app->getAlias() , 'discussionId' => $discussion->id , 'external' => true ) , false );
 			$options['discussionId']		= $discussion->id;
@@ -254,70 +240,5 @@ class EasysocialApiResourceDiscussion extends ApiResource
 		$wres->id = $discussion->id;
 		$wres->message[] = JText::_( 'PLG_API_EASYSOCIAL_GROUP_DISCUSSION_CREATED_MESSAGE' );
 		return $wres;
-		
-	}
-	
-/*
-	//format friends object into required object
-	function baseGrpObj($node=null)
-	{
-		if($node==null)
-		return 0;
-
-		$user = JFactory::getUser($this->plugin->get('user')->id);
-
-		$list = array();
-		
-		$grp_obj = FD::model('Groups');
-	
-		$obj = new stdclass;
-		$obj->id = $node->id;
-		$obj->title = $node->title;
-		$obj->description = $node->description;
-		$obj->hits = $node->hits;
-		$obj->state = $node->state;
-		$obj->created_date = $node->created;
-		
-		//get category name
-		$category 	= FD::table('GroupCategory');
-		$category->load($node->category_id);
-		$obj->category_id = $node->category_id;
-		$obj->category_name = $category->get('title');
-		
-		$obj->created_by = $node->creator_uid;
-		$obj->creator_name = JFactory::getUser($node->creator_uid)->username;
-		$obj->type = ($node->type == 1 )?'Private':'Public';
-		
-		foreach($node->avatars As $ky=>$avt)
-		{
-			$avt_key = 'avatar_'.$ky;
-			$obj->$avt_key = JURI::root().'media/com_easysocial/avatars/group/'.$node->id.'/'.$avt;
-		}
-		
-		//$obj->members = $node->members;
-		$obj->member_count = $grp_obj->getTotalMembers($node->id);
-		//$obj->cover = $grp_obj->getMeta($node->id);
-		
-		$alb_model = FD::model('Albums');
-		
-		$uid = $node->id.':'.$node->title;
-
-		$filters = array('uid'=>$uid,'type'=>'group');
-		//get total album count
-		$obj->album_count = $alb_model->getTotalAlbums($filters);
-
-		//get group album list
-		//$albums = $alb_model->getAlbums($uid,'group');
-		
-		$obj->isowner = ( $node->creator_uid == $userid )?true:false;
-		$obj->ismember = in_array( $log_user->id,$node->members );
-		$obj->approval_pending = in_array( $log_user->id,$node->pending );
-
-		/*$news_obj = new EasySocialModelGroups();
-		$news = $news_obj->getNews($node->id); */
-		
-		/*return $obj;
-	}
-*/
-	
+	}	
 }

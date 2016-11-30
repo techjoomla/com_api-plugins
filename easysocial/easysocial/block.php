@@ -11,12 +11,11 @@ defined('_JEXEC') or die( 'Restricted access' );
 jimport('joomla.plugin.plugin');
 jimport('joomla.html.html');
 
-
 class EasysocialApiResourceBlock extends ApiResource
 {
 	public function get()
 	{
-	$this->plugin->setResponse("Use method post");
+		$this->plugin->setResponse("Use method post");
 	}	
 	public function post()
 	{
@@ -29,7 +28,6 @@ class EasysocialApiResourceBlock extends ApiResource
 		$reason = $app->input->get('reason','','STRING');
 		$target_id = $app->input->get('target_id',0,'INT');
 		$block_this = $app->input->get('block',0,'INT');
-		//print_r($_POST);die();
 		return $res = ($block_this)?$this->block($target_id,$reason):$this->unblock($target_id);
 		
 	}
@@ -37,10 +35,7 @@ class EasysocialApiResourceBlock extends ApiResource
 	//block user function
 	public function block($target_id,$reason)
 	{
-		
-		//print_r($target_id);die( 'block access' );
 		$res = new stdClass();
-	
 		if(!$target_id)
 		{
 			$res->success = 0;
@@ -66,7 +61,6 @@ class EasysocialApiResourceBlock extends ApiResource
 	
 	public function unblock($target_id)
 	{
-		//print_r($target_id);
 		$res = new stdClass();
 		
 		if(!$target_id)
@@ -92,5 +86,4 @@ class EasysocialApiResourceBlock extends ApiResource
 		}
 		return $res;
 	}
-
 }	

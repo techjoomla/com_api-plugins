@@ -34,28 +34,6 @@ class EasysocialApiResourceFriend extends ApiResource
 	public function delete()
 	{
 		$this->plugin->setResponse($this->deletefriend());
-
-		/*$app = JFactory::getApplication();
-		$frnd_id = $app->input->get('target_userid',0,'INT');
-
-		$user 	= FD::user( $frnd_id );
-		$user->approve();
-		$res = new stdClass();
-
-		$res->result = EasySocialModelUsers::deleteFriends($frnd_id);
-
-		if( $res->result == true )
-		{
-			 $res->status = 1;
-			 //$res->message = 'Freind deleted';
-		}
-		else
-		{
-			$res->status = 0;
-			//$res->message = 'Unable to delete friend';
-		}
-		
-		$this->plugin->setResponse($res);*/
 	}
 
 	public function deletefriend()
@@ -113,35 +91,20 @@ class EasysocialApiResourceFriend extends ApiResource
 		if(empty($search))
 		{
 			$ttl_list = $frnd_mod->getFriends($userid); 
-	    }
-	    else
-	    {
+		}
+		else
+		{
 			$ttl_list = $frnd_mod->search($userid,$search,'username');
 		}
 
-	    //$frnd_list = $this->basefrndObj($ttl_list);
-	    $frnd_list = $mapp->mapItem( $ttl_list,'user',$userid);
+		$frnd_list = $mapp->mapItem( $ttl_list,'user',$userid);
 
 	    //get other data
 	    foreach($frnd_list as $ky=>$lval)
-	    {	
-			//get mutual friends of given user
-			/*if($userid != $user->id)
-			{
-				$lval->mutual = $frnd_mod->getMutualFriendCount($user->id,$lval->id);
-				$lval->isFriend = $frnd_mod->isFriends($user->id,$lval->id);
-				//$lval->mutual_frnds = $frnd_mod->getMutualFriends($userid,$lval->id);
-			}
-			else
-			{
-				$lval->mutual = $frnd_mod->getMutualFriendCount($userid,$lval->id);
-				$lval->isFriend = $frnd_mod->isFriends($user->id,$lval->id);
-			}*/
-
+	    {			
 			$lval->mutual = $frnd_mod->getMutualFriendCount($user->id,$lval->id);
 			$lval->isFriend = $frnd_mod->isFriends($user->id,$lval->id);
 		}
-
 		return( $frnd_list );
 	}
 	
@@ -160,13 +123,11 @@ class EasysocialApiResourceFriend extends ApiResource
 			$obj->username = $node->username;
 			$obj->email = $node->email;
 			
-			//$obj->avatar = EasySocialModelAvatars::getPhoto($node->id);
 			foreach($node->avatars As $ky=>$avt)
 			{
 				$avt_key = 'avtar_'.$ky;
 				$obj->$avt_key = JURI::root().'media/com_easysocial/avatars/users/'.$node->id.'/'.$avt;
 			}
-			
 			$list[] = $obj;
 		}
 		
@@ -179,15 +140,10 @@ class EasysocialApiResourceFriend extends ApiResource
 	{
 		//init variable
 		$app = JFactory::getApplication();
-		
 		$log_user = JFactory::getUser($this->plugin->get('user')->id);
-		
 		$db = JFactory::getDbo();
-		
 		$frnd_id = $app->input->get('target_userid',0,'INT');
-
 		$userid = $log_user->id;
-		
 		$res = new stdClass();
 		
 		if(!$frnd_id)
@@ -196,24 +152,16 @@ class EasysocialApiResourceFriend extends ApiResource
 		}
 
 		$frnds_obj = new EasySocialModelFriends();
-		
 		$result = $frnds_obj->request($userid,$frnd_id);
 		
 		if($result->id)
 		{
 			$res->status = 1;
-			/*$res->frnd_id = $frnd_id;
-			$res->code = 200;
-			$res->message = 'Request send';*/
 		}
 		else
 		{
 			$res->status = 0;
-			/*$res->code = 403;
-			$res->message = $result;*/
 		}
 		return $res;
-		
 	}
-
 }

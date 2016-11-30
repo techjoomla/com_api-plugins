@@ -47,12 +47,11 @@ class EasysocialApiResourceEvents extends ApiResource
 		$mapp = new EasySocialApiMappingHelper();		
 		$userObj = FD::user($log_user);
 		$options = array('state' => SOCIAL_STATE_PUBLISHED, 'ordering' => $ordering,'type' => $userObj->isSiteAdmin() ? 'all' : 'user');	
-		//if date is given then choose appropriate switch case for that.
-		//for calender date
+		
 		if(!empty($cdates))
-               	{
-                       $dates=$cdates;
-               	}
+		{
+			$dates=$cdates;
+		}
 
 		if(!empty($dates)){	
 			$check = strtotime($dates);				
@@ -88,8 +87,8 @@ class EasysocialApiResourceEvents extends ApiResource
 		//get events with filter. 		
 		switch($filter)
 		{
-				case 'all':		//$options['featured'] = true;
-							  // We do not want to include past events here
+				case 'all':
+							// We do not want to include past events here
 							if (!$includePast) {
 								$options['ongoing'] = true;
 								$options['upcoming'] = true;
@@ -168,14 +167,10 @@ class EasysocialApiResourceEvents extends ApiResource
 	//this common function is for getting dates for month,year,today,tomorrow filters.
 	public function dfilter($dates)
 	{
-			// We need segments to be populated. If no input is passed, then it is today, and we use today as YMD then
+					// We need segments to be populated. If no input is passed, then it is today, and we use today as YMD then
 					$segments = explode('-', $dates);
 					$start = $dates;
-					$end = $dates;
-					// Depending on the amount of segments
-					// 1 = filter by year
-					// 2 = filter by month
-					// 3 = filter by day
+					$end = $dates;		
 					$mode = count($segments);
 					
 					switch ($mode) 
@@ -216,12 +211,12 @@ class EasysocialApiResourceEvents extends ApiResource
 		//load the user
 		$user = FD::user($log_user);		
 		// Load the event
-        $event = FD::event($event_id);
-        // Determine the guest object
-        $guest = $event->getGuest($log_user);
+		$event = FD::event($event_id);
+		// Determine the guest object
+		$guest = $event->getGuest($log_user);
         
-        if( empty($event) || empty($event->id) || !$event->isPublished() )
-        {
+		if( empty($event) || empty($event->id) || !$event->isPublished() )
+		{
 			$res->message=JText::_( 'PLG_API_EASYSOCIAL_EVENT_NOT_FOUND_MESSAGE' );
 			$res->status=0;
 			return $res;
@@ -234,7 +229,7 @@ class EasysocialApiResourceEvents extends ApiResource
 		}
 		$guest->cluster_id = $event_id;
 		$access = $user->getAccess();
-        $total = $user->getTotalEvents();
+		$total = $user->getTotalEvents();
 		if (in_array($state, array('going', 'maybe', 'request')) && $access->exceeded('events.join', $total))
 		{
 			$res->message=JText::_( 'PLG_API_EASYSOCIAL_LIMIT_EXCEEDS_MESSAGE' );
@@ -243,41 +238,35 @@ class EasysocialApiResourceEvents extends ApiResource
 		}
 		switch ($state) 
 		{
-            case 'going':
+			case 'going':
 							$final=$guest->going();
-            break;
+			break;
 
-            case 'notgoing':
-							// Depending on the event settings
-							// It is possible that if user is not going, then admin doesn't want the user to continue be in the group.
-							// If guest is owner, admin or siteadmin, or this event allows not going guest then allow notgoing state
-							// If guest is just a normal user,then we return state as 'notgoingdialog' so that the JS part can show a dialog to warn user about it.
+			case 'notgoing':
 							if ($event->getParams()->get('allownotgoingguest', true) || $guest->isOwner()) {
 								$final=$guest->notGoing();
 							} else {
 								$final=$guest->withdraw();
 							}
-            break;
+			break;
 
-            case 'maybe':
+			case 'maybe':
 							$final=$guest->maybe();
-            break;
+			break;
 
-            case 'request':
+			case 'request':
 							$final=$guest->request();
-            break;
+			break;
 
-            case 'withdraw':
+			case 'withdraw':
 							$final=$guest->withdraw();
-            break;
+			break;
             
-            default: 		
+			default: 		
 							$final=JText::_( 'PLG_API_EASYSOCIAL_SELECT_VALID_OPTION_MESSAGE' );				
-            break;
-        }
-        //$res->message="success";
-        $res->status=$final;
+			break;
+		}
+		$res->status=$final;
 		return $res;	
 	}
-	
 }

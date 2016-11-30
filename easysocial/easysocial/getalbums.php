@@ -20,14 +20,16 @@ class EasysocialApiResourceGetalbums extends ApiResource
 {
 	public function get()
 	{
-	$this->plugin->setResponse($this->get_albums());
+		$this->plugin->setResponse($this->get_albums());
 	}
 	//get user album as per id / login user
 	public function get_albums()
 	{
 		$app = JFactory::getApplication();
+		
 		//getting log_user
 		$log_user = $this->plugin->get('user')->id;
+		
 		//accepting user details.	
 		$uid = $app->input->get('uid',0,'INT');
 		$type = $app->input->get('type',0,'STRING');	
@@ -35,6 +37,7 @@ class EasysocialApiResourceGetalbums extends ApiResource
 		//accepting pagination values.
 		$limitstart = $app->input->get('limitstart',5,'INT');
 		$limit =  $app->input->get('limit',10,'INT');		
+		
 		// taking values in array for pagination of albums.		
 		//$mydata['limitstart']=$limitstart;
 		$mydata['excludeblocked'] = 1;
@@ -59,25 +62,23 @@ class EasysocialApiResourceGetalbums extends ApiResource
 				
 		foreach($albums as $album )
 		{
-		 if($album->cover_id)
-         {
-         $album->load( $album->id );
-		 }
-         $album->cover_featured = $album->getCover('featured');
-         $album->cover_large = $album->getCover('large');
-         $album->cover_square = $album->getCover('square');
-         $album->cover_thumbnail = $album->getCover('thumbnail');         		
+			if($album->cover_id)
+			{
+				$album->load( $album->id );
+			}
+		$album->cover_featured = $album->getCover('featured');
+		$album->cover_large = $album->getCover('large');
+		$album->cover_square = $album->getCover('square');
+		$album->cover_thumbnail = $album->getCover('thumbnail');         		
 		}
+		
 		//getting count of photos in every albums.	
 		foreach($albums as $alb)
 		{
 		 $alb->count = $obj->getTotalPhotos($alb->id);
 		}		
 		$all_albums = $mapp->mapItem($albums,'albums',$log_user);
-		
 		$output = array_slice($all_albums, $limitstart, $limit);
-	
-	    return $output;
-
+		return $output;
 	}
 }	

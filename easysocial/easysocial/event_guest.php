@@ -25,8 +25,10 @@ class EasysocialApiResourceEvent_guest extends ApiResource
 	public function get_guests()
 	{
 		$app = JFactory::getApplication();
+		
 		//getting log_user.
 		$log_user = $this->plugin->get('user')->id;
+		
 		//get event id,limit,limitstart.
 		$event_id = $app->input->get('event_id',0,'INT');
 		$limitstart = $app->input->get('limitstart',0,'INT');
@@ -36,6 +38,7 @@ class EasysocialApiResourceEvent_guest extends ApiResource
 		$state = $app->input->get('state','','STRING');
 		$mapp = new EasySocialApiMappingHelper();
 		$eguest = FD::model('Events');
+		
 		//filter with guests state.
 		switch($state)
 		{
@@ -57,6 +60,7 @@ class EasysocialApiResourceEvent_guest extends ApiResource
 		$options['limitstart']=$limitstart;
 		$options['limit']=$limit;
 		$res = $eguest->getGuests($event_id,$options);
+		
 		//map the object to userobject.
 		$eventGuests=$mapp->mapItem($res,'user');
 		return $eventGuests;

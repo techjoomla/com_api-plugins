@@ -46,14 +46,10 @@ class EasysocialApiResourceGcm extends ApiResource
 		}
 		else
 		{
-
-		$state = $this->tnotify($log_user, $dev_id, $nval);
-		$result->success= $state;
-		$result->message = ( $state && $nval )?JText::_( 'PLG_API_EASYSOCIAL_NOTIFICATION_ON' ):JText::_( 'PLG_API_EASYSOCIAL_NOTIFICATION_OFF' );
-		//For conversion of special character to utf-8 characters
-		//$result->message = utf8_encode($result->message);
-		}	
-		
+			$state = $this->tnotify($log_user, $dev_id, $nval);
+			$result->success= $state;
+			$result->message = ( $state && $nval )?JText::_( 'PLG_API_EASYSOCIAL_NOTIFICATION_ON' ):JText::_( 'PLG_API_EASYSOCIAL_NOTIFICATION_OFF' );
+		}			
 		return $result;
 	}
 	
@@ -66,9 +62,7 @@ class EasysocialApiResourceGcm extends ApiResource
 		$db->setQuery($query1);
 		$db->query();
 		$id = $db->loadResult();
-	
 		$query_a = "UPDATE #__acpush_users SET active = ".$val." WHERE id = ".$id;
-
 		$db->setQuery($query_a);
 		return $val = $db->query();
 	}
@@ -90,7 +84,6 @@ class EasysocialApiResourceGcm extends ApiResource
 			$res->message = JText::_( 'PLG_API_EASYSOCIAL_NO_DEVICE_ID' );
 			$res->status=false;
 			return $res;
-
 		}
 		
 		//DB Create steps
@@ -111,17 +104,6 @@ class EasysocialApiResourceGcm extends ApiResource
 		$db->setQuery($checkval);
 
 		$ids_dev = $db->loadResult();
-
-		/*foreach($results as $notfn)
-		{
-			if($notfn->user_id==$log_user && $notfn->device_id==$reg_id)
-			{
-				$res->message = "Your device is already register to server.";
-				$res->status=false;
-				return $res;
-			}
-		}*/
-		
 		if($ids_dev)
 		{
 			$res->message = JText::_( 'PLG_API_EASYSOCIAL_DEVICE_ALREADY_REGISTERED_MESSAGE' );
@@ -158,18 +140,16 @@ class EasysocialApiResourceGcm extends ApiResource
 		
 		//DB steps
 		$db = FD::db();
+		
 		//Getting database values to check current user is login again or he change his device then only adding device to database
 		$query = $db->getQuery(true);
+		
 		// delete all custom keys for user 1001.
 		$conditions = " ".$db->quoteName('device_id') ." LIKE '%".$reg_id."%' "; 
 		$query->delete($db->quoteName('#__acpush_users'));
 		$query->where($conditions); 
 		$db->setQuery($query);
-		 
 		$result = $db->execute();
 		return $result;
-		//return true;
 	}
 }
-
-

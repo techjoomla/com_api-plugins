@@ -117,16 +117,14 @@ class EasysocialApiResourceComments extends ApiResource
 					$result->status  = 0;
 					$result->message = JText::_( 'PLG_API_EASYSOCIAL_COMMENT_SAVE_UNSUCCESS_MESSAGE' ); 
 				}
-			
 		}
-		
 	   $this->plugin->setResponse($result);
 	}
 	
 	public function getComments()
 	{
 		$app = JFactory::getApplication();
-		
+		$log_user = JFactory::getUser($this->plugin->get('user')->id);
 		$row = new stdClass();
 		$row->uid = $app->input->get('uid',0,'INT');
 		$row->element = $app->input->get('element','','STRING');//discussions.group.reply
@@ -136,9 +134,7 @@ class EasysocialApiResourceComments extends ApiResource
 		
 		$row->limitstart = $app->input->get('limitstart',0,'INT');
 		$row->limit = $app->input->get('limit',10,'INT');
-		
-		//$row->deleteable = 1;
-		//$row->parentid = 0;
+        	$row->userid = $log_user->id;
 
 		$data = array();
 		$mapp = new EasySocialApiMappingHelper();
@@ -150,24 +146,20 @@ class EasysocialApiResourceComments extends ApiResource
 	public function delete()
 	{
 		$app = JFactory::getApplication();
-		
 		$conversion_id = $app->input->get('conversation_id',0,'INT');
 		$valid = 1;
 		$result = new stdClass;
 	
 		if( !$conversion_id )
 		{
-			
 			$result->status = 0;
 			$result->message = JText::_( 'PLG_API_EASYSOCIAL_INVALID_CONVERSATION_MESSAGE' );
 			$valid = 0;
-		}
-		
+		}		
 		if($valid)
 		{
 			// Try to delete the group
 			$conv_model = FD::model('Conversations');
-			//$my 	= FD::user($this->plugin->get('user')->id);
 			$result->status = $conv_model->delete( $conversion_id , $this->plugin->get('user')->id );
 			$result->message = JText::_( 'PLG_API_EASYSOCIAL_CONVERSATION_DELETED_MESSAGE' );
 		}

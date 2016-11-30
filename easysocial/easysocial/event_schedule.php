@@ -31,10 +31,13 @@ class EasysocialApiResourceEvent_schedule extends ApiResource
 		$event_id = $app->input->get('event_id',0,'INT');
 		$event = FD::event($event_id);
 		$options = array();
+		
 		//getting params for sending array option.
 		$params = $event->getParams();		
+		
 		//loading model for getting event schedule.
 		$schedule = FD::model('Events');
+		
 		//required parameters.
 		$options['eventStart'] = $event->getEventStart();
         $options['end'] = $params->get('recurringData')->end;

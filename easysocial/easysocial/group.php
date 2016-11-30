@@ -29,7 +29,6 @@ class EasysocialApiResourceGroup extends ApiResource
 
 	public function post()
 	{
-		//print_r($FILES);die("in post grp api");
 	   $this->plugin->setResponse($this->CreateGroup());
 	}
 	
@@ -52,7 +51,6 @@ class EasysocialApiResourceGroup extends ApiResource
 
 		// Only allow super admins to delete groups
 		$my 	= FD::user($this->plugin->get('user')->id);
-
 		if( !$my->isSiteAdmin() && !$group->isOwner())
 		{
 			$result->status = 0;
@@ -64,11 +62,9 @@ class EasysocialApiResourceGroup extends ApiResource
 		{
 			// Try to delete the group
 			$group->delete();
-			
 			$result->status = 1;
 			$result->message = JText::_( 'PLG_API_EASYSOCIAL_GROUP_DELETED_MESSAGE' );
 		}
-		
 		$this->plugin->setResponse($result);
 	}
 	//function use for get friends data
@@ -93,9 +89,6 @@ class EasysocialApiResourceGroup extends ApiResource
 		if($group_id)
 		{
 			$group[] = FD::group($group_id);
-			
-			//$pth = FD::photo($group[0]->creator_uid,'',$group[0]->id);
-		
 			$data['data'] = $mapp->mapItem($group,'group',$log_user->id);
 		}
 		return( $data );
@@ -107,7 +100,6 @@ class EasysocialApiResourceGroup extends ApiResource
 		$app = JFactory::getApplication();
 		$log_user = JFactory::getUser($this->plugin->get('user')->id);
 		$user = FD::user($log_user->id);
-		
 		$config	= FD::config();
 		
 		//create group post structure
@@ -130,7 +122,6 @@ class EasysocialApiResourceGroup extends ApiResource
 		{
 			$upload_obj = new EasySocialApiUploadHelper();
 			//ckecking upload cover
-			//$phto_obj = $upload_obj->uploadPhoto($log_user->id,'group');
 			$phto_obj = $upload_obj->ajax_avatar($_FILES['file']);
 			$avtar_pth = $phto_obj['temp_path'];
 			$avtar_scr = $phto_obj['temp_uri'];
@@ -145,13 +136,7 @@ class EasysocialApiResourceGroup extends ApiResource
 			$upload_obj = new EasySocialApiUploadHelper();
 			//ckecking upload cover
 			$cover_data = $upload_obj->ajax_cover($_FILES['cover_file'],'cover_file');
-			//$phtomod	= FD::model( 'Photos' );
-			//$cover_obj = $upload_obj->uploadCover($log_user->id,'group');
-			//$cover_data = $phtomod->getMeta($cover_obj->id, SOCIAL_PHOTOS_META_PATH);
-			//
 		}
-	
-		//
 
 		//check title
 		if(empty($title) || $title == null)
@@ -213,9 +198,6 @@ class EasysocialApiResourceGroup extends ApiResource
 				$lib = FD::fields();
 				$fieldsModel = FD::model('Fields');
 
-				/*$post = $this->input->post->getArray();
-				$args = array(&$post, &$group, &$errors);*/
-
 				// query written due to commented function not working
 				$query = "SELECT a.id,a.unique_key	FROM `#__social_fields` AS `a` 
 						LEFT JOIN `#__social_apps` AS `b` ON `b`.`id` = `a`.`app_id`
@@ -225,18 +207,6 @@ class EasysocialApiResourceGroup extends ApiResource
 				$db->setQuery( $query );
 
 				$field_ids	= $db->loadAssocList();
-
-				/*foreach ($steps as $step) {
-
-					if ($group->id) {
-						$step->fields 	= $fieldsModel->getCustomFields(array('step_id' => $step->id, 'data' => true, 'dataId' => $group->id, 'dataType' => SOCIAL_TYPE_GROUP));
-					}
-					else {
-						$step->fields 	= $fieldsModel->getCustomFields(array('step_id' => $step->id));
-					}
-
-					
-				}*/ 
 				
 				foreach($field_ids as $field)
 				{
@@ -282,21 +252,21 @@ class EasysocialApiResourceGroup extends ApiResource
 			
 				//for check group exceed limit
 				if( !$user->getAccess()->allowed( 'groups.create' ) && !$user->isSiteAdmin() )
-                               {
-                                       $valid = 0;
-                                       $result->status = 0;
-                                       $result->message[] = JText::_( 'PLG_API_EASYSOCIAL_CREATE_GROUP_ACCESS_DENIED' );
-                                       return $result;
-                               }
+				{
+					$valid = 0;
+					$result->status = 0;
+					$result->message[] = JText::_( 'PLG_API_EASYSOCIAL_CREATE_GROUP_ACCESS_DENIED' );
+					return $result;
+				}
                                
-                               // Ensure that the user did not exceed their group creation limit        
-                               if ($user->getAccess()->intervalExceeded('groups.limit', $user->id) && !$user->isSiteAdmin()) 
-                               {
-                                       $valid = 0;
-                                       $result->status = 0;
-                                       $result->message[] = JText::_( 'PLG_API_EASYSOCIAL_GROUP_CREATION_LIMIT_EXCEEDS' );
-                                       return $result;
-                               }
+				// Ensure that the user did not exceed their group creation limit        
+				if ($user->getAccess()->intervalExceeded('groups.limit', $user->id) && !$user->isSiteAdmin()) 
+				{
+					$valid = 0;
+					$result->status = 0;
+					$result->message[] = JText::_( 'PLG_API_EASYSOCIAL_GROUP_CREATION_LIMIT_EXCEEDS' );
+					return $result;
+				}
 
 				// Get current user's info
 				$session    = JFactory::getSession();
@@ -328,13 +298,7 @@ class EasysocialApiResourceGroup extends ApiResource
 
 				// Load json library.
 				$json 	= FD::json();
-
-				// Retrieve all file objects if needed
-				//$files 		= JRequest::get( 'FILES' );
-				
-				
 				$token      = FD::token();
-				
 				$disallow = array($token, 'option', 'cid', 'controller', 'task', 'option', 'currentStep');
 	
 				foreach( $grp_data as $key => $value )
@@ -351,7 +315,6 @@ class EasysocialApiResourceGroup extends ApiResource
 
 				// Convert the values into an array.
 				$data		= $registry->toArray();
-			
 				$args       = array( &$data , &$stepSession );
 
 				// Perform field validations here. Validation should only trigger apps that are loaded on the form
@@ -366,9 +329,7 @@ class EasysocialApiResourceGroup extends ApiResource
 
 				// The values needs to be stored in a JSON notation.
 				$stepSession->values   = $json->encode( $data );
-				
 				$stepSession->created 	= FD::date()->toMySQL();
-
 				$group 	= $groupsModel->createGroup( $stepSession );
 
 				if($group->id)
@@ -392,8 +353,7 @@ class EasysocialApiResourceGroup extends ApiResource
 					$result->status = 0;
 					$result->id = 0;
 					$result->message = JText::_( 'PLG_API_EASYSOCIAL_UNABLE_CREATE_GROUP_MESSAGE' );
-				}
-				
+				}				
 				return $result;
 		}
 	}
@@ -423,8 +383,6 @@ class EasysocialApiResourceGroup extends ApiResource
 
 			// Add stream template.
 			$stream->add( $streamTemplate );
-			
 			return true;
 	}
-	
 }

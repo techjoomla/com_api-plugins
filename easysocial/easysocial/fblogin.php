@@ -15,16 +15,10 @@ jimport('joomla.application.component.model');
 jimport('joomla.user.helper');
 jimport('joomla.user.user');
 
-//JModelLegacy::addIncludePath(JPATH_SITE.'components/com_api/models');
 require_once JPATH_SITE.'/components/com_api/libraries/authentication/user.php';
 require_once JPATH_SITE.'/components/com_api/libraries/authentication/login.php';
 require_once JPATH_SITE.'/components/com_api/models/key.php';
 require_once JPATH_SITE.'/components/com_api/models/keys.php';
-
-
-//require_once JPATH_SITE . '/components/com_jfbconnect/controllers/login.php';
-//require_once JPATH_SITE . '/plugins/api/tryitonline/tryitonline/helper/mappingHelper.php';
-
 require_once JPATH_SITE.'/components/com_api/models/keys.php';
 
 class EasysocialApiResourceFblogin extends ApiResource
@@ -37,7 +31,7 @@ class EasysocialApiResourceFblogin extends ApiResource
 	
 	public function get()
 	{
-		//$this->plugin->setResponse(JText::_( 'PLG_API_EASYSOCIAL_UNSUPPORTED_METHOD_MESSAGE' ));
+		$this->plugin->setResponse(JText::_( 'PLG_API_EASYSOCIAL_UNSUPPORTED_METHOD_MESSAGE' ));
 	}
 
 	public function post()
@@ -53,7 +47,6 @@ class EasysocialApiResourceFblogin extends ApiResource
 		if( $this->accessToken ) {
 			
 			$objFbProfileData = $this->jfbGetUser( $this->accessToken );
-						
 			$userId = $this->jfbGetUserFromMap( $objFbProfileData );			
 			
 			if( $this->confirmed == 0 && !isset($objFbProfileData->birthday) && !( $userId > 0 ) ) {
@@ -66,18 +59,14 @@ class EasysocialApiResourceFblogin extends ApiResource
 			if( $userId ) {
 				$this->jfbLogin( $userId );
 			} else {
-				
 				if( !isset($objFbProfileData->email) ) {
-
-					$reg_dt = new stdClass();
-					
+					$reg_dt = new stdClass();					
 					$reg_dt->code = 200;			
 					$reg_dt->email = 0;
 					$reg_dt->warning = 'Email id not found in Facebook data unable to register user, Do you want to complete registration process';					
 					$reg_dt->data = $objFbProfileData;
 
 					$this->plugin->setResponse( $reg_dt );
-					//$this->badRequest( JText::_( 'PLG_API_EMAIL_MANDATORY_REGISTRAION' ), 200 );
 					return false;
 				}
 				
@@ -105,35 +94,26 @@ class EasysocialApiResourceFblogin extends ApiResource
 		$this->plugin->setResponse( $this->keygen( $userId ) );		
 	}
 	
-	function jfbRegister( $accessToken ){
-	    $objFbProfileData =  $this->jfbGetUser( $accessToken );
-	    
-	    if( $objFbProfileData->id ) {
-		//changed for number login username issue
-	    	//$username = explode( " ", $objFbProfileData->name );
-	    	//$username = 'fb_' . $username[0];
-
+	function jfbRegister( $accessToken ) {
+		$objFbProfileData =  $this->jfbGetUser( $accessToken );
+		if( $objFbProfileData->id ) {
 		$username = $objFbProfileData->name;
-
-	    	if( $username ) {
-	    		$isUserExist = 1;
-	    		$loopCounter = 0;
-	    		while( $isUserExist ) {
-	    			$isUserExist = $this->checkUserNameIsExist( $username );
-	    			if( $isUserExist ) {
-	    				$username .= '_' . $loopCounter ++;
-	    			}
-	    		};
-	    		
-	    		$userId = $this->joomlaCreateUser($username, $objFbProfileData->name, $objFbProfileData->email, $objFbProfileData);
-	    		
-	    		if( $userId && $this->is_use_jfb) {
-	    			$this->jfbCreateUser( $userId, $objFbProfileData);
-	    		}
-	    		
-	    	}
-	   	}
-	    
+			if( $username ) {
+				$isUserExist = 1;
+				$loopCounter = 0;
+				while( $isUserExist ) {
+					$isUserExist = $this->checkUserNameIsExist( $username );
+						if( $isUserExist ) {
+							$username .= '_' . $loopCounter ++;
+						}
+				};
+				$userId = $this->joomlaCreateUser($username, $objFbProfileData->name, $objFbProfileData->email, $objFbProfileData);
+				
+				if( $userId && $this->is_use_jfb) {
+					$this->jfbCreateUser( $userId, $objFbProfileData);
+				}
+			}
+		}
 	}
 	
 	/*
@@ -147,14 +127,11 @@ class EasysocialApiResourceFblogin extends ApiResource
 
 		if($this->is_use_jfb)
 		{
-		
-		$query->select(' j_user_id ');
-		$query->from('#__jfbconnect_user_map');
-		$query->where( " provider_user_id = " . $db->quote( $objFbProfileData->id )  );
-		$db->setQuery($query);
-		
-		$userId = $db->loadResult();
-		
+			$query->select(' j_user_id ');
+			$query->from('#__jfbconnect_user_map');
+			$query->where( " provider_user_id = " . $db->quote( $objFbProfileData->id )  );
+			$db->setQuery($query);
+			$userId = $db->loadResult();		
 		}
 	
 		if( !$userId )
@@ -166,7 +143,6 @@ class EasysocialApiResourceFblogin extends ApiResource
 			$db->setQuery($query);			
 			$userId = $db->loadResult();
 		}
-		
 		return $userId;
 	}
 	
@@ -176,12 +152,11 @@ class EasysocialApiResourceFblogin extends ApiResource
 	public function jfbGetUser( $accessToken )
 	{
 		$url = 'https://graph.facebook.com/v2.2/me';
-	    $token_params = array(
-	        "access_token" => $accessToken,
-	        "fields" => 'id,name,gender,email,location,website,picture,relationship_status'
-        );
-        
-        return $this->makeRequest( $url, $token_params ) ;
+		$token_params = array(
+			"access_token" => $accessToken,
+			"fields" => 'id,name,gender,email,location,website,picture,relationship_status'
+		);
+		return $this->makeRequest( $url, $token_params ) ;
 	}
 	
 	/*
@@ -223,7 +198,7 @@ class EasysocialApiResourceFblogin extends ApiResource
 			
 			return $result = $db->execute();
 	}
-	
+
 	public function makeRequest($url, $params){
 		 	$url .= '?' . http_build_query($params);
 			$ch = curl_init();
@@ -238,8 +213,7 @@ class EasysocialApiResourceFblogin extends ApiResource
 			$output = json_decode($output);
 			return $output;
 	}
-	
-	
+		
 	//public function for genrate key
 	public function keygen( $userId )
 	{
@@ -269,10 +243,8 @@ class EasysocialApiResourceFblogin extends ApiResource
 				'option' => 'com_api',
 				JSession::getFormToken() => 1
 				);
-
 				$result = $kmodel->save($data);
 				$key = $result->hash;
-				
 		}
 		
 		if( !empty($key)  )
@@ -287,19 +259,16 @@ class EasysocialApiResourceFblogin extends ApiResource
 		}
 		
 		return( $obj );
-	
 	}
 	
 	public function checkUserNameIsExist( $username ){
 		
 				$db = JFactory::getDBO();
 				$query = $db->getQuery(true);
-				
 				$query->select(' id ');
 				$query->from('#__users');
 				$query->where( " username = " . $db->quote( $username )  );
 				$db->setQuery($query);
-				
 				return $db->loadResult();
 	}
 	
@@ -375,17 +344,17 @@ class EasysocialApiResourceFblogin extends ApiResource
 		if( $userid )
 			{
 				$username	= explode( " ", $objFbProfileData->name );
-			    	$firstName	= $username[0];
-			    	$lastName	= $username[1];
-			    	
+					$firstName	= $username[0];
+					$lastName	= $username[1];
+					
 				$esocialProfData = array(
 									'BIRTHDAY'	=> isset($objFbProfileData->birthday) ? $objFbProfileData->birthday : '',
 									'last_name'	=> $lastName,
 									'first_name'	=> $firstName,
 									'GENDER'	=> $objFbProfileData->gender == 'male' ? 1 : 0
 							);
-			
 					$easysocial = JPATH_ADMINISTRATOR .'/components/com_easysocial/easysocial.php';
+					
 					//eb version
 					if( JFile::exists( $easysocial ) )
 					{
@@ -397,14 +366,10 @@ class EasysocialApiResourceFblogin extends ApiResource
 			
 					// Assign badge for the person.
 					$badge = FD::badges();
-					$badge->log( 'com_easysocial' , 'registration.create' , $user->id , JText::_( 'COM_EASYSOCIAL_REGISTRATION_BADGE_REGISTERED' ) );			
-		
+					$badge->log( 'com_easysocial' , 'registration.create' , $user->id , JText::_( 'COM_EASYSOCIAL_REGISTRATION_BADGE_REGISTERED' ) );
 			}
 		}
-
 	}
-	
-	
 	
 	/**
 	 * Function create easysocial profile.
@@ -418,11 +383,9 @@ class EasysocialApiResourceFblogin extends ApiResource
 		if (JComponentHelper::isEnabled('com_easysocial', true))
 		{
 			$app    = JFactory::getApplication();
-	
 			$epost = $fields;
 
 			require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/foundry.php';
-			
 			
 			// Get all published fields apps that are available in the current form to perform validations
 			$fieldsModel = FD::model('Fields');
@@ -454,7 +417,6 @@ class EasysocialApiResourceFblogin extends ApiResource
 					if (is_array($value) && $key != 'es-fields-11') {
 						$value  = $json->encode( $value );
 					}
-
 					$registry->set($key, $value);
 				}
 			}
@@ -471,11 +433,6 @@ class EasysocialApiResourceFblogin extends ApiResource
 
 			// Build arguments to be passed to the field apps.
 			$args = array( $data , &$my );
-
-			// Ensure that there is no errors.
-			// @trigger onEditValidate
-			//$errors = $fieldsLib->trigger( 'onEditValidate' , SOCIAL_FIELDS_GROUP_USER , $fields , $args, array( $handler, 'validate' ) );
-
 
 			// Bind the my object with appropriate data.
 			$my->bind($data);
@@ -497,13 +454,8 @@ class EasysocialApiResourceFblogin extends ApiResource
 
 			// @trigger onEditAfterSaveFields
 			$fieldsLib->trigger( 'onEditAfterSaveFields' , SOCIAL_FIELDS_GROUP_USER , $fields , $args );
-			
-			
-			
 		}
-
 	}
-	
 	
 	//create field array as per easysocial 
 	public function create_field_arr($fields,$post)
@@ -514,42 +466,27 @@ class EasysocialApiResourceFblogin extends ApiResource
 		require_once JPATH_SITE.'/plugins/api/easysocial/libraries/uploadHelper.php';
 		//for upload photo
 		 if(!empty($_FILES['avatar']['name']))
-               {
-                       $upload_obj = new EasySocialApiUploadHelper();
-                       //ckecking upload cover
-                       //$phto_obj = $upload_obj->uploadPhoto($log_user->id,'group');
-                       $phto_obj = $upload_obj->ajax_avatar($_FILES['avatar']);
-                       $avtar_pth = $phto_obj['temp_path'];
-                       $avtar_scr = $phto_obj['temp_uri'];
-                       $avtar_typ = 'upload';
-                       $avatar_file_name = $_FILES['avatar']['name']; 
-               }
-		//for upload cover
-               /*$cover_data = null;
-               
-               if(!empty($_FILES['cover_file']['name']))
-               {
-                       $upload_obj = new EasySocialApiUploadHelper();
-                       //ckecking upload cover
-                       $cover_data = $upload_obj->ajax_cover($_FILES['cover_file'],'cover_file');
-                       //$phtomod        = FD::model( 'Photos' );
-                       //$cover_obj = $upload_obj->uploadCover($log_user->id,'group');
-                       //$cover_data = $phtomod->getMeta($cover_obj->id, SOCIAL_PHOTOS_META_PATH);
-                       //
-               }*/
-
+		{
+			$upload_obj = new EasySocialApiUploadHelper();
+             
+			//ckecking upload cover
+			$phto_obj = $upload_obj->ajax_avatar($_FILES['avatar']);
+			$avtar_pth = $phto_obj['temp_path'];
+			$avtar_scr = $phto_obj['temp_uri'];
+			$avtar_typ = 'upload';
+			$avatar_file_name = $_FILES['avatar']['name']; 
+		}
+		
 		foreach($fields as $field)
 		{
-			//$fld_data[$field->id] = $field->unique_key;
 			$fobj = new stdClass();
 			$fullname = $post['TITLE']." ".$post['first_name']." ".$post['middle_name']." ".$post['last_name']; 
 			$address = $post['STREET_1'].",".$post['STREET_2'].",".$post['CITY'].",".$post['PIN_CODE'].",".$post['STATE'].",".$post['COUNTRY'];
 			// Hari code for address comma remove
 			if($address == ',,,,,'){
-                               $address='';
-                       	}		
-  
-
+				$address='';
+			}		
+ 
 			$fld_data['first_name'] = (!empty($post['first_name']))?$post['first_name']:$app->input->get('name', '', 'STRING');
 			$fld_data['middle_name'] = $post['middle_name'];
 			$fld_data['last_name'] = $post['last_name'];
@@ -605,16 +542,8 @@ class EasysocialApiResourceFblogin extends ApiResource
 											'name' => $avatar_file_name
 										);
 								break;
-				/*
-				case 'COVER':	$fld_data['es-fields-'.$field->id] = Array
-										(
-											'data' =>$cover_data,
-											'position' =>'{"x":0.5,"y":0.5}' 
-										);
-								break;*/
 			}
 		}
-
 		return $fld_data;
 	}
 	
@@ -627,7 +556,6 @@ class EasysocialApiResourceFblogin extends ApiResource
 		
 		$lang = JFactory::getLanguage();
 		$lang->load('com_users', JPATH_SITE, '', true);
-        //$tit=JText::_($emailOptions['title']);
 		
 		$data['fromname'] = $config->get('fromname');
 		$data['mailfrom'] = $config->get('mailfrom');
@@ -690,12 +618,7 @@ class EasysocialApiResourceFblogin extends ApiResource
 				);
 			}
 		}
-
 		// Send the registration email.
 		return $return = JFactory::getMailer()->sendMail($data['mailfrom'], $data['fromname'], $base_dt['email'], $emailSubject, $emailBody);
-		
 	}
-	
-
 }
-

@@ -46,14 +46,14 @@ class EasyblogApiResourceBlog extends ApiResource
 		$key = 'post:'.$post->id;
 		
 		$file = JRequest::getVar( 'file' , '' , 'FILES' , 'array' );
+		$data['image']	= basename($data['image']);
+		$data['image'] = $key.'/'.$data['image'];
 		
-		$data['image'] = '';
-		
-		if(isset($file['name']))
+		/*if($file['name'])
 		{
 		  $image_obj = $this->uploadImage($key);
 		  $data['image'] = $image_obj->media->uri; 
-		}
+		}*/
 		//document needs to get from app
 		$data['content'] = $input->get('content', '', 'raw');
 		$data['document'] = null;

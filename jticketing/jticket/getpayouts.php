@@ -9,7 +9,7 @@
 
 defined('_JEXEC') or die;
 jimport('joomla.plugin.plugin');
-require_once JPATH_ADMINISTRATOR . '/components/com_jticketing/models/mypayouts.php';
+require_once JPATH_ADMINISTRATOR.'/components/com_jticketing/models/mypayouts.php';
 
 /**
  * Class for getting user events based on user id
@@ -29,6 +29,7 @@ class JticketApiResourceGetPayouts extends ApiResource
 	 */
 	public function get()
 	{
+		
 		$com_params  = JComponentHelper::getParams('com_jticketing');
 		$integration = $com_params->get('integration');
 		$input       = JFactory::getApplication()->input;
@@ -40,7 +41,7 @@ class JticketApiResourceGetPayouts extends ApiResource
 
 		$userid = $input->get('userid', '', 'INT');
 		$search = $input->get('search', '', 'STRING');
-
+		
 		if (empty($userid))
 		{
 			$obj->success = 0;
@@ -67,13 +68,13 @@ class JticketApiResourceGetPayouts extends ApiResource
 			$eventdatapaid        = $jticketingmainhelper->getMypayoutData();
 		}
 		else
-		{
-			$eventdatapaid        = $jticketingmainhelper->getMypayoutData($userid, $search);
+		{	
+			$eventdatapaid        = $jticketingmainhelper->getMypayoutData($userid,$search);																				
 		}
-
+				
 		$db = JFactory::getDBO();
 		$db->setQuery($eventdatapaid);
-		$obj_merged = $db->loadObjectlist();
+		$obj_merged = $db->loadObjectlist();	
 
 		$obj = new stdClass;
 

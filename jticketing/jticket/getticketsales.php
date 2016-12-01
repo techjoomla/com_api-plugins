@@ -38,6 +38,9 @@ class JticketApiResourceGetTicketSales extends ApiResource
 		$obj_merged = array();
 
 		$userid = $input->get('userid', '', 'INT');
+		//$obj_merged = array();
+
+		// $userid = $this->plugin->get('user')->id;
 
 		if (empty($userid))
 		{
@@ -62,16 +65,19 @@ class JticketApiResourceGetTicketSales extends ApiResource
 		// If user is in allowed user to access APP show all events to that user
 		if (is_array($users_allow_access_app) and in_array($userid, $users_allow_access_app))
 		{
-			$eventdatapaid        = $jticketingmainhelper->getSalesDataAdmin();
+			$eventdatapaid        = $jticketingmainhelper->getMypayoutDataAPI();
+			$obj_merged = $eventdatapaid;
 		}
 		else
-		{
-			$eventdatapaid        = $jticketingmainhelper->getSalesDataAdmin($userid);
+		{	
+			$eventid = 84;
+			$eventdatapaid        = $jticketingmainhelper->getSalesDataAdmin($userid,$eventid);
+						
+			$db = JFactory::getDBO();
+			$db->setQuery($eventdatapaid);
+			$results = $db->loadObjectlist();
+			$obj_merged = $results;
 		}
-
-		$db = JFactory::getDBO();
-		$db->setQuery($eventdatapaid);
-		$obj_merged = $db->loadObjectlist();
 
 		$obj = new stdClass;
 

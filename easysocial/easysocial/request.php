@@ -31,11 +31,7 @@ class EasysocialApiResourceRequest extends ApiResource
 	{
 	   $this->plugin->setResponse($this->request());
 	}
-	
-	public function delete()
-	{
-		//$this->plugin->setResponse($result);
-	}
+		
 	//function use for get friends data
 	function request()
 	{
@@ -48,16 +44,11 @@ class EasysocialApiResourceRequest extends ApiResource
 		$other_user_id = $app->input->get('target_user',0,'INT');
 		$type = $app->input->get('type','group','STRING'); 
 		
-		//$userid = ($other_user_id)?$other_user_id:$log_user->id;
 		$data = array();
 		
 		$user = FD::user($other_user_id);
 		$res = new stdClass();
-		
-		//$mapp = new EasySocialApiMappingHelper();
-	
-		//$grp_model = FD::model('Groups');
-		
+				
 		if(!$group_id || !$other_user_id )
 		{
 			$res->success = 0;
@@ -67,15 +58,13 @@ class EasysocialApiResourceRequest extends ApiResource
 		else
 		{
 			$group = FD::$type($group_id);
-
 			if($group->isAdmin() != $log_user && ($req_val != 'withdraw') && ($req_val != 'reject'))
 			{
 				$res->success = 0;
 				$res->message = JText::_( 'PLG_API_EASYSOCIAL_UNAUTHORISED_USER_MESSAGE' );
 				return $res;
 			}
-			
-			
+
 			if($type == 'group')
 			{			
 				switch($req_val)
@@ -96,16 +85,14 @@ class EasysocialApiResourceRequest extends ApiResource
 			}
 			else
 			{
-
 				$guest = FD::table('EventGuest');
-        			$state = $guest->load($other_user_id);
-			
-				// Get the event object
-        			$event = FD::event($group_id);
+				$state = $guest->load($other_user_id);
+						
+				$event = FD::event($group_id);
 				$my = FD::user($log_user->id);
 
-        			$myGuest = $event->getGuest();
-				
+				$myGuest = $event->getGuest();
+
 				$res->success = 0;
 				if (!$state || empty($guest->id))
 				{
@@ -122,17 +109,17 @@ class EasysocialApiResourceRequest extends ApiResource
 					{
 						case 'Approve':
 						case 'approve': 
-								$res->success = $guest->approve();
-								$res->message = ($res->success)?JText::_( 'PLG_API_EASYSOCIAL_USER_REQ_GRANTED' ):JText::_( 'PLG_API_EASYSOCIAL_USER_REQ_UNSUCCESS' );
+										$res->success = $guest->approve();
+										$res->message = ($res->success)?JText::_( 'PLG_API_EASYSOCIAL_USER_REQ_GRANTED' ):JText::_( 'PLG_API_EASYSOCIAL_USER_REQ_UNSUCCESS' );
 										break;
 						case 'Reject':
 						case 'reject' : $res->success =  $guest->reject();
-								$res->message = ($res->success)?JText::_( 'PLG_API_EASYSOCIAL_USER_APPLICATION_REJECTED' ):JText::_( 'PLG_API_EASYSOCIAL_UNABLE_REJECT_APPLICATION' );
+										$res->message = ($res->success)?JText::_( 'PLG_API_EASYSOCIAL_USER_APPLICATION_REJECTED' ):JText::_( 'PLG_API_EASYSOCIAL_UNABLE_REJECT_APPLICATION' );
 										break;
 						case 'remove':
 						case 'Remove' :	$res->success = $guest->remove();
-								$res->message = ($res->success)?JText::_( 'COM_EASYSOCIAL_EVENTS_GUEST_REMOVAL_SUCCESS' ):JText::_( 'COM_EASYSOCIAL_EVENTS_NO_ACCESS_TO_EVENT' );
-											break;
+										$res->message = ($res->success)?JText::_( 'COM_EASYSOCIAL_EVENTS_GUEST_REMOVAL_SUCCESS' ):JText::_( 'COM_EASYSOCIAL_EVENTS_NO_ACCESS_TO_EVENT' );
+										break;
 					}
 				}
 				else
@@ -140,10 +127,7 @@ class EasysocialApiResourceRequest extends ApiResource
 					$res->message = JText::_('COM_EASYSOCIAL_EVENTS_NO_ACCESS_TO_EVENT');
 				}
 			}
-
 			return $res;
-
 		}
 	}
-
 }

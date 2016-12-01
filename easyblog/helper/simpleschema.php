@@ -97,19 +97,8 @@ class EasyBlogSimpleSchema_plg
 		foreach ($skip as $v) {
 			unset($item->$v);
 		}
-
-		if(empty($item->introtext) && !empty($item->text))
-		{	
-			//need dynamic value here
-			$num_words = 6;
-			$words = array();
-			$words = explode(" ", $item->text, $num_words);
-			$item->introtext = strip_tags(implode(" " ,array_slice($words,0,$num_words-1)));
-			
-		}
-		
 		//handle image path	
-		if(isset($item->text) && strpos($item->text,'src="data:image') == false)
+		if(strpos($item->text,'src="data:image') == false)
 		{	
 			
 			if (strpos($item->text,'href="index'))

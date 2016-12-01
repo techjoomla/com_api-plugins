@@ -113,7 +113,6 @@ class EasySocialApiUploadHelper
 			$meta->group 		= SOCIAL_PHOTOS_META_PATH;
 			$meta->property 	= $type;
 			$meta->value		= $storage . '/' . $fileName;
-
 			$meta->store();
 		}
 		
@@ -318,269 +317,260 @@ class EasySocialApiUploadHelper
 	// photo-album image upload function	
 	public function albumPhotoUpload($log_usr=0,$type=null,$id)
 	{   
-        // Load up the configuration
-        $config     = FD::config();
-        // Check if the photos is enabled
-        if (!$config->get('photos.enabled')) 
-        {         
-            return false;
-        }
-        // Load the album table     
+		// Load up the configuration
+		$config     = FD::config();
+		// Check if the photos is enabled
+		if (!$config->get('photos.enabled')) 
+		{         
+			return false;
+		}
+		// Load the album table     
 		 $album = FD::table( 'Album' );
-         $album->load( $id );  
+		$album->load( $id );  
 
-        // Check if the album id provided is valid
-        if (!$album->id || !$album->id) 
-        {            
-            return false;
-        }        
-        // Get the uid and the type
-        $uid        = $album->uid;
-        $type       = $album->type;
-        // Load the photo library
-        $lib = FD::photo( $uid , $type );       
-        // Set uploader options
-        $options = array( 'name' => 'file', 'maxsize' => $lib->getUploadFileSizeLimit() );
-        // Get uploaded file
-        $file   = FD::uploader( $options )->getFile();
-        // If there was an error getting uploaded file, stop.
-        if ($file instanceof SocialException) {
-           return false;
-        }
-        // Load the image object
-        $image = FD::image();
-        $image->load($file['tmp_name'], $file['name']);
-        // Detect if this is a really valid image file.
-        if (!$image->isValid()) 
-        {
-          return false;
-        }
-        // Bind the photo data now
-        $photo              = FD::table( 'Photo' );
-        $photo->uid         = $uid;
-        $photo->type        = $type;
-        $photo->user_id     = $album->uid;
-        $photo->album_id    = $album->id;
-        $photo->title       = $file[ 'name' ];
-        $photo->caption     = '';
-        $photo->ordering    = 0;
-        $photo->state       = SOCIAL_STATE_PUBLISHED;
+		// Check if the album id provided is valid
+		if (!$album->id || !$album->id) 
+		{            
+			return false;
+		}        
+		// Get the uid and the type
+		$uid        = $album->uid;
+		$type       = $album->type;
+		// Load the photo library
+		$lib = FD::photo( $uid , $type );       
+		// Set uploader options
+		$options = array( 'name' => 'file', 'maxsize' => $lib->getUploadFileSizeLimit() );
+		// Get uploaded file
+		$file   = FD::uploader( $options )->getFile();
+		// If there was an error getting uploaded file, stop.
+		if ($file instanceof SocialException) {
+			return false;
+		}
+		// Load the image object
+		$image = FD::image();
+		$image->load($file['tmp_name'], $file['name']);
+		// Detect if this is a really valid image file.
+		if (!$image->isValid()) 
+		{
+			return false;
+		}
+		// Bind the photo data now
+		$photo              = FD::table( 'Photo' );
+		$photo->uid         = $uid;
+		$photo->type        = $type;
+		$photo->user_id     = $album->uid;
+		$photo->album_id    = $album->id;
+		$photo->title       = $file[ 'name' ];
+		$photo->caption     = '';
+		$photo->ordering    = 0;
+		$photo->state       = SOCIAL_STATE_PUBLISHED;
 
-        // Set the creation date alias
-        $photo->assigned_date   = FD::date()->toMySQL();
-        // Cleanup photo title.
-        $photo->cleanupTitle();
-        // Trigger rules that should occur before a photo is stored
-        $photo->beforeStore($file , $image);
+		// Set the creation date alias
+		$photo->assigned_date   = FD::date()->toMySQL();
+		// Cleanup photo title.
+		$photo->cleanupTitle();
+		// Trigger rules that should occur before a photo is stored
+		$photo->beforeStore($file , $image);
 
-        // Try to store the photo.
-        $state      = $photo->store();
+		// Try to store the photo.
+		$state      = $photo->store();
 
-        if (!$state) 
-        {
-        return false;
-        }
-        // If album doesn't have a cover, set the current photo as the cover.
-        if (!$album->hasCover()) 
-        {
-            $album->cover_id    = $photo->id;
+		if (!$state) 
+		{
+			return false;
+		}
+		// If album doesn't have a cover, set the current photo as the cover.
+		if (!$album->hasCover()) 
+		{
+			$album->cover_id    = $photo->id;
 			// Store the album
-            $album->store();
-        }
-        // Get the photos library
-        $photoLib   = FD::get('Photos', $image);
-        // Get the storage path for this photo
-        $storageContainer = FD::cleanPath($config->get('photos.storage.container'));
-        $storage    = $photoLib->getStoragePath($album->id, $photo->id);
-        $paths      = $photoLib->create($storage);
+			$album->store();
+		}
+		// Get the photos library
+		$photoLib   = FD::get('Photos', $image);
+		// Get the storage path for this photo
+		$storageContainer = FD::cleanPath($config->get('photos.storage.container'));
+		$storage    = $photoLib->getStoragePath($album->id, $photo->id);
+		$paths      = $photoLib->create($storage);
 
-        // We need to calculate the total size used in each photo (including all the variants)
-        $totalSize  = 0;
+		// We need to calculate the total size used in each photo (including all the variants)
+		$totalSize  = 0;
 
-        // Create metadata about the photos
-        if($paths) {
+		// Create metadata about the photos
+		if($paths) {
+			foreach ($paths as $type => $fileName) {
+				$meta               = FD::table( 'PhotoMeta' );
+				$meta->photo_id     = $photo->id;
+				$meta->group        = SOCIAL_PHOTOS_META_PATH;
+				$meta->property     = $type;
+				// do not store the container path as this path might changed from time to time
+				$tmpStorage = str_replace('/' . $storageContainer . '/', '/', $storage);
+				$meta->value = $tmpStorage . '/' . $fileName;
+				$meta->store();
 
-            foreach ($paths as $type => $fileName) {
-                $meta               = FD::table( 'PhotoMeta' );
-                $meta->photo_id     = $photo->id;
-                $meta->group        = SOCIAL_PHOTOS_META_PATH;
-                $meta->property     = $type;
-                // do not store the container path as this path might changed from time to time
-                $tmpStorage = str_replace('/' . $storageContainer . '/', '/', $storage);
-                $meta->value = $tmpStorage . '/' . $fileName;
-                $meta->store();
+				// We need to store the photos dimension here
+				list($width, $height, $imageType, $attr) = getimagesize(JPATH_ROOT . $storage . '/' . $fileName);
 
-                // We need to store the photos dimension here
-                list($width, $height, $imageType, $attr) = getimagesize(JPATH_ROOT . $storage . '/' . $fileName);
+				// Set the photo size
+				$totalSize += filesize(JPATH_ROOT . $storage . '/' . $fileName);
 
-                // Set the photo size
-                $totalSize += filesize(JPATH_ROOT . $storage . '/' . $fileName);
+				// Set the photo dimensions
+				$meta               = FD::table('PhotoMeta');
+				$meta->photo_id     = $photo->id;
+				$meta->group        = SOCIAL_PHOTOS_META_WIDTH;
+				$meta->property     = $type;
+				$meta->value        = $width;
+				$meta->store();
 
-                // Set the photo dimensions
-                $meta               = FD::table('PhotoMeta');
-                $meta->photo_id     = $photo->id;
-                $meta->group        = SOCIAL_PHOTOS_META_WIDTH;
-                $meta->property     = $type;
-                $meta->value        = $width;
-                $meta->store();
+				$meta               = FD::table('PhotoMeta');
+				$meta->photo_id     = $photo->id;
+				$meta->group        = SOCIAL_PHOTOS_META_HEIGHT;
+				$meta->property     = $type;
+				$meta->value        = $height;
+				$meta->store();
+			}
+		}
 
-                $meta               = FD::table('PhotoMeta');
-                $meta->photo_id     = $photo->id;
-                $meta->group        = SOCIAL_PHOTOS_META_HEIGHT;
-                $meta->property     = $type;
-                $meta->value        = $height;
-                $meta->store();
-            }
-        }
+		// Set the total photo size
+		$photo->total_size = $totalSize;
+		$photo->store();
 
-        // Set the total photo size
-        $photo->total_size = $totalSize;
-        $photo->store();
+		// After storing the photo, trigger rules that should occur after a photo is stored
+		$photo->afterStore($file, $image);
 
-        // After storing the photo, trigger rules that should occur after a photo is stored
-        $photo->afterStore($file, $image);
+		// Determine if we should create a stream item for this upload
+		$createStream   = JRequest::getBool( 'createStream' );
 
-        // Determine if we should create a stream item for this upload
-        $createStream   = JRequest::getBool( 'createStream' );
-
-        // Add Stream when a new photo is uploaded
-        if ($createStream) {
-            $photo->addPhotosStream( 'create' );
-        }       
+		// Add Stream when a new photo is uploaded
+		if ($createStream) {
+			$photo->addPhotosStream( 'create' );
+		}       
 		// After storing the photo, trigger rules that should occur after a photo is stored		
 		return $photo; 
 	}
 	
 	//add photos in album.
-	
 	public function addPhotoAlbum($log_usr=0,$album_id)
 	{
-	    $my     = FD::user();
-        // Load up the configuration
-        $config     = FD::config();
+		$my     = FD::user();
+		// Load up the configuration
+		$config     = FD::config();
              
-        // Load the album table     
+		// Load the album table     
 		 $album = FD::table( 'Album' );
-         $album->load( $album_id );
-        // Check if the album id provided is valid
-        if (!$album->id || !$album->id) {           
-            return "album not valid";
-        }
+		$album->load( $album_id );
+		// Check if the album id provided is valid
+		if (!$album->id || !$album->id) {           
+			return "album not valid";
+		}
 
-        // Get the uid and the type
-        $uid        = $album->uid;
-        $type       = $album->type;
+		// Get the uid and the type
+		$uid        = $album->uid;
+		$type       = $album->type;
+        
+		// Load the photo library
+		$lib = FD::photo( $uid , $type );
 
-        // Load the photo library
-        $lib = FD::photo( $uid , $type );
-    
-        // Set uploader options
-        $options = array( 'name' => 'file', 'maxsize' => $lib->getUploadFileSizeLimit() );
+		// Set uploader options
+		$options = array( 'name' => 'file', 'maxsize' => $lib->getUploadFileSizeLimit() );
 
-        // Get uploaded file
-        $file   = FD::uploader( $options )->getFile();
-        // If there was an error getting uploaded file, stop.
-        if ($file instanceof SocialException) {
-            return false;
-        }
-        // Load the image object
-        $image = FD::image();
-        $image->load($file['tmp_name'], $file['name']);
-        // Detect if this is a really valid image file.
-        if (!$image->isValid()) {
-            return false;
-        }
-        // Bind the photo data now
-        $photo              = FD::table( 'Photo' );
-        $photo->uid         = $uid;
-        $photo->type        = $type;
-        $photo->user_id     = $album->uid;
-        $photo->album_id    = $album->id;
-        $photo->title       = $file[ 'name' ];
-        $photo->caption     = '';
-        $photo->ordering    = 0;
-        $photo->state       = SOCIAL_STATE_PUBLISHED;
-        // Set the creation date alias
-        $photo->assigned_date   = FD::date()->toMySQL();
-        // Cleanup photo title.
-        $photo->cleanupTitle();
+		// Get uploaded file
+		$file   = FD::uploader( $options )->getFile();
+		// If there was an error getting uploaded file, stop.
+		if ($file instanceof SocialException) {
+			return false;
+		}
+		// Load the image object
+		$image = FD::image();
+		$image->load($file['tmp_name'], $file['name']);
+		// Detect if this is a really valid image file.
+		if (!$image->isValid()) {
+			return false;
+		}
+		// Bind the photo data now
+		$photo              = FD::table( 'Photo' );
+		$photo->uid         = $uid;
+		$photo->type        = $type;
+		$photo->user_id     = $album->uid;
+		$photo->album_id    = $album->id;
+		$photo->title       = $file[ 'name' ];
+		$photo->caption     = '';
+		$photo->ordering    = 0;
+		$photo->state       = SOCIAL_STATE_PUBLISHED;
+		// Set the creation date alias
+		$photo->assigned_date   = FD::date()->toMySQL();
+		// Cleanup photo title.
+		$photo->cleanupTitle();
 
-        // Trigger rules that should occur before a photo is stored
-        $photo->beforeStore($file , $image);
-        // Try to store the photo.
-        $state      = $photo->store();
-        if (!$state) {
-            return false;
-        }
-        // If album doesn't have a cover, set the current photo as the cover.
-        //~ if (!$album->hasCover()) {
-            //~ $album->cover_id    = $photo->id;
-//~ 
-            //~ // Store the album
-            //~ $album->store();
-        //~ }
-        // Get the photos library
-        $photoLib   = FD::get('Photos', $image);
+		// Trigger rules that should occur before a photo is stored
+		$photo->beforeStore($file , $image);
+		// Try to store the photo.
+		$state      = $photo->store();
+		if (!$state) {
+			return false;
+		}
 
-        // Get the storage path for this photo
-        $storageContainer = FD::cleanPath($config->get('photos.storage.container'));
-        $storage    = $photoLib->getStoragePath($album->id, $photo->id);
-        $paths      = $photoLib->create($storage);
+		// Get the photos library
+		$photoLib   = FD::get('Photos', $image);
 
-        // We need to calculate the total size used in each photo (including all the variants)
-        $totalSize  = 0;
-        // Create metadata about the photos
-        if($paths) {
+		// Get the storage path for this photo
+		$storageContainer = FD::cleanPath($config->get('photos.storage.container'));
+		$storage    = $photoLib->getStoragePath($album->id, $photo->id);
+		$paths      = $photoLib->create($storage);
 
-            foreach ($paths as $type => $fileName) {
-                $meta               = FD::table( 'PhotoMeta' );
-                $meta->photo_id     = $photo->id;
-                $meta->group        = SOCIAL_PHOTOS_META_PATH;
-                $meta->property     = $type;
-                // do not store the container path as this path might changed from time to time
-                $tmpStorage = str_replace('/' . $storageContainer . '/', '/', $storage);
-                $meta->value = $tmpStorage . '/' . $fileName;
-                $meta->store();
+		// We need to calculate the total size used in each photo (including all the variants)
+		$totalSize  = 0;
+		// Create metadata about the photos
+		if($paths) {
+			foreach ($paths as $type => $fileName) {
+				$meta               = FD::table( 'PhotoMeta' );
+				$meta->photo_id     = $photo->id;
+				$meta->group        = SOCIAL_PHOTOS_META_PATH;
+				$meta->property     = $type;
+				// do not store the container path as this path might changed from time to time
+				$tmpStorage = str_replace('/' . $storageContainer . '/', '/', $storage);
+				$meta->value = $tmpStorage . '/' . $fileName;
+				$meta->store();
 
-                // We need to store the photos dimension here
-                list($width, $height, $imageType, $attr) = getimagesize(JPATH_ROOT . $storage . '/' . $fileName);
+				// We need to store the photos dimension here
+				list($width, $height, $imageType, $attr) = getimagesize(JPATH_ROOT . $storage . '/' . $fileName);
 
-                // Set the photo size
-                $totalSize += filesize(JPATH_ROOT . $storage . '/' . $fileName);
+				// Set the photo size
+				$totalSize += filesize(JPATH_ROOT . $storage . '/' . $fileName);
 
                 // Set the photo dimensions
-                $meta               = FD::table('PhotoMeta');
-                $meta->photo_id     = $photo->id;
-                $meta->group        = SOCIAL_PHOTOS_META_WIDTH;
-                $meta->property     = $type;
-                $meta->value        = $width;
-                $meta->store();
+				$meta               = FD::table('PhotoMeta');
+				$meta->photo_id     = $photo->id;
+				$meta->group        = SOCIAL_PHOTOS_META_WIDTH;
+				$meta->property     = $type;
+				$meta->value        = $width;
+				$meta->store();
 
-                $meta               = FD::table('PhotoMeta');
-                $meta->photo_id     = $photo->id;
-                $meta->group        = SOCIAL_PHOTOS_META_HEIGHT;
-                $meta->property     = $type;
-                $meta->value        = $height;
-                $meta->store();
-            }
-        }
-        // Set the total photo size
-        $photo->total_size = $totalSize;
-        $photo->store();
+				$meta               = FD::table('PhotoMeta');
+				$meta->photo_id     = $photo->id;
+				$meta->group        = SOCIAL_PHOTOS_META_HEIGHT;
+				$meta->property     = $type;
+				$meta->value        = $height;
+				$meta->store();
+			}
+		}
+		// Set the total photo size
+		$photo->total_size = $totalSize;
+		$photo->store();
 
-        // After storing the photo, trigger rules that should occur after a photo is stored
-        $photo->afterStore($file, $image);
+		// After storing the photo, trigger rules that should occur after a photo is stored
+		$photo->afterStore($file, $image);
 
-        // Determine if we should create a stream item for this upload
-        $createStream   = JRequest::getBool( 'createStream' );
-
-        // Add Stream when a new photo is uploaded
-        if ($createStream) {
-            $photo->addPhotosStream( 'create' );
-        }
-        if ($isAvatar) {
-            return $photo;
-        }
+		// Determine if we should create a stream item for this upload
+		$createStream   = JRequest::getBool( 'createStream' );
+        
+		// Add Stream when a new photo is uploaded
+		if ($createStream) {
+			$photo->addPhotosStream( 'create' );
+		}
+		if ($isAvatar) {
+			return $photo;
+		}
 		// After storing the photo, trigger rules that should occur after a photo is stored		
 		return $photo; 
 	}	

@@ -7,17 +7,14 @@
 */
 
 	defined('_JEXEC') or die( 'Restricted access' );
-
 	jimport('joomla.plugin.plugin');
 	jimport('joomla.html.html');
-
 
 	class EasysocialApiResourceTerms extends ApiResource
 	{
 		public function get()
 		{
-		$this->plugin->setResponse("Use method post");		
-			
+		$this->plugin->setResponse("Use method post");					
 		}
 	
 		public function post()
@@ -27,22 +24,13 @@
 	
 		public function content()
 		{		
-			$res = new stdClass();						
-			//$app = 'Easysocial';
-			//$company = 'Appcarvers';
-			//$day = 30;	
-
+			$res = new stdClass();									
 			$jinput = JFactory::getApplication();
-                               
 			$app = $jinput->input->get('appname',null,'STRING');	
-
 			$company = $jinput->input->get('company','Appcarvers','STRING');
 			$day = $jinput->input->get('day',30,'INT');		
-
 			$res->message = "<h3>".JText::sprintf('PLG_API_EASYSOCIAL_APP_TERM_ONE', $company).JText::sprintf('PLG_API_EASYSOCIAL_APP_TERM_TWO', $app, $company).JText::sprintf('PLG_API_EASYSOCIAL_APP_TERM_THREE', $company).JText::sprintf('PLG_API_EASYSOCIAL_APP_TERM_FOUR', $company, $day)."</h3>";
-		
+
 			return $res;		
 		}		
 	}
-
-

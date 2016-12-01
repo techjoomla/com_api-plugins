@@ -7,6 +7,8 @@
 */
 defined('_JEXEC') or die( 'Restricted access' );
 
+error_reporting(E_ERROR | E_PARSE);
+
 jimport('joomla.user.user');
 /*
 require_once( EBLOG_CONTROLLERS . '/media.php' );
@@ -52,9 +54,15 @@ class EasyblogApiResourceImage extends ApiResource
 			// Let's get the path for the current request.
 			$file	= JRequest::getVar( 'file' , '' , 'FILES' , 'array' );
 
+
 			if($file['name'])
 			{
-			$place 	= 'user:'.$this->plugin->get('user')->id;
+				$post = 	EB::post(NULL);
+				$post->create();
+				$key = $post->id;
+				$key = $key + 1;
+				$place 	= 'post:'.$key;
+				$key =	null;
 			
 			// The user might be from a subfolder?
 			$source	= urldecode('/'.$file['name']);

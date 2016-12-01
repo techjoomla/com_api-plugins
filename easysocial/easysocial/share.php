@@ -30,14 +30,8 @@ class EasysocialApiResourceShare extends ApiResource
 	public function post()
 	{
 		$app = JFactory::getApplication();
-
-		//$share_for = $app->input->get('share_for','','CMD');
-		
-		$type = $app->input->get('type','story','STRING');
-		
+		$type = $app->input->get('type','story','STRING');		
 		$content = $app->input->get('content','','RAW');
-
-		//$targetId = $app->input->get('target_user','All','raw');
 		$targetId = $app->input->get('target_user',0,'INT');
 		
 		$cluster = $app->input->get('cluster_id',null,'INT');
@@ -112,8 +106,7 @@ class EasysocialApiResourceShare extends ApiResource
 				}
 			}
 			
-		//validate friends 
-			
+		//validate friends 			
 		$friends = array();
 
 		if (!empty( $friends_tags )) {
@@ -127,7 +120,6 @@ class EasysocialApiResourceShare extends ApiResource
 				if (!$model->isFriends($log_usr, $id)) {
 					continue;
 				}
-
 				$friends[]	= $id;
 			}
 		}
@@ -156,20 +148,15 @@ class EasysocialApiResourceShare extends ApiResource
 					$posn[] = $pos - 2;
 					$start = $pos+1;
 				}
-				$content = substr($content, 2);
-				//
-				//$pos = strpos(($content),'#',$start);
-				
+				$content = substr($content, 2);			
 				$has_hash = "#";
 				
 				$cont_arr = explode(' ',$content);
 				$indx= 0;
 				foreach($cont_arr as $val)
 				{
-					//if(preg_match('/[\'^#,|=_+¬-]/', $val))
 					if(strpbrk($val, $has_hash))	
 					{
-						//$vsl = substr_count($val,'#');
 						$val_arr = array_filter(explode('#',$val));
 	
 						foreach($val_arr as $subval)
@@ -180,43 +167,24 @@ class EasysocialApiResourceShare extends ApiResource
 							$mention->length = strlen($subval) - 0;
 							$mention->value = str_replace('#','',$subval);
 							$mention->type = 'hashtag';
-							
 							$mentions[] = $mention;
 						} 
 					}
 				}
-
 			}
-
 			$contextIds = 0;
-		/*if($type == 'photos')
-			{
-				$photo_obj = $this->uploadPhoto($log_usr,'user');
-				
-				$photo_ids[] = $photo_obj->id;
-				$contextIds = (count($photo_ids))?$photo_ids:null;
-			}
-			else
-			{
-				$type = 'story';
-			}*/
-			
-			//manage type
+
 			switch($type)
 			{
-			case 'photos':	$photo_obj = $this->uploadPhoto($log_usr,'user');
-					
+			case 'photos':	$photo_obj = $this->uploadPhoto($log_usr,'user');					
 							$photo_ids[] = $photo_obj->id;
 							$contextIds = (count($photo_ids))?$photo_ids:null;
 							
 							break;
 			case 'videos':
 			case 'polls': 
-			case 'story': break;
-			
+			case 'story': break;			
 			}
-			
-			
 			
 			// Process moods here
 			$mood = FD::table('Mood');
@@ -248,11 +216,8 @@ class EasysocialApiResourceShare extends ApiResource
 			// Privacy is only applicable to normal postings
 			if (!$isCluster) {
 				$privacyLib = FD::privacy();
-
 				if ($type == 'photos') {
-
 					$photoIds = FD::makeArray($contextIds);
-
 					foreach ($photoIds as $photoId) {
 						$privacyLib->add($privacyRule, $photoId, $type, $privacy, null, $customPrivacy);
 					}
@@ -276,10 +241,9 @@ class EasysocialApiResourceShare extends ApiResource
 				$result->status  =1;
 				$result->message = JText::_( 'PLG_API_EASYSOCIAL_DATA_SHARE_SUCCESS' );
 			}
-
 		}
 		
-	   $this->plugin->setResponse($result);
+		$this->plugin->setResponse($result);
 	}
 	
 	//function for upload photo
@@ -356,7 +320,6 @@ class EasysocialApiResourceShare extends ApiResource
 				$meta->group        = SOCIAL_PHOTOS_META_PATH;
 				$meta->property     = $type;
 				$meta->value        = $storage . '/' . $fileName;
-
 				$meta->store();
 
 				// We need to store the photos dimension here
@@ -378,15 +341,9 @@ class EasysocialApiResourceShare extends ApiResource
 				$meta->store();
 			}
 		}
-
-		// After storing the photo, trigger rules that should occur after a photo is stored
-		//$photo->afterStore( $file , $image );
-		
-		//$sphoto = new SocialPhotos($photo_obj->id);
-
 		return $photo; 
 	}
-	
+		
 	//function for upload file
 	public function uploadFile()
 	{
@@ -404,8 +361,6 @@ class EasysocialApiResourceShare extends ApiResource
 
 		// Pass uploaded data to the uploader.
 		$uploader->bindFile( $data );
-
 		$state 	= $uploader->store();
 	}	
 }
-

@@ -21,11 +21,10 @@ class plgAPIEasysocial extends ApiPlugin
 				/*load language file for plugin frontend*/ 
 		$lang = JFactory::getLanguage(); 
 		$lang->load('plg_api_easysocial', JPATH_ADMINISTRATOR,'',true);
-		
+		$lang->load('com_easysocial', JPATH_SITE,'',true);
+        $lang->load('com_users', JPATH_SITE,'',true);
 		$this->setResourceAccess('terms', 'public', 'post');	
 		$this->setResourceAccess('slogin', 'public', 'post');
-		$this->setResourceAccess('fblogin', 'public', 'post');
-        	
-		
+		$this->setResourceAccess('fblogin', 'public', 'post');        			        		
 	}
 }

@@ -7,7 +7,6 @@
 */
 
 defined('_JEXEC') or die( 'Restricted access' );
-
 jimport('joomla.plugin.plugin');
 jimport('joomla.html.html');
 
@@ -17,11 +16,11 @@ class EasysocialApiResourceReport extends ApiResource
 {
 	public function get()
 	{
-	$this->plugin->setResponse(JText::_( 'PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE' ));			
+		$this->plugin->setResponse(JText::_( 'PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE' ));			
 	}	
 	public function post()
 	{
-	$this->plugin->setResponse($this->create_report());	
+		$this->plugin->setResponse($this->create_report());	
 	}
 	public function create_report()
 	{
@@ -37,34 +36,32 @@ class EasysocialApiResourceReport extends ApiResource
 		$data['type']= $app->input->get('type','stream','STRING');
 		$data['title']= $title;
 		$data['extension']= 'com_easysocial';
-		 //build share url use for share post through app
+		//build share url use for share post through app
 
 		switch($data['type'])
 		{
-
 			case 'stream':	
-        $sharing = FD::get( 'Sharing', array( 'url' => FRoute::stream( array( 'layout' => 'item', 'id' => $item_id, 'external' => true, 'xhtml' => true ) ), 'display' => 'dialog', 'text' => JText::_( 'COM_EASYSOCIAL_STREAM_SOCIAL' ) , 'css' => 'fd-small' ) );
-        $url = $sharing->url;
-		$data['url']= $url;
+			$sharing = FD::get( 'Sharing', array( 'url' => FRoute::stream( array( 'layout' => 'item', 'id' => $item_id, 'external' => true, 'xhtml' => true ) ), 'display' => 'dialog', 'text' => JText::_( 'COM_EASYSOCIAL_STREAM_SOCIAL' ) , 'css' => 'fd-small' ) );
+			$url = $sharing->url;
+			$data['url']= $url;
 			break;
 			
 			case 'groups':
-                        $group	= FD::group( $item_id );
+			$group	= FD::group( $item_id );
 			$data['url'] = $group->getPermalink( false, true );
 			break;
 			
 			case 'events':
 
-                        $event	= FD::event( $item_id );
+			$event	= FD::event( $item_id );
 			$data['url'] = $event->getPermalink( false, true );
 			break;	
 			
 			case 'profile':
-                        $user	= FD::user( $item_id );
+			$user	= FD::user( $item_id );
 			$data['url'] = $user->getPermalink( false, true );
 			break;
-			
-			
+
 			case 'photos':
 
 			$ptable	= FD::table( 'Photo' );
@@ -80,7 +77,6 @@ class EasysocialApiResourceReport extends ApiResource
 			$data['url'] = $atable->getPermalink();
 
 			break; 			       
-
 		}
 
 		// Get the reports model
@@ -125,7 +121,7 @@ class EasysocialApiResourceReport extends ApiResource
 		if ($config->get('reports.notifications.moderators')) {
 			$report->notify();
 		}
-		$final_result['message'] = JText::_( 'PLG_API_EASYSOCIAL_REPORT_LOGGED' );;
+		$final_result['message'] = JText::_( 'COM_EASYSOCIAL_REPORTS_STORED_SUCCESSFULLY' );;
 		$final_result['status'] = true;
 		return $final_result;
 	}	

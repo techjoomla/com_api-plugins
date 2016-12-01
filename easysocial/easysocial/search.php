@@ -29,6 +29,7 @@ class EasysocialApiResourceSearch extends ApiResource
 	{
 	   $this->plugin->setResponse($this->getSearch());
 	}
+	
 	//function use for get friends data
 	function getSearch()
 	{
@@ -49,7 +50,6 @@ class EasysocialApiResourceSearch extends ApiResource
 		}
 		
 		$mapp = new EasySocialApiMappingHelper();
-
 		$res = new stdClass;
 		
 		if(empty($search))
@@ -70,10 +70,7 @@ class EasysocialApiResourceSearch extends ApiResource
 		$query->select($db->quoteName(array('su.user_id')));
 		$query->from($db->quoteName('#__social_users','su'));
 		$query->join('LEFT', $db->quoteName('#__users', 'u') . ' ON (' . $db->quoteName('su.user_id') . ' = ' . $db->quoteName('u.id') . ')');
-		//$query->where("su.user_id NOT IN( SELECT bu.user_id FROM #__social_block_users AS bu)");
-
-		//->where(($db->quoteName('u.username') . ' LIKE '. $db->quote('\'% '.$search.'%\'') ).'OR' .( $db->quoteName('u.name') . ' LIKE '. $db->quote('\'%'.$search.'%\'') ).'OR'.( $db->quoteName('u.email') . ' LIKE '. $db->quote('\'%'.$search.'%\'')))
-
+		
 		if(!empty($search))
 		{
 			$query->where("(u.username LIKE '%".$search."%' ) OR ( u.name LIKE '%".$search."%')");
@@ -87,7 +84,6 @@ class EasysocialApiResourceSearch extends ApiResource
 		$susers = array();
 		foreach($tdata as $ky=>$val)
 		{
-	
 			$block = $block_model->isBlocked($val->user_id,$userid);
 			if(!$block)
 			{		
@@ -97,18 +93,16 @@ class EasysocialApiResourceSearch extends ApiResource
 				
 		//manual pagination code
 		$susers = array_slice( $susers, $limitstart, $limit );		
-
 		$base_obj = $mapp->mapItem($susers,'user',$log_user->id);
-
 		$list['user'] = $this->createSearchObj( $base_obj );
 
 		if(empty($list['user']))
-               	{
-                       $ret_arr = new stdClass;
-                       $ret_arr->status = false;
-                       $ret_arr->message = JText::_( 'PLG_API_EASYSOCIAL_USER_NOT_FOUND' );
-                       $list['user']= $ret_arr;
-               	}
+		{
+			$ret_arr = new stdClass;
+			$ret_arr->status = false;
+			$ret_arr->message = JText::_( 'PLG_API_EASYSOCIAL_USER_NOT_FOUND' );
+			$list['user']= $ret_arr;
+		}
 		
 		//for group
 		$query1 = $db->getQuery(true);
@@ -126,7 +120,6 @@ class EasysocialApiResourceSearch extends ApiResource
 		$db->setQuery($query1);
 		$gdata = $db->loadObjectList();
 		
-		
 		$grp_model = FD::model('Groups');
 		$group = array();
 		foreach($gdata as $grp)
@@ -136,32 +129,32 @@ class EasysocialApiResourceSearch extends ApiResource
 			$is_member = $group_load->isMember($log_user->id);
 			if($is_inviteonly && !$is_member)
 			{
-			       if($group_load->creator_uid == $log_user->id)
-			       {
-				       $group[] = FD::group($grp->id);
-			       }
-			       else
-			       {                                        
-				continue;
-			       }                                
+				if($group_load->creator_uid == $log_user->id)
+				{
+					$group[] = FD::group($grp->id);
+				}
+				else
+				{                                        
+					continue;
+				}                                
 			}
 			else
-			{                                
-			       $group[] = FD::group($grp->id);        
+			{
+				$group[] = FD::group($grp->id);        
 			}
 		}
-	
+		
 		//manual pagination code
 		$group = array_slice( $group, $limitstart, $limit );
 		$list['group'] = $mapp->mapItem($group,'group',$log_user->id);
 		
 		if(empty($list['group']))
-               	{
-                       $ret_arr = new stdClass;
-                       $ret_arr->status = false;
-                       $ret_arr->message = JText::_( 'PLG_API_EASYSOCIAL_GROUP_NOT_FOUND' );
-                       $list['group']= $ret_arr;
-               	}
+		{
+			$ret_arr = new stdClass;
+			$ret_arr->status = false;
+			$ret_arr->message = JText::_( 'PLG_API_EASYSOCIAL_GROUP_NOT_FOUND' );
+			$list['group']= $ret_arr;
+		}
 			
 		//give status as per front end requirement
 		if(empty($list['group']) && empty($list['user']))	
@@ -220,11 +213,6 @@ class EasysocialApiResourceSearch extends ApiResource
 				$list[] = $node;
 			}
 		}
-
 		return $list;
-		
 	}
-	
-	
-
 }

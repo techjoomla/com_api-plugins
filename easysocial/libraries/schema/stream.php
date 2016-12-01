@@ -27,6 +27,8 @@ class streamSimpleSchema {
 	public $stream_url;
 	public $with;
 	public $isPinned;
+	public $file_name;
+	public $download_file_url;
 	
 }
 

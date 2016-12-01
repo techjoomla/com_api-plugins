@@ -25,43 +25,44 @@ class EasysocialApiResourceTags extends ApiResource
 	 */
     public function get()
 	{        
-        $this->plugin->setResponse($this->getTags());
-    }
+		$this->plugin->setResponse($this->getTags());
+	}
 
-    public function getTags()
-    {
-        $app = JFactory::getApplication();
+	public function getTags()
+	{
+		$app = JFactory::getApplication();
 
         // Get the video
-        $videoid = $app->input->get('video_id',0,'INT');	
+		$videoid = $app->input->get('video_id',0,'INT');	
+		$video = ES::video();
+		$video->load($videoid);
 
-        $video = ES::video();
-        $video->load($videoid);
+		$model = ES::model('Tags');
+		$tag_peoples = $model->getTags($videoid, SOCIAL_TYPE_VIDEO);
+		$mapp = new EasySocialApiMappingHelper();
+		
+		if($tag_peoples){
+			foreach( $tag_peoples as $tusr )
+			{
 
-        $tag_peoples = $video->getTags();
-	$mapp = new EasySocialApiMappingHelper();
-
-	foreach( $tag_peoples as $tusr )
-	{
-
-		$tusr->target_user_obj = $mapp->mapItem($tusr->target_id,'profile',$log_user);
-	}		
-
-        return $tag_peoples;
-    }    
+				$tusr->target_user_obj = $mapp->mapItem($tusr->target_id,'profile',$log_user);
+			}		
+		}
+		return $tag_peoples;
+	}    
 
 	public function post()
 	{
 		// Check for request forgeries
 		//ES::checkToken();
 
-       $app = JFactory::getApplication();
+		$app = JFactory::getApplication();
 
 		// Get the user id's.
-        $friends_tags = $app->input->get('friends_tags',null,'ARRAY');
+		$friends_tags = $app->input->get('friends_tags',null,'ARRAY');
 
 		// Get the video
-        $cluster = $app->input->get('cluster_id',null,'INT');
+		$cluster = $app->input->get('cluster_id',null,'INT');
 
 		$table = ES::table('Video');
 		$table->load($cluster);
@@ -69,21 +70,11 @@ class EasysocialApiResourceTags extends ApiResource
 
 		// Insert the user tags
 		$tags = $video->insertTags($friends_tags);
-
-        $video = ES::video();
-        $video->load($cluster);
-        $tag_peoples=$video->getTags();
-
-        /*$data=array(); 
-        $userObj = FD::user($friends_tags);
-          
-        foreach($userObj as $ky=>$row)
-        {
-            $data['name'] = $row->username;
-        }
-        $data['data'] = $tag_peoples;  */  
-        $this->plugin->setResponse($tag_peoples);
+    
+		$video = ES::video();
+		$video->load($cluster);
+		$model = ES::model('Tags');
+		$tag_peoples = $model->getTags($videoid, SOCIAL_TYPE_VIDEO);
+		$this->plugin->setResponse($tag_peoples);
 	}
 }
-
-

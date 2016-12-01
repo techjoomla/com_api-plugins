@@ -46,33 +46,25 @@ class EasysocialApiResourceSlogin extends ApiResource
 		$slogin = $app->input->get('social_login', 0 , 'INT');
 		if($slogin)
 		{
-			//$provider = $app->input->get('provider', 'facebook' , 'STRING');
-			
 			$user_id = $app->input->get('user_id',0,'INT');
 			$tokan = $app->input->get('tokan',0,'STRING');
 			$username = $app->input->get('username','','STRING');
 			$name = $app->input->get('name','','STRING');
 			$email_crp = $app->input->get('email','','STRING');
-			
-			//$crpt = base64_encode($email_crp.$tokan);
 
 			$email_crp = base64_decode( $email_crp );
 			$email = str_replace( $tokan,'', $email_crp );
-
 			$reg_usr = 0;
 			
 			if($email )
 			{
 				$reg_usr = $this->check_user($email);
-//print_r( $_POST );
-//var_dump( $reg_usr );
-//die("in slogin api");
+
 				if( $reg_usr == null )
 				{
 					$user_details = $this->createUser($username,$name,$email);
 					$reg_usr = $user_details['user_id'];
-				}
-				
+				}				
 			}
 			$user = JFactory::getUser( $reg_usr );
 		}
@@ -99,6 +91,7 @@ class EasysocialApiResourceSlogin extends ApiResource
 		$kmodel = new ApiModelKey;
 		$model = new ApiModelKeys;
 		$key = null;
+		
 		// Get login user hash
 		$kmodel->setState('user_id', $user->id);
 		$log_hash = $kmodel->getList();
@@ -145,11 +138,9 @@ class EasysocialApiResourceSlogin extends ApiResource
 				$obj->code = 403;
 				$obj->message = JText::_( 'PLG_API_EASYSOCIAL_BAD_REQUEST' );
 			}
-			return( $obj );
-	
+			return( $obj );	
 	}
-	
-	
+		
 	/*
 	 * function to get joomla user id on email
 	 */
@@ -245,8 +236,6 @@ class EasysocialApiResourceSlogin extends ApiResource
 		{
 			$message = JText::_( 'PLG_API_EASYSOCIAL_CREATED_USERNAME' ) . $user->username .JText::_( 'PLG_API_EASYSOCIAL_SEND_MAIL_DETAILS' );
 		}
-
-		// #$this->plugin->setResponse($user->id);
 		$userid = $user->id;
 
 		// Result message

@@ -17,13 +17,7 @@ require_once JPATH_SITE.'/components/com_easysocial/controllers/videos.php';
 
 class EasysocialApiResourceVideos extends ApiResource
 {
-	/**
-	 * get.
-	 *
-	 * @see        JController
-	 * @since      1.0
-	 * @return true or null
-	 */
+	
 	public function get()
 	{
 		$this->plugin->setResponse($this->get_videos());	
@@ -31,7 +25,7 @@ class EasysocialApiResourceVideos extends ApiResource
 	
 	public function post()
 	{       
-        	$app = JFactory::getApplication();	
+		$app = JFactory::getApplication();	
 		$type =  $app->input->get('source','upload','STRING');		
 		$result = ($type=='link')?$this->processVideo():$this->upload_videos($type);
 		$this->plugin->setResponse($result);
@@ -59,13 +53,15 @@ class EasysocialApiResourceVideos extends ApiResource
 		$ordering = $this->plugin->get('ordering', '', 'STRING');
 		$userObj = FD::user($log_user);
 		
+		$model->setUserState( 'limitstart' , $limitstart );
 		$options = array('limitstart'=>$limitstart,'limit'=>$limit,'sort'=>$sort,'filter'=>$filter,'category'=>$categoryid,'state' => SOCIAL_STATE_PUBLISHED, 'ordering' => $ordering); /* ,'type' => $userObj->isSiteAdmin() ? 'all' : 'user' */		
 		if($video_id)
 		{
 			$data[] = $this->getVideoDetails($video_id);
 		}
 		else
-		{		
+		{	
+			if($options['limitstart'] <= $model->getTotalVideos($options))
 			$data = $model->getVideos($options);		
 		}
 		$mapp = new EasySocialApiMappingHelper();
@@ -80,32 +76,31 @@ class EasysocialApiResourceVideos extends ApiResource
 		
 		$result['video'] = $mapp->mapItem($data,'videos',$log_user);
 		$result['categories'] = $mapp->categorySchema($cats);
+		$result['length'] = count($result['video']);
 		
+		//if(empty($result['video']))
+			$result->message	=	 JText::_( 'COM_EASYSOCIAL_VIDEOS_EMPTY_MESSAGE' );
 		return $result;
 	}
 
 	public function getVideoDetails($vid = 0)
 	{
-		if(!$vid)
+		if($vid)
 		{
-			return 0;
-		}
-		else
-		{
-
 			$table = ES::table('Video');
 			$table->load($vid);
 			return $video = ES::video($table->uid, $table->type, $table);
-
+			
 		}
-
+		else
+			return 0;
 	}	
 	
 	//upload video in throught api
 	public function upload_videos($type)
 	{				
 		$app = JFactory::getApplication();
-		$res = new stdClass;
+		$result = new stdClass;
 		$es_config = ES::config();
 		
 		$id = $app->input->get('id', 0, 'int');
@@ -114,41 +109,56 @@ class EasysocialApiResourceVideos extends ApiResource
 		$table->load($id);
 
 		$video = ES::video($table->uid, $table->type, $table);
-
+		$user = JFactory::getUser();
+		$isAdmin = $user->authorise('core.admin');
+		
 		// Get the callback url
 		$callback = $app->input->get('return', '', 'default');
 		
-		if($action=="featured"){
-			$video->setFeatured();
-		} elseif($action=="unfeatured") {
-			$video->removeFeatured();
-		} elseif($action=="delete") {
-			$state = $video->delete();
-		} elseif($action=="edit") {
-			$video 	= FD::table('Video');				
-            $video->load($id);	            
-            return $video;
-		} elseif($action=="update") {
-            $video 	= FD::table('Video');				
-            $video->load($id);	                    
-    		$videoEdit = ES::video($video);
+		if($action=="featured" && $isAdmin){
+			
+			$result->state=$video->setFeatured();
+			$result->success = true;
+			$result->message = ($result->state)?(JText::_( 'PLG_API_EASYSOCIAL_VIDEO_FEATURED_SUCCESS' )):JText::_( 'PLG_API_EASYSOCIAL_VIDEO_FEATURED_FAIL' );
+			return $result;
+			
+		} elseif ($action=="unfeatured" && $isAdmin) {
+			
+			$result->state=$video->removeFeatured();
+			$result->success = true;
+			$result->message = ($result->state)?(JText::_( 'PLG_API_EASYSOCIAL_VIDEO_UNFEATURED_SUCCESS' )):JText::_( 'PLG_API_EASYSOCIAL_VIDEO_UNFEATURED_FAIL' );
+			return $result;
+			
+		} elseif ($action=="delete") {
+			$result->state = $video->delete();
+			$result->success = true;
+			$result->message = JText::_( 'COM_EASYSOCIAL_VIDEOS_UPDATED_SUCCESS' );
+			return $result;
+		} elseif ($action=="edit") {
+			$video 	= FD::table('Video');
+			$video->load($id);
+			return $video;
+		} elseif ($action=="update") {
+			$video 	= FD::table('Video');
+			$video->load($id);	                    
+			$video->description =  ($video->description == 'undefined')?($video->description = ''):$video->description;
+			$videoEdit = ES::video($video);
 
-    		// Save the video
-            $post['category_id'] = $app->input->get('category_id', 0, 'INT');
-            $post['uid'] = $app->input->get('uid', 0, 'INT');
-       		$post['title'] = $app->input->get('title', '', 'STRING');
-            $post['description'] = $app->input->get('description', '', 'STRING');
-    		$post['link'] = $app->input->get('path', '', 'STRING');
-      		$post['tags'] = $app->input->get('tags', '', 'ARRAY');
-            $post['location'] = $app->input->get('location', '', 'STRING');
-            $post['privacy'] = $app->input->get('privacy', '', 'STRING');
+			// Save the video
+			$post['category_id'] = $app->input->get('category_id', 0, 'INT');
+			$post['uid'] = $app->input->get('uid', 0, 'INT');
+			$post['title'] = $app->input->get('title', '', 'STRING');
+			$post['description'] = $app->input->get('description', '', 'STRING');
+			$post['link'] = $app->input->get('path', '', 'STRING');
+			$post['tags'] = $app->input->get('tags', '', 'ARRAY');
+			$post['location'] = $app->input->get('location', '', 'STRING');
+			$post['privacy'] = $app->input->get('privacy', '', 'STRING');
 
-		    $state = $videoEdit->save($post);
+			$state = $videoEdit->save($post);
 
-            $videoEdit->success = 1;
-            $videoEdit->message = JText::_( 'Video updated successfully' );	
-        	return $videoEdit;
+			$videoEdit->success = 1;
+			$videoEdit->message = JText::_( 'COM_EASYSOCIAL_VIDEOS_UPDATED_SUCCESS' );	
+			return $videoEdit;
         }										
 	}	
 }
-

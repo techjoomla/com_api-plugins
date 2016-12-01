@@ -19,55 +19,36 @@ class EasysocialApiResourceVideos_link extends ApiResource
 {	
 	public function post()
 	{
-        $this->plugin->setResponse($this->save_video());				        
+		$this->plugin->setResponse($this->save_video());				        
 	}
-				
-	public function save_video()
-	{          	
-		// Check for request forgeries
-		//ES::checkToken();
 
+	public function save_video()
+	{          			
 		$app = JFactory::getApplication();
 		$res = new stdClass;
 		$es_config = ES::config();
 		$log_user = $this->plugin->get('user')->id;	
-        
+
 		$post['category_id'] = $app->input->get('category_id', 0, 'INT');
-        $post['uid'] = $app->input->get('uid', $log_user, 'INT');
-   		$post['title'] = $app->input->get('title', '', 'STRING');
-        $post['description'] = $app->input->get('description', '', 'STRING');
+		$post['uid'] = $app->input->get('uid', $log_user, 'INT');
+		$post['title'] = $app->input->get('title', '', 'STRING');
+		$post['description'] = $app->input->get('description', '', 'STRING');
 		$post['link'] =  $app->input->get('path', '', 'STRING');
-  		$post['tags'] = $app->input->get('tags', '', 'ARRAY');
-        $post['location'] = $app->input->get('location', '', 'STRING');
-        $post['privacy'] = $app->input->get('privacy', '', 'STRING');
-        
-
-        $video = ES::video();
-        //$video->load($row->id);
-//$post['link'] = "https://www.youtube.com/watch?v=CLNXXcfcX1g";
-	if($post['link'])
-	{
-
-		$rx = '~
-	    ^(?:https?://)?              # Optional protocol
-	     (?:www\.)?                  # Optional subdomain
-	     (?:youtube\.com|youtu\.be|vimeo\.com)  # Mandatory domain name
-	     /watch\?v=([^&]+)           # URI with video id as capture group 1
-	     ~x';
-
-		$has_match = preg_match($rx, $post['link'], $matches);
-
-		if(!$has_match && count($matches) <= 1 )
-		{
-			$res->success = 0;
-			$res->message = JText::_('PLG_API_EASYSOCIAL_VIDEO_LNK_INVALID');
-			return $res;
-		}
+		$post['location'] = $app->input->get('location', '', 'STRING');
+		$post['privacy'] = $app->input->get('privacy', '', 'STRING');
+       
+		$video = ES::video();
 		
-	}		
-		
- 
-        $isNew = $video->isNew();
+		if($post['link']) {
+			$rx = '~
+			^(?:https?://)?              # Optional protocol
+			(?:www\.)?                  # Optional subdomain
+			(?:youtube\.com|youtu\.be|vimeo\.com)  # Mandatory domain name
+			/watch\?v=([^&]+)           # URI with video id as capture group 1
+			~x';
+			$has_match = preg_match($rx, $post['link'], $matches);
+		}		
+		$isNew = $video->isNew();
 
 		// Set the current user id only if this is a new video, otherwise whenever the video is edited,
 		// the owner get's modified as well.
@@ -91,16 +72,13 @@ class EasysocialApiResourceVideos_link extends ApiResource
 
 			// Set the video's duration
 			$video->table->duration = @$scrape->oembed->duration;
-    		$video->processLinkVideo();
-    		$video->save($post);
-    		$video->table->hit();
-
-			// Save the video
-			$state = $video->table->store();
-
-		if ($id) {
-			$message = 'COM_EASYSOCIAL_VIDEOS_UPDATED_SUCCESS';
+			$video->processLinkVideo();
+			$video->save($post);
+			$video->table->hit();
 		}
+
+		// Save the video
+		$state = $video->table->store();
 
 		// Bind the video location
 		if (isset($post['location']) && $post['location'] && isset($post['latitude']) && $post['latitude'] && isset($post['longitude']) && $post['longitude']) {
@@ -116,19 +94,7 @@ class EasysocialApiResourceVideos_link extends ApiResource
 			$location->longitude = $video['longitude'];
 			$location->store();
 		}
-		
-		// This video could be edited
-		$id = $post["id"];
-		$uid = $log_user;
-		$type = $app->input->get('type', SOCIAL_TYPE_USER, 'word');
-
-        /*
-		// Bind the tags
-		if (isset($post['tags'])) {
-			$video->insertTags($post['tags']);
-		}*/
         
-
 		$privacyData = 'public';
 		if (isset($post['privacy'])) {
 
@@ -145,12 +111,9 @@ class EasysocialApiResourceVideos_link extends ApiResource
 		if ($createStream) {
 			$video->createStream('create', $privacyData);
 		}	
-
         $video->success = 1;
-        $video->message = JText::_( 'PLG_API_EASYSOCIAL_VIDEO_LNK_UPLOAD_SUCCESS' );	
+        $video->message = JText::_( 'COM_EASYSOCIAL_EMAILS_EVENT_NEW_VIDEO' );
+        
     	return $video;
-		}	
-    }
+	}
 }
-
-

@@ -78,8 +78,8 @@ class EasysocialApiResourceVideos extends ApiResource
 		$result['categories'] = $mapp->categorySchema($cats);
 		$result['length'] = count($result['video']);
 		
-		//if(empty($result['video']))
-			$result->message	=	 JText::_( 'COM_EASYSOCIAL_VIDEOS_EMPTY_MESSAGE' );
+		if($result['length'])
+			$result['message']	=	 JText::_( 'COM_EASYSOCIAL_VIDEOS_EMPTY_MESSAGE' );
 		return $result;
 	}
 

@@ -668,7 +668,7 @@ class EasySocialApiMappingHelper
 				
 				$item->description = $row->content;
 				$item->created_by = $this->createUserObj($row->created_by);
-				$item->created_date = $this->dateCreate($row->created);
+				$item->created_date = ES::date($row->created)->format(JText::_('DATE_FORMAT_LC1'));
 				$item->lapsed = $this->calLaps($row->created);
 				$item->hits = $row->hits;
 				$item->replies_count = $row->total_replies;

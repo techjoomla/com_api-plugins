@@ -53,9 +53,9 @@ class UsersApiResourceLogin extends ApiResource
 		// Get login user hash
 		$kmodel->setState('user_id', $user->id);
 		$log_hash = $kmodel->getList();
-		$log_hash = $log_hash[count($log_hash) - count($log_hash)];
+		$log_hash = (!empty($log_hash))?$log_hash[count($log_hash) - count($log_hash)]:$log_hash;
 
-		if( $log_hash->hash )
+		if( !empty($log_hash) )
 		{
 			$key = $log_hash->hash;
 		}

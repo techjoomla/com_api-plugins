@@ -54,8 +54,6 @@ class UsersApiResourceUsers extends ApiResource
 		$userid         = null;
 		$data           = array();
 
-		//$log_user = $this->plugin->get('user')->id;
-
 		$app              = JFactory::getApplication();
 		$data['username'] = $app->input->get('username', '', 'STRING');
 		$data['password'] = $app->input->get('password', '', 'STRING');
@@ -65,6 +63,7 @@ class UsersApiResourceUsers extends ApiResource
 		$data['activation']    = $app->input->get('activation', 0, 'INT');	
 		$data['app']    = $app->input->get('app_name', 'Easysocial App', 'STRING');	
 		$data['profile_id']    = $app->input->get('profile_id', 1, 'INT');	
+
 		global $message;
 
 		$eobj = new stdClass();		
@@ -178,8 +177,6 @@ class UsersApiResourceUsers extends ApiResource
 			$badge->log( 'com_easysocial' , 'registration.create' , $user->id , JText::_( 'COM_EASYSOCIAL_REGISTRATION_BADGE_REGISTERED' ) );			
 
 		}
-
-		// #$this->plugin->setResponse($user->id);
 		$userid = $user->id;
 
 		// Result message
@@ -208,14 +205,12 @@ class UsersApiResourceUsers extends ApiResource
 		if ($id = $input->get('id'))
 		{
 			$user = JUser::getInstance($id);
-
 			if (!$user->id)
 			{
 				$this->plugin->setResponse($this->getErrorResponse(JText::_( 'PLG_API_USERS_USER_NOT_FOUND_MESSAGE' )));
 
 				return;
 			}
-
 			$this->plugin->setResponse($user);
 		}
 		else
@@ -248,7 +243,6 @@ class UsersApiResourceUsers extends ApiResource
 			$epost = $app->input->get('fields', '', 'ARRAY');
 	
 			require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/foundry.php';
-			
 			
 			// Get all published fields apps that are available in the current form to perform validations
 			$fieldsModel = FD::model('Fields');
@@ -312,7 +306,7 @@ class UsersApiResourceUsers extends ApiResource
 			$args 		= array(&$data, &$my);
 
 			// @trigger onEditAfterSave
-			$fieldsLib->trigger( 'onEditAfterSave' , SOCIAL_FIELDS_GROUP_USER , $fields , $args );
+			$fieldsLib->trigger( 'onRegisterAfterSave' , SOCIAL_FIELDS_GROUP_USER , $fields , $args );
 
 			// Bind custom fields for the user.
 			$my->bindCustomFields($data);
@@ -354,43 +348,26 @@ class UsersApiResourceUsers extends ApiResource
 		require_once JPATH_SITE.'/plugins/api/easysocial/libraries/uploadHelper.php';
 		//for upload photo
 		 if(!empty($_FILES['avatar']['name']))
-               {
-                       $upload_obj = new EasySocialApiUploadHelper();
-                       //ckecking upload cover
-                       //$phto_obj = $upload_obj->uploadPhoto($log_user->id,'group');
-                       $phto_obj = $upload_obj->ajax_avatar($_FILES['avatar']);
-                       $avtar_pth = $phto_obj['temp_path'];
-                       $avtar_scr = $phto_obj['temp_uri'];
-                       $avtar_typ = 'upload';
-                       $avatar_file_name = $_FILES['avatar']['name']; 
-               }
-		//for upload cover
-               /*$cover_data = null;
-               
-               if(!empty($_FILES['cover_file']['name']))
-               {
-                       $upload_obj = new EasySocialApiUploadHelper();
-                       //ckecking upload cover
-                       $cover_data = $upload_obj->ajax_cover($_FILES['cover_file'],'cover_file');
-                       //$phtomod        = FD::model( 'Photos' );
-                       //$cover_obj = $upload_obj->uploadCover($log_user->id,'group');
-                       //$cover_data = $phtomod->getMeta($cover_obj->id, SOCIAL_PHOTOS_META_PATH);
-                       //
-               }*/
+			{
+				$upload_obj = new EasySocialApiUploadHelper();
+
+				$phto_obj = $upload_obj->ajax_avatar($_FILES['avatar']);
+				$avtar_pth = $phto_obj['temp_path'];
+				$avtar_scr = $phto_obj['temp_uri'];
+				$avtar_typ = 'upload';
+				$avatar_file_name = $_FILES['avatar']['name']; 
+			}
 
 		foreach($fields as $field)
 		{
-			
 			$fobj = new stdClass();
 			$fullname = $app->input->get('name', '', 'STRING');
 			$fld_data['first_name'] = $app->input->get('name', '', 'STRING');
-			
 			
 			$fobj->first = $fld_data['first_name'];
 			$fobj->middle = '';
 			$fobj->last = '';
 			$fobj->name = $fullname;
-
 			switch($field->unique_key)
 			{
 				case 'HEADER': break;
@@ -403,7 +380,8 @@ class UsersApiResourceUsers extends ApiResource
 								break;
 				case 'JOOMLA_EMAIL':	$fld_data['es-fields-'.$field->id] = $app->input->get('email', '', 'STRING'); 
 								break;
-				case 'AVATAR':	$fld_data['es-fields-'.$field->id] = Array
+				case 'AVATAR':	if(isset($avtar_scr)){
+									$fld_data['es-fields-'.$field->id] = Array
 										(
 											'source' =>$avtar_scr, 
 											'path' =>$avtar_pth,
@@ -411,10 +389,10 @@ class UsersApiResourceUsers extends ApiResource
 											'type' => $avtar_typ,
 											'name' => $avatar_file_name
 										);
+									}
 								break;
 			}
 		}
-
 		return $fld_data;
 	}
 	
@@ -427,7 +405,6 @@ class UsersApiResourceUsers extends ApiResource
 		
 		$lang = JFactory::getLanguage();
 		$lang->load('com_users', JPATH_SITE, '', true);
-        //$tit=JText::_($emailOptions['title']);
 		
 		$data['fromname'] = $config->get('fromname');
 		$data['mailfrom'] = $config->get('mailfrom');
@@ -448,7 +425,6 @@ class UsersApiResourceUsers extends ApiResource
 				$base_dt['name'],
 				$data['sitename']
 			);
-
 
 			if ($sendpassword)
 			{
@@ -490,11 +466,9 @@ class UsersApiResourceUsers extends ApiResource
 				);
 			}
 		}
-
 		// Send the registration email.
 		$return = JFactory::getMailer()->sendMail($data['mailfrom'], $data['fromname'], $base_dt['email'], $emailSubject, $emailBody);
 		return $return;
 		
 	}
 }
-

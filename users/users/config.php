@@ -97,7 +97,7 @@ class UsersApiResourceConfig extends ApiResource
 			$es_params = FD::config();
 			$profiles = FD::model( 'profiles' );
 
-			$cdata['conversations_limit'] = $es_params->get('conversations')->limit;
+			//$cdata['conversations_limit'] = $es_params->get('conversations')->limit;
 			$cdata['activity_limit'] = $es_params->get('activity')->pagination;
 			$cdata['lists_limit'] = $es_params->get('lists')->display->limit;
 			$cdata['comments_limit'] = $es_params->get('comments')->limit;

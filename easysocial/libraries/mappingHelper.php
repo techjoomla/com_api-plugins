@@ -598,6 +598,7 @@ class EasySocialApiMappingHelper
 	//create comments object
 	public function createCommentsObj($row,$limitstart=0,$limit=10)
 	{
+		$this->log_user = JFactory::getUser()->id;
 		if (!is_bool($row->uid))
 		{
 			$options = array('uid' => $row->uid, 'element' => $row->element, 'stream_id' => $row->stream_id, 'start' => $limitstart, 'limit' => $limit);

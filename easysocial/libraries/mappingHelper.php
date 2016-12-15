@@ -332,7 +332,11 @@ class EasySocialApiMappingHelper
 				$item->group = $row->cluster_type;
 				$item->element_id = $row->contextId;
 				$item->content = urldecode(str_replace('href="/index','href="'.JURI::root().'index',$row->content));
-
+				
+				$search	=	"data-readmore";
+				$insert	=	"style='display:none'";
+				$item->content = str_replace($search,$insert,$item->content);
+				
 				//check code optimisation
 				$frame_match= preg_match('/;iframe.*?>/', $row->preview);
 					if($frame_match)
@@ -1038,10 +1042,11 @@ class EasySocialApiMappingHelper
 		$result = array();
 		
 		foreach($rows as $ky=>$row)
-		{//print_r($row->conversation);die('In message');
+		{
 			if($row->id)
 			{
 				$item = new converastionSimpleSchema();
+				$conversation	=	ES::conversation($row->id);
 				$participant_usrs = $conv_model->getParticipants( $row->id );
 				$con_usrs = array();
 
@@ -1056,7 +1061,7 @@ class EasySocialApiMappingHelper
 				$item->lastreplied_date = $row->lastreplied;
 				$item->isread = $row->isread;
 				$item->messages = $row->message;
-				$item->lapsed = $this->calLaps($row->lastreplied);
+				$item->lapsed = $conversation->getLastRepliedDate(true);
 				$item->participant = $con_usrs;
 				$result[] = $item;
 			}

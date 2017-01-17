@@ -21,9 +21,9 @@ use Joomla\Registry\Registry;
 
 require_once JPATH_SITE .'/components/com_content/models/article.php';
 require_once JPATH_SITE .'/components/com_content/models/category.php';
-require_once JPATH_SITE .'/components/com_tz_portfolio/models/category.php';
+//require_once JPATH_SITE .'/components/com_tz_portfolio/models/category.php';
 require_once JPATH_ADMINISTRATOR .'/components/com_categories/models/categories.php';
-require_once JPATH_ADMINISTRATOR .'/components/com_tz_portfolio/models/categories.php';
+//require_once JPATH_ADMINISTRATOR .'/components/com_tz_portfolio/models/categories.php';
 require_once JPATH_SITE .'/libraries/legacy/model/list.php';
 require_once JPATH_SITE .'/libraries/cms/menu/menu.php';
 require_once JPATH_SITE .'/components/com_content/helpers/query.php';
@@ -64,8 +64,8 @@ class ArticlesApiResourceCategory extends ApiResource
 			}
 	
 		}
-		//$cat_obj = new CategoriesModelCategories();
-		$cat_obj = new TZ_PortfolioModelCategories();
+		$cat_obj = new CategoriesModelCategories();
+		//$cat_obj = new TZ_PortfolioModelCategories();
 		$jlist = new JModelList();
 
 		$config = JFactory::getConfig();

@@ -40,7 +40,7 @@ class EasySocialApiMappingHelper
 	
 	public function mapItem($rows, $obj_type='', $userid = 0 ,$type='', $strip_tags='', $text_length=0, $skip=array()) {
 	
-		$this->log_user = $userid;
+		$this->log_user =  JFactory::getUser()->id;
 
 		switch($obj_type)
 		{
@@ -475,7 +475,7 @@ class EasySocialApiMappingHelper
                 //
 				$item->actor = $actors;
 				//This node is for Report-flag for the posts.
-				$item->isself = ( $actors[0]->id == $userid )?true:false;
+				$item->isself = ( $actors[0]->id == $this->log_user )?true:false;
 
 				$item->likes = (!empty($row->likes))?$this->createlikeObj($row->likes,$userid):null;
 				$item->isAdmin = $isRoot;

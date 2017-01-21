@@ -1450,7 +1450,10 @@ if($item->id == 11115)
 				$item->thumbnail = $row->thumbnail;
 				$item->likes = $video->getLikesCount();
                 $item->comments = $video->getCommentsCount();
-                $item->isAdmin = $isRoot;	
+                
+                if(($userid == $row->user_id)||$isRoot)
+                	$item->isAdmin = true;	
+                	
                 $item->stream_id = $model->getStreamId($row->id,'create');    
 				
 				$comments = FD::comments($row->id, SOCIAL_TYPE_VIDEOS , 'create', SOCIAL_APPS_GROUP_USER , array('url' => $row->getPermalink()));				

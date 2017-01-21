@@ -243,7 +243,9 @@ class EasysocialApiResourceFollower extends ApiResource
 		}
 		else
 		{
-			$raw_followers 	= $foll_model->getFollowers( $target_user, $options );
+			if($options['limitstart'] <= $foll_model->getTotalFollowers($target_user)){
+				$raw_followers 	= $foll_model->getFollowers( $target_user, $options );
+			}
 		}
 
 	    //$frnd_list = $this->basefrndObj($ttl_list);

@@ -44,12 +44,15 @@ class EasysocialApiResourceProfile extends ApiResource
 
 		$data = array();
 		$user = FD::user($userid);
-		if($user->id == 0) {
+
+		/* Check whether user is not deleted */
+		if($user->id == 0){
+
 			$result = new stdClass;
 			$result->message = JText::_( 'COM_USERS_USER_NOT_FOUND' );
 			return $result;
 		}
-		
+
 		//easysocial default profile
 		$profile = $user->getProfile();
 		$mapp = new EasySocialApiMappingHelper();

@@ -14,7 +14,7 @@ require_once JPATH_SITE . '/components/com_content/models/article.php';
  *
  * @since  3.5
  */
-class ContentApiResourceArticles extends ApiResource
+class ArticlesApiResourceArticle extends ApiResource
 {
 	/**
 	 * get Method to get all artcle data
@@ -29,7 +29,7 @@ class ContentApiResourceArticles extends ApiResource
 	}
 
 	/**
-	 * delete Method to delete artcle
+	 * delete Method to delete article
 	 *
 	 * @return  json
 	 *
@@ -188,9 +188,9 @@ class ContentApiResourceArticles extends ApiResource
 	}
 
 	/**
-	 * Post is to create / upadte article
+	 * Post is to create / update article
 	 *
-	 * @return  Bolean
+	 * @return  Boolean
 	 *
 	 * @since  3.5
 	 */

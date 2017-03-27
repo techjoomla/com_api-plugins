@@ -307,6 +307,8 @@ class EasySocialApiMappingHelper
 		{
 			if(isset($row->uid))
 			{
+				$user = JFactory::getUser();
+                $isRoot = $user->authorise('core.admin');
 				$item = new streamSimpleSchema();
 				//new code
 				// Set the stream title
@@ -343,9 +345,10 @@ class EasySocialApiMappingHelper
 				   {
 						$dom = new DOMDocument;
 						$dom->loadHTML($row->preview);
-						foreach ($dom->getElementsByTagName('a') as $node) {
-								$first = $node->getAttribute( 'href' );                                        
-								break;                                
+
+					   foreach ($dom->getElementsByTagName('a') as $node) {
+							   $first = $node->getAttribute( 'href' );                                        
+							   break;                                
 					   }
 					   if(strstr($first,"youtu.be"))        
 					   {
@@ -434,7 +437,9 @@ class EasySocialApiMappingHelper
 				//$item->isself = ( $actors[0]->id == $userid )?true:false;
 				$item->isself = ( $actors[0]->id == $this->log_user )?true:false;
 				$item->likes = (!empty($row->likes))?$this->createlikeObj($row->likes,$userid):null;
-                $item->isAdmin = $isRoot;
+
+				$item->isAdmin = $isRoot;
+
 				
 				if(!empty($row->comments->element))
 				{
@@ -640,6 +645,7 @@ class EasySocialApiMappingHelper
 				$item->likes->verb    = 'like';
 				$item->likes->stream_id = $cdt->stream_id;
 				$item->likes->total   = $likesModel->getLikesCount($item->uid, 'comments.' . 'user' . '.like');
+
 				//$item->likes->hasLiked = $likesModel->hasLiked($item->uid,'comments.' . 'user' . '.like',$row->userid);
 				$item->likes->hasLiked = $likesModel->hasLiked($item->uid,'comments.' . 'user' . '.like',$this->log_user);
 
@@ -1061,7 +1067,9 @@ class EasySocialApiMappingHelper
 				$item->lastreplied_date = $row->lastreplied;
 				$item->isread = $row->isread;
 				$item->messages = $row->message;
+
 				$item->lapsed = $conversation->getLastRepliedDate(true);
+
 				$item->participant = $con_usrs;
 				$result[] = $item;
 			}
@@ -1202,15 +1210,18 @@ class EasySocialApiMappingHelper
 	public function frnd_nodes($data,$user)
 	{
 		$frnd_mod = FD::model( 'Friends' );
+		$model = FD::model('Blocks');
 		$list = array();
 		foreach($data as $k=>$node)
 		{
-
+			$res = (bool) $model->isBlocked($user->id, $node->id);
+			
 			if($node->id != $user->id)
 			{								
 				$node->mutual = $frnd_mod->getMutualFriendCount($user->id,$node->id);
 				$node->isFriend = $frnd_mod->isFriends($user->id,$node->id);
-				$node->approval_pending = $frnd_mod->isPendingFriends($user->id,$node->id);			
+				$node->approval_pending = $frnd_mod->isPendingFriends($user->id,$node->id);	
+				$node->isBlock = $res;		
 			}
 		}		
 		return $data;	
@@ -1254,6 +1265,7 @@ class EasySocialApiMappingHelper
 				
 				$category 	= FD::table('VideoCategory');
 				$likesModel = FD::model('Likes');
+
 				
 				$category->load($row->category_id);	
 				$item->hasLiked = $likesModel->hasLiked($row->id,$row->type,$userid,$model->getStreamId($row->id,'create'));
@@ -1285,6 +1297,7 @@ class EasySocialApiMappingHelper
 				$item->source = $row->source;	
 				$item->thumbnail = $row->thumbnail;
 				$item->likes = $video->getLikesCount();
+
 				$item->comments = $video->getCommentsCount();
 				
 				$item->isSiteAdmin = isset($isRoot)?true:false;

@@ -1,22 +1,53 @@
 <?php
+/**
+ * @package     Joomla.Site
+ * @subpackage  Com_api
+ *
+ * @copyright   Copyright (C) 2009-2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
+ * @license     GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
+ * @link        http://techjoomla.com
+ * Work derived from the original RESTful API by Techjoomla (https://github.com/techjoomla/Joomla-REST-API)
+ * and the com_api extension by Brian Edgerton (http://www.edgewebworks.com)
+ */
+
 defined('_JEXEC') or die( 'Restricted access' );
 
 jimport('joomla.plugin.plugin');
 jimport('joomla.html.html');
 FD::import('site:/controllers/controller');
 
+/**
+ * API class EasysocialApiResourceStreams
+ *
+ * @since  1.0
+ */
 class EasysocialApiResourceStreams extends ApiResource
 {
+	/**	  
+	 * Function for retrieve poll data
+	 * 	 
+	 * @return  JSON
+	 */
 	public function get()
 	{
 		$this->plugin->setResponse("Use method post");
 	}
 
+	/**	  
+	 * Function for retrieve stream
+	 * 	 
+	 * @return  JSON 
+	 */
 	public function post()
 	{
 		$this->plugin->setResponse($this->processAction());
 	}
 
+	/**	  
+	 * Function for retrieve stream
+	 * 	 
+	 * @return  JSON
+	 */
 	public function processAction()
 	{
 		$app = JFactory::getApplication();
@@ -25,18 +56,28 @@ class EasysocialApiResourceStreams extends ApiResource
 
 		switch ($action)
 		{
-			case 'hide' 	: 	return $res = $this->hide($target_id);
+			case 'hide' 	:
+								return $res = $this->hide($target_id);
 								break;
-
-			case 'unhide' 	: 	return $res = $this->unhide($target_id);
+			case 'unhide' 	:
+								return $res = $this->unhide($target_id);
 								break;
-
-			case 'delete' 	:  	return $res = $this->delete($target_id);
+			case 'delete' 	:
+								return $res = $this->delete($target_id);
 								break;
 		}
 	}
 
-    public function hide($target_id)
+	/**
+	 * get videos throught api
+	 *
+	 * @param   string  $target_id  The target id.
+	 * 
+	 * @return  mixed
+	 *
+	 * @since 1.0
+	 */
+	public function hide($target_id)
 	{
 		$res = new stdClass;
 
@@ -79,7 +120,16 @@ class EasysocialApiResourceStreams extends ApiResource
 		return $res;
 	}
 
-    public function unhide($target_id)
+	/**
+	 * hide stream
+	 *
+	 * @param   string  $target_id  The target id.
+	 * 
+	 * @return  mixed
+	 *
+	 * @since 1.0
+	 */
+	public function unhide($target_id)
 	{
 		$res = new stdClass;
 
@@ -123,6 +173,15 @@ class EasysocialApiResourceStreams extends ApiResource
 		return $res;
 	}
 
+	/**
+	 * delete stream
+	 *
+	 * @param   string  $target_id  The target id.
+	 * 
+	 * @return  mixed
+	 *
+	 * @since 1.0
+	 */
 	public function delete($target_id)
 	{
 		$res = new stdClass;

@@ -1,185 +1,232 @@
 <?php
 /**
- * @package API plugins
- * @copyright Copyright (C) 2009 2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
- * @license GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
- * @link http://www.techjoomla.com
-*/
+ * @package     Joomla.Site
+ * @subpackage  Com_api
+ *
+ * @copyright   Copyright (C) 2009-2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
+ * @license     GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
+ * @link        http://techjoomla.com
+ * Work derived from the original RESTful API by Techjoomla (https://github.com/techjoomla/Joomla-REST-API)
+ * and the com_api extension by Brian Edgerton (http://www.edgewebworks.com)
+ */
 defined('_JEXEC') or die( 'Restricted access' );
 
 jimport('joomla.plugin.plugin');
 jimport('joomla.html.html');
 
-require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/foundry.php';
-require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/router.php';
-require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/groups.php';
-require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/covers.php';
-require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/albums.php';
-require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/apps.php';
-
-require_once JPATH_SITE.'/plugins/api/easysocial/libraries/mappingHelper.php';
-
+require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
+require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/router.php';
+require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/groups.php';
+require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/covers.php';
+require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/albums.php';
+require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/apps.php';
+require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
+/**
+ * API class EasysocialApiResourceReply
+ *
+ * @since  1.0
+ */
 class EasysocialApiResourceReply extends ApiResource
 {
+	/**
+	 * Method description
+	 *
+	 * @return  mixed
+	 *
+	 * @since 1.0
+	 */
 	public function get()
 	{
 		$this->plugin->setResponse($this->getDiscussionReply());
 	}
 
+	/**
+	 * Method description
+	 *
+	 * @return  mixed
+	 *
+	 * @since 1.0
+	 */
 	public function post()
 	{
-	   $this->plugin->setResponse($this->postDiscussionReply());   
+		$this->plugin->setResponse($this->postDiscussionReply());
 	}
 
-	//function use for get friends data
-	function getDiscussionReply()
-	{
-		//init variable
-		$mainframe = JFactory::getApplication();
-		
-		$group_id = $mainframe->input->get('group_id',0,'INT');
-		$discussId = $mainframe->input->get('discussion_id',0,'INT');
-		$limit = $mainframe->input->get('limit',10,'INT');
-		$limitstart = $mainframe->input->get('limitstart',0,'INT');	
-		$wres = new stdClass;
-		$valid = 0;
+	/**
+	 * Method function use for get friends data
+	 *
+	 * @return  mixed
+	 *
+	 * @since 1.0
+	 */
 
-		if(!$group_id)
+	public function getDiscussionReply()
+	{
+		// Init variable
+		$mainframe		=	JFactory::getApplication();
+		$group_id		=	$mainframe->input->get('group_id', 0, 'INT');
+		$discussId		=	$mainframe->input->get('discussion_id', 0, 'INT');
+		$limit			=	$mainframe->input->get('limit', 10, 'INT');
+		$limitstart		=	$mainframe->input->get('limitstart', 0, 'INT');
+		$wres			=	new stdClass;
+		$valid			=	0;
+
+		if (!$group_id)
 		{
-			$wres->status = 0;
-			$wres->message[] = JText::_( 'PLG_API_EASYSOCIAL_EMPTY_GROUP_ID_MESSAGE' );
+			$wres->status		=	0;
+			$wres->message[]	=	JText::_('PLG_API_EASYSOCIAL_EMPTY_GROUP_ID_MESSAGE');
+
 			return $wres;
 		}
 		else
 		{
-			$group 		= FD::group( $group_id );
-						
+			$group		= FD::group($group_id);
+
 			// Get the current filter type
-			$filter 	= $mainframe->input->get('filter','all','STRING');
-			$options 	= array();
+			$filter		=	$mainframe->input->get('filter', 'all', 'STRING');
+			$options 	=	array();
 
-			if( $filter == 'unanswered' )
+			if ($filter == 'unanswered')
 			{
-				$options[ 'unanswered' ]	= true;
-			}
-
-			if( $filter == 'locked' )
-			{
-				$options[ 'locked' ]	= true;
+				$options['unanswered']	=	true;
 			}
 
-			if( $filter == 'resolved' )
+			if ($filter == 'locked')
 			{
-				$options[ 'resolved' ]	= true;
+				$options['locked']	=	true;
 			}
-			
-			$options[ 'ordering' ] = 'created';
-			$mapp = new EasySocialApiMappingHelper();
-			
-			$model 			= FD::model( 'Discussions' );
-			$reply_rows	= $model->getReplies( $discussId,$options);
-			
-			if($discussId)
+
+			if ($filter == 'resolved')
 			{
-				$disc_dt = new stdClass();
-				//create discussion details as per request
-				$discussion = FD::table( 'Discussion' );
-				$discussion->load( $discussId );
-				$data_node[] = $discussion; 
-				$data['discussion'] = $mapp->mapItem($data_node,'discussion',$this->plugin->get('user')->id);
+				$options['resolved']	=	true;
 			}
-			
-			if($limitstart)
+
+			$options['ordering']	=	'created';
+			$mapp					=	new EasySocialApiMappingHelper;
+			$model					=	FD::model('Discussions');
+			$reply_rows				=	$model->getReplies($discussId, $options);
+
+			if ($discussId)
 			{
-				$reply_rows = array_slice($reply_rows,$limitstart,$limit);
-			}			
-			$data['data'] = $mapp->mapItem($reply_rows,'reply',$this->plugin->get('user')->id);
+				$disc_dt	=	new stdClass;
+
+				// Create discussion details as per request
+				$discussion			=	FD::table('Discussion');
+				$discussion->load($discussId);
+				$data_node[]		=	$discussion;
+				$data['discussion']	=	$mapp->mapItem($data_node, 'discussion', $this->plugin->get('user')->id);
+			}
+
+			if ($limitstart)
+			{
+				$reply_rows	=	array_slice($reply_rows, $limitstart, $limit);
+			}
+
+			$data['data']	=	$mapp->mapItem($reply_rows, 'reply', $this->plugin->get('user')->id);
+
 			return( $data );
 		}
 	}
-	
-	//function for create new group
-	function postDiscussionReply()
+
+	/**
+	 * Method function for create new group
+	 *
+	 * @return  mixed
+	 *
+	 * @since 1.0
+	 */
+	public function postDiscussionReply()
 	{
-		//init variable
-		$mainframe = JFactory::getApplication();
-		$log_user = $this->plugin->get('user')->id;
+		// Init variable
+		$mainframe	=	JFactory::getApplication();
+		$log_user	=	$this->plugin->get('user')->id;
+
 		// Load the discussion
-		$discuss_id 	= $mainframe->input->get('discussion_id',0,'INT');
-		$groupId 	= $mainframe->input->get('group_id',0,'INT');
-		$content 	= $mainframe->input->get('content','','RAW');
-		
-		$content = str_replace('<p>','',$content);
-		$content = str_replace('</p>','',$content);
-		$content = str_replace('<','[',$content);
-		$content = str_replace('>',']',$content);
-		
-		$wres = new stdClass;
-		
-		$discussion = FD::table( 'Discussion' );
-		$discussion->load( $discuss_id );
-		
+		$discuss_id		=	$mainframe->input->get('discussion_id', 0, 'INT');
+		$groupId		=	$mainframe->input->get('group_id', 0, 'INT');
+		$content		=	$mainframe->input->get('content', '', 'RAW');
+		$content		=	str_replace('<p>', '', $content);
+		$content		=	str_replace('</p>', '', $content);
+		$content		=	str_replace('<', '[', $content);
+		$content		=	str_replace('>', ']', $content);
+		$wres			=	new stdClass;
+		$discussion		=	FD::table('Discussion');
+		$discussion->load($discuss_id);
+
 		// Get the current logged in user.
-		$my		= FD::user($log_user);
+		$my				=	FD::user($log_user);
 
 		// Get the group
-		$group		= FD::group( $groupId );
-		
-		$reply 				= FD::table( 'Discussion' );
-		$reply->uid 		= $discussion->uid;
-		$reply->type 		= $discussion->type;
-		$reply->content 	= $content;
-		$reply->created_by 	= $log_user;
-		$reply->parent_id 	= $discussion->id;
-		$reply->state 		= SOCIAL_STATE_PUBLISHED;
+		$group				=	FD::group($groupId);
+		$reply 				=	FD::table('Discussion');
+		$reply->uid 		=	$discussion->uid;
+		$reply->type 		=	$discussion->type;
+		$reply->content 	=	$content;
+		$reply->created_by	=	$log_user;
+		$reply->parent_id	=	$discussion->id;
+		$reply->state		=	SOCIAL_STATE_PUBLISHED;
 
 		// Save the reply.
-		$state = $reply->store();
-		
-		if($state)
-		{	
-			$this->createStream($discussion,$group,$reply,$log_user);
-			$wres->id = $discussion->id;
-			$wres->message[] = JText::_( 'PLG_API_EASYSOCIAL_DISCUSSION_REPLY_MESSAGE' );
+		$state	=	$reply->store();
+
+		if ($state)
+		{
+			$this->createStream($discussion, $group, $reply, $log_user);
+			$wres->id			=	$discussion->id;
+			$wres->message[]	=	JText::_('PLG_API_EASYSOCIAL_DISCUSSION_REPLY_MESSAGE');
+
 			return $wres;
 		}
 	}
-	
-	public function createStream($discussion,$group,$reply,$log_user)
+
+	/**
+	 * Method createStream
+	 *
+	 * @param   int     $discussion  discussion id
+	 * @param   int     $group       group id
+	 * @param   string  $reply       reply
+	 * @param   int     $log_user    user id
+	 * 
+	 * @return string
+	 *
+	 * @since 1.0
+	 */
+	public function createStream($discussion, $group, $reply, $log_user)
 	{
 		// Create a new stream item for this discussion
-		$stream = FD::stream();
+		$stream	=	FD::stream();
 		$my		= FD::user($log_user);
+
 		// Get the stream template
-		$tpl		= $stream->getTemplate();
+		$tpl	= $stream->getTemplate();
 
 		// Someone just joined the group
-		$tpl->setActor( $log_user , SOCIAL_TYPE_USER );
+		$tpl->setActor($log_user, SOCIAL_TYPE_USER);
 
 		// Set the context
-		$tpl->setContext( $discussion->id , 'discussions' );
+		$tpl->setContext($discussion->id, 'discussions');
 
 		// Set the cluster
-		$tpl->setCluster( $group->id , SOCIAL_TYPE_GROUP, $group->type );
+		$tpl->setCluster($group->id, SOCIAL_TYPE_GROUP, $group->type);
 
 		// Set the verb
-		$tpl->setVerb( 'reply' );
+		$tpl->setVerb('reply');
 
 		// Set the params to cache the group data
-		$registry 	= FD::registry();
-		$registry->set( 'group' , $group );
-		$registry->set( 'reply' , $reply );
-		$registry->set( 'discussion' , $discussion );
+		$registry	=	FD::registry();
+		$registry->set('group', $group);
+		$registry->set('reply', $reply);
+		$registry->set('discussion', $discussion);
 
-		$tpl->setParams( $registry );
+		$tpl->setParams($registry);
 
 		$tpl->setAccess('core.view');
 
 		// Add the stream
-		$stream->add( $tpl );
+		$stream->add($tpl);
 
 		// Update the parent's reply counter.
-		$discussion->sync( $reply );
+		$discussion->sync($reply);
 
 		// Before we populate the output, we need to format it according to the theme's specs.
 		$reply->author 		= $my;
@@ -195,13 +242,25 @@ class EasysocialApiResourceReply extends ApiResource
 		$theme->set('answer', $answer);
 		$theme->set('reply', $reply);
 
-		$options 	= array();		
-		$options[ 'permalink' ]	= FRoute::apps( array( 'layout' => 'canvas' , 'customView' => 'item' , 'uid' => $group->getAlias() , 'type' => SOCIAL_TYPE_GROUP , 'id' => $group->id , 'discussionId' => $discussion->id , 'external' => true ) , false );
-		$options[ 'title' ]		= $discussion->title;
-		$options[ 'content']	= $reply->getContent();
-		$options['discussionId']		= $reply->id;
-		$options[ 'userId' ]	= $reply->created_by;
-		$options[ 'targets' ]	= $discussion->getParticipants( array( $reply->created_by ) );
-		return $group->notifyMembers( 'discussion.reply' , $options );
+		$options 	=	array();
+		$options['permalink']	=	FRoute::apps(
+													array(
+														'layout' => 'canvas',
+														'customView' => 'item',
+														'uid' => $group->getAlias(),
+														'type' => SOCIAL_TYPE_GROUP,
+														'id' => $group->id,
+														'discussionId' => $discussion->id,
+														'external' => true
+													),
+													false
+												);
+		$options['title']			=	$discussion->title;
+		$options['content']			=	$reply->getContent();
+		$options['discussionId']	=	$reply->id;
+		$options['userId']		=	$reply->created_by;
+		$options['targets']		=	$discussion->getParticipants(array($reply->created_by));
+
+		return $group->notifyMembers('discussion.reply', $options);
 	}
 }

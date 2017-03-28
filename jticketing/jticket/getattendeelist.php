@@ -81,21 +81,19 @@ class JticketApiResourcegetAttendeelist extends ApiResource
 
 				if (!empty($attendee_details['first_name']))
 				{
-					$attendee_nm = $attendee_details['first_name'] . " " . $attendee_details['last_name'];
-				}
+					$attendee_nm = $attendee_details['first_name']." ".$attendee_details['last_name'];
+				}	
 				else
 				{
 					$buyername = $orderitem->name;
 				}
-
 				if (!empty($attendee_details['phone']))
 				{
-					$attendee_phone = $attendee_details['phone'];
+					$attendee_phone = $attendee_details['phone'];		
 				}
-
 				if (!empty($attendee_details['email']))
 				{
-					$attendee_email = $attendee_details['email'];
+					$attendee_email = $attendee_details['email'];		
 				}
 
 				$obj->checkin           = $jticketingmainhelper->GetCheckinStatusAPI($orderitem->order_items_id);

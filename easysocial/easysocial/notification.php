@@ -1,260 +1,359 @@
 <?php
 /**
- * @package API plugins
- * @copyright Copyright (C) 2009 2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
- * @license GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
- * @link http://www.techjoomla.com
-*/
+ * @package     Joomla.Site
+ * @subpackage  Com_api
+ *
+ * @copyright   Copyright (C) 2009-2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
+ * @license     GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
+ * @link        http://techjoomla.com
+ * Work derived from the original RESTful API by Techjoomla (https://github.com/techjoomla/Joomla-REST-API)
+ * and the com_api extension by Brian Edgerton (http://www.edgewebworks.com)
+ */
 
-defined('_JEXEC') or die( 'Restricted access' );
+defined('_JEXEC') or die('Restricted access');
 
 jimport('joomla.plugin.plugin');
 jimport('joomla.html.html');
 
-require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/tables/friend.php';
-require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/models/friends.php';
+require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/tables/friend.php';
+require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/friends.php';
+require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
+require_once JPATH_SITE . '/plugins/api/easysocial/libraries/uploadHelper.php';
 
-require_once JPATH_SITE.'/plugins/api/easysocial/libraries/mappingHelper.php';
-require_once JPATH_SITE.'/plugins/api/easysocial/libraries/uploadHelper.php';
-//this api use for get all notification in app
+/**
+ * API class EasysocialApiResourceNotification
+ *
+ * @since  1.0
+ */
 class EasysocialApiResourceNotification extends ApiResource
 {
+	/**
+	 * Method description
+	 *
+	 * @return  mixed
+	 *
+	 * @since 1.0
+	 */
 	public function get()
-	{	 
-	 $this->plugin->setResponse($this->get_data());
+	{
+		$this->plugin->setResponse($this->get_data());
 	}
+
+	/**
+	 * Method description
+	 *
+	 * @return  mixed
+	 *
+	 * @since 1.0
+	 */
 	public function post()
 	{
-	 $this->plugin->setResponse($this->friend_add_remove());
-	}	
-	
-	//forking respective function.
+		$this->plugin->setResponse($this->friend_add_remove());
+	}
+
+	/**
+	 * Method forking respective function.
+	 *
+	 * @return  mixed
+	 *
+	 * @since 1.0
+	 */
 	public function friend_add_remove()
-	{		
-		$app = JFactory::getApplication();
-		$flag = $app->input->get('flag',NULL,'STRING');
-						
-		if($flag =='reject')
-		{	
-			$result1 = $this->removefriend();
-			return $result1;			
+	{
+		$app		=	JFactory::getApplication();
+		$flag		=	$app->input->get('flag', null, 'STRING');
+
+		if ($flag == 'reject')
+		{
+			$result1	=	$this->removefriend();
+
+			return $result1;
 		}
-		else if($flag =='accept')		
-		{			
-			$result2 = $this->addfriend();
+		elseif ($flag == 'accept')
+		{
+			$result2	=	$this->addfriend();
+
 			return $result2;
 		}
-		else if($flag == 'cancelrequest')
+		elseif ($flag == 'cancelrequest')
 		{
-			 $result3 = $this->requestcancel();
-			 return $result3;
-		}		
-		else
-		return false;
-	}
-	
-	//cancel friend request
-	public function requestcancel()
-	{		
-		$app = JFactory::getApplication();
-		//getting target id and user id.
-		$user = $app->input->get('target_id',0,'INT');
-		$target = $app->input->get('user_id',0,'INT');
-		//$log_user = JFactory::getUser($this->plugin->get('user')->id);		
-		$friend	= FD::table( 'Friend' );
-		$friend->actor_id  = $user;
-		$friend->target_id = $target;
-		//loading friend model for getting id.
-		$friendmodel = FD::model( 'Friends' );
-		$result = $friendmodel->getPendingRequests($user); 
-		$state = SOCIAL_FRIENDS_STATE_FRIENDS;	
-		
-		 foreach($result as $r)
-		 {			  			
-			 if( $r->actor_id == $target && $r->target_id == $user)
-			 {  
-				//$friend->id = $r->id;
-				$friend->load($r->id);
-				break;				
-			 }
-			 else
-			 continue;			  
-		}		
-		$status = $friendmodel->isFriends($user,$target,$state);
-	
-		if(!$status)
-		{
-		//final call to reject friend request.	
-		$final = $friend->reject();
+			$result3	=	$this->requestcancel();
+
+			return $result3;
 		}
 		else
 		{
 			return false;
 		}
-		return true;
 	}
-	//reject friend request
+
+	/**
+	 * Method cancel friend request
+	 *
+	 * @return  mixed
+	 *
+	 * @since 1.0
+	 */
+
+	public function requestcancel()
+	{
+		$app	=	JFactory::getApplication();
+
+		// Getting target id and user id.
+		$user	=	$app->input->get('user_id', 0, 'INT');
+		$target	=	$app->input->get('target_id', 0, 'INT');
+
+		// Loading friend model for getting id
+		$friendmodel	=	FD::model('Friends');
+		$state			=	SOCIAL_FRIENDS_STATE_FRIENDS;
+		$status			=	$friendmodel->isFriends($user, $target, $state);
+
+		if (!$status)
+		{
+			/* final call to Cancel friend request.
+			* $final = $friend->reject();
+			*/
+
+			$final	=	ES::friends($target, $user)->cancel();
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Method reject friend request
+	 *
+	 * @return  mixed
+	 *
+	 * @since 1.0
+	 */
 	public function removefriend()
 	{
-		$app = JFactory::getApplication();
-		//getting target id and user id.
-		$user = $app->input->get('user_id',0,'INT');
-		$target = $app->input->get('target_id',0,'INT');
-		//$log_user = JFactory::getUser($this->plugin->get('user')->id);		
-		$friend	= FD::table( 'Friend' );
-		$friend->actor_id  = $user;
-		$friend->target_id = $target;
-		//loading friend model for getting id.
-		$friendmodel = FD::model( 'Friends' );
-		$result = $friendmodel->getPendingRequests($user); 
-		$state = SOCIAL_FRIENDS_STATE_FRIENDS;	
-		$res = new stdClass;
-		foreach($result as $r)
+		$app	=	JFactory::getApplication();
+
+		// Getting target id and user id.
+		$user	=	$app->input->get('user_id', 0, 'INT');
+		$target	=	$app->input->get('target_id', 0, 'INT');
+		$friend	=	FD::table('Friend');
+
+		// Loading friend model for getting id.
+		$friendmodel	=	FD::model('Friends');
+		$state			=	SOCIAL_FRIENDS_STATE_FRIENDS;
+		$res			=	new stdClass;
+		$status			=	$friendmodel->isFriends($user, $target, $state);
+		$addstate		=	$friend->loadByUser($user, $target);
+
+		if (!$addstate)
 		{
-			  			
-			if( $r->actor_id == $target && $r->target_id == $user)
-			{  
-				$friend->id = $r->id;
-				break;				
-			}
-			else
-			continue;			  
-		}					
-		$status = $friendmodel->isFriends($user,$target,$state);
-		$addstate=$friend->loadByUser($user,$target);
-		if(!$addstate)
-		{
-			$res->message = JText::_( 'PLG_API_EASYSOCIAL_UNABLE_REJECT_FRIEND_REQ' );
-			$res->status = false;
+			$res->message	=	JText::_('PLG_API_EASYSOCIAL_UNABLE_REJECT_FRIEND_REQ');
+			$res->status	=	false;
+
 			return $res;
 		}
-		if(!$status)
-		{//final call to reject friend request.	
-			$final = $friend->reject();
+
+		if (!$status)
+		{
+			// Final call to reject friend request.
+			$final	=	ES::friends($target, $user)->reject();
 		}
 		else
 		{
-			$res->message = JText::_( 'PLG_API_EASYSOCIAL_UNABLE_REJECT_FRIEND_REQ' );
-			$res->status = false;
+			$res->message	=	JText::_('PLG_API_EASYSOCIAL_UNABLE_REJECT_FRIEND_REQ');
+			$res->status	=	false;
+
 			return $res;
 		}
-		
-		$res->message = JText::_( 'PLG_API_EASYSOCIAL_FRIEND_REQ_CANCEL' );
-		$res->status = true;
-		return $res;	
-	 } 
-		 	
+
+		$res->message	=	JText::_('PLG_API_EASYSOCIAL_FRIEND_REQ_CANCEL');
+		$res->status	=	true;
+
+		return $res;
+	}
+
+	/**
+	 * Method description
+	 *
+	 * @return  mixed
+	 *
+	 * @since 1.0
+	 */
 	public function addfriend()
-	{		
-		$app = JFactory::getApplication();		
-		$user = $app->input->get('user_id',0,'INT');
-		$target = $app->input->get('target_id',0,'INT');		
-		$friend	= FD::table( 'Friend' );		
-		$res = new stdClass;
-		// Set the state and ensure that the state is both friends.
-		//$friend->state = 'SOCIAL_FRIENDS_STATE_FRIENDS';		
-		$friend->actor_id = $user;
-		$friend->target_id = $target;
-		$state = SOCIAL_FRIENDS_STATE_FRIENDS;
-		$friendmodel = FD::model( 'Friends' );
-		$result = $friendmodel->getPendingRequests($user);		
-		 foreach($result as $r)
-		 {
-			  			
-			 if( $r->actor_id == $target && $r->target_id == $user)
-			 {  
-				//$friend->id = $r->id;
-				$friend->load($r->id);				
-				break;				
-			 }
-			 else
-			 continue;			  
-		 }		
-		$status = $friendmodel->isFriends($user,$target,$state);
-		$addstate=$friend->loadByUser($user,$target);
-		if(!$addstate)
+	{
+		$app			=	JFactory::getApplication();
+		$user			=	$app->input->get('user_id', 0, 'INT');
+		$target			=	$app->input->get('target_id', 0, 'INT');
+		$friend			=	FD::table('Friend');
+		$res			=	new stdClass;
+		$state			=	SOCIAL_FRIENDS_STATE_FRIENDS;
+		$friendmodel	=	FD::model('Friends');
+		$status			=	$friendmodel->isFriends($user, $target, $state);
+		$addstate		=	$friend->loadByUser($user, $target);
+
+		if (!$addstate)
 		{
-			$res->message = JText::_( 'PLG_API_EASYSOCIAL_UNBALE_ADD_FRIEND_REQ' );
-			$res->status = false;
+			$res->message	=	JText::_('PLG_API_EASYSOCIAL_UNBALE_ADD_FRIEND_REQ');
+			$res->status	=	false;
+
 			return $res;
 		}
-		if(!$status )
-		{						
-		$final=$friend->approve();					
+
+		if (!$status)
+		{
+			$final	=	ES::friends($target, $user)->approve();
 		}
 		else
 		{
-			$res->message = JText::_( 'PLG_API_EASYSOCIAL_UNBALE_ADD_FRIEND_REQ' );
-			$res->status = false;
+			$res->message	=	JText::_('PLG_API_EASYSOCIAL_UNBALE_ADD_FRIEND_REQ');
+			$res->status	=	false;
+
 			return $res;
-		}	
-		$res->message = JText::_( 'PLG_API_EASYSOCIAL_FRIEND_REQ_ACCEPT' );
-		$res->status = true;
-		return $res;	
+		}
+
+		$res->message	=	JText::_('PLG_API_EASYSOCIAL_FRIEND_REQ_ACCEPT');
+		$res->status	=	true;
+
+		return $res;
 	}
-	//common function for forking other functions	
+
+	/**
+	 * Method common function for forking other functions	
+	 *
+	 * @return  mixed
+	 *
+	 * @since 1.0
+	 */
 	public function get_data()
-	{	
-		$app = JFactory::getApplication();
-		$uid = $app->input->get('uid',0,'INT');
-		$data = array();
-		$data['messagecount'] = $this->get_message_count($uid);
-		$data['message'] = $this->get_messages($uid);
-		$data['notificationcount'] = $this->get_notification_count($uid);
-		$data['notifications'] = $this->get_notifications($uid);
-		$data['friendcount'] = $this->get_friend_count($uid);
-		$data['friendreq'] = $this->get_friend_request($uid);				 
-		return $data;		
+	{
+		$app						=	JFactory::getApplication();
+		$uid						=	$app->input->get('uid', 0, 'INT');
+		$data						=	array();
+		$data['messagecount']		=	$this->get_message_count($uid);
+		$data['message']			=	$this->get_messages($uid);
+		$data['notificationcount']	=	$this->get_notification_count($uid);
+		$data['notifications']		=	$this->get_notifications($uid);
+		$data['friendcount']		=	$this->get_friend_count($uid);
+		$data['friendreq']			=	$this->get_friend_request($uid);
+
+		return $data;
 	}
-	//function for friend request count	
+
+	/**
+	 * Method get_friend_count
+	 *
+	 * @param   string  $uid  user id
+	 * 
+	 * @return string
+	 *
+	 * @since 1.0
+	 */
 	public function get_friend_request($uid)
-	{		 
-		 $object = new  EasySocialModelFriends();
-		 $result = $object->getPendingRequests($uid);
-		 return $result;			
-	}	
+	{
+		$object	=	new EasySocialModelFriends;
+		$result	=	$object->getPendingRequests($uid);
+
+		return $result;
+	}
+
+	/**
+	 * Method get_friend_count
+	 *
+	 * @param   string  $uid  user id
+	 * 
+	 * @return string
+	 *
+	 * @since 1.0
+	 */
 	public function get_friend_count($uid)
 	{
-		$model 	= FD::model( 'Friends' );
-		$total 	= $model->getTotalRequests($uid);
+		$model	=	FD::model('Friends');
+		$total	=	$model->getTotalRequests($uid);
+
 		return $total;
-	}	
+	}
+
+	/**
+	 * Method get_message_count
+	 *
+	 * @param   string  $uid  user id
+	 * 
+	 * @return string
+	 *
+	 * @since 1.0
+	 */
 	public function get_message_count($uid)
 	{
-		$model 	= FD::model( 'Conversations' );
-		$total 	= $model->getNewCount($uid,'user');
-		return $total;		
-	}	
+		$model	=	FD::model('Conversations');
+		$total	=	$model->getNewCount($uid, 'user');
+
+		return $total;
+	}
+
+	/**
+	 * Method get_notification_count
+	 *
+	 * @param   string  $uid  user id
+	 * 
+	 * @return string
+	 *
+	 * @since 1.0
+	 */
 	public function get_notification_count($uid)
 	{
-		$options = array(
+		$options	=	array(
 						'unread' => true,
 						'target' => array('id' => $uid, 'type' => SOCIAL_TYPE_USER)
-					);						
-		$model 	= FD::model( 'Notifications' );
-		$total 	= $model->getCount($options);
+					);
+		$model		=	FD::model('Notifications');
+		$total		=	$model->getCount($options);
+
 		return $total;
-	}		
+	}
+
+	/**
+	 * Method get_messages
+	 *
+	 * @param   string  $uid  user id
+	 * 
+	 * @return string
+	 *
+	 * @since 1.0
+	 */
 	public function get_messages($uid)
 	{
-			$maxlimit = 0;
+			$maxlimit	=	0;
+
 			// Get the conversations model
-			$model = FD::model( 'Conversations' );
+			$model		=	FD::model('Conversations');
+
 			// We want to sort items by latest first
-			$options = array( 'sorting' => 'lastreplied', 'maxlimit' => $maxlimit );
+			$options	=	array('sorting' => 'lastreplied', 'maxlimit' => $maxlimit);
+
 			// Get conversation items.
-			$conversations	= $model->getConversations( $uid , $options );
-			return $conversations;		
+			$conversations	=	$model->getConversations($uid, $options);
+
+			return $conversations;
 	}
-		
+
+	/**
+	 * Method get_notifications
+	 *
+	 * @param   string  $uid  user id
+	 * 
+	 * @return string
+	 *
+	 * @since 1.0
+	 */
 	public function get_notifications($uid)
 	{
-		   $notification = FD::notification();
-		   $options = array('target_id' => $uid,
-							'target_type' => SOCIAL_TYPE_USER,
-							'unread' => true );			
-			$items = $notification->getItems($options);
-			return $items;		
-	}		
-}
+		$notification	=	FD::notification();
+		$options		=	array('target_id' => $uid,
+								'target_type' => SOCIAL_TYPE_USER,
+								'unread' => true
+								);
+			$items		=	$notification->getItems($options);
 
+			return $items;
+	}
+}

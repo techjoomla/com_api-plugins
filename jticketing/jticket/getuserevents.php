@@ -36,10 +36,12 @@ class JticketApiResourceGetuserevents extends ApiResource
 		$base_dir  = JPATH_SITE;
 		$lang->load($extension, $base_dir);
 
-		$search = $input->get('search', '', 'STRING');
+		$search = $input->get('search', '', 'STRING');				
 		$userid = $input->get('userid', '', 'INT');
-
+		
 		$obj_merged = array();
+
+		// $userid = $this->plugin->get('user')->id;
 
 		if (empty($userid))
 		{
@@ -67,8 +69,8 @@ class JticketApiResourceGetuserevents extends ApiResource
 			$eventdatapaid        = $jticketingmainhelper->GetUserEventsAPI();
 		}
 		else
-		{
-			$eventdatapaid        = $jticketingmainhelper->GetUserEventsAPI($userid, '', $search);
+		{			
+			$eventdatapaid        = $jticketingmainhelper->GetUserEventsAPI($userid, '', $search);		
 		}
 
 		$eveidarr = array();
@@ -96,8 +98,34 @@ class JticketApiResourceGetuserevents extends ApiResource
 				}
 
 				$return                = $jticketingmainhelper->getTimezoneString($eventdata1->id);
-				$eventdata1->startdate = $return['startdate'];
-				$eventdata1->enddate   = $return['enddate'];
+				$sdate = date_create($return['startdate']);								
+				$syear = substr(date_format($sdate, 'D, jS M Y'),14);
+				$smonth = substr(date_format($sdate, 'D, jS M Y'),10);
+				$sday = substr(date_format($sdate, 'D, jS M Y'),5);				
+
+				$edate = date_create($return['enddate']);
+				$eyear = substr(date_format($edate, 'D, jS M Y'),14);
+				$emonth = substr(date_format($edate, 'D, jS M Y'),10);
+				$eday = substr(date_format($edate, 'D, jS M Y'),5);
+
+				if($syear == $eyear){
+						$start = substr(date_format($sdate, 'D, jS M Y'),0,13);						
+						$eventdata1->startdate = $start;
+						$eventdata1->enddate   = date_format($edate, 'D, jS M Y');	
+				} 
+				if($smonth == $emonth) {									
+						$start = substr(date_format($sdate, 'D, jS M Y'),0,9);												
+						$eventdata1->startdate = $start;
+						$eventdata1->enddate   = date_format($edate, 'D, jS M Y');
+				} 
+				if($sday == $eday) {
+						$eventdata1->startdate = date_format($sdate, 'D, jS M Y');
+						$eventdata1->enddate   = date_format($edate, 'D, jS M Y');
+				}
+				if($syear != $eyear) {
+						$eventdata1->startdate = date_format($sdate, 'D, jS M Y');
+						$eventdata1->enddate   = date_format($edate, 'D, jS M Y');
+				}				
 				$datetoshow            = $return['startdate'] . '-' . $return['enddate'];
 
 				if (!empty($return['eventshowtimezone']))
@@ -120,8 +148,35 @@ class JticketApiResourceGetuserevents extends ApiResource
 					$eventdata3->totaltickets = 0;
 				}
 
-				$eventdata3->startdate   = $jticketingmainhelper->getLocaletime($userid, $eventdata3->startdate);
-				$eventdata3->enddate     = $jticketingmainhelper->getLocaletime($userid, $eventdata3->enddate);
+				$sdate = date_create($eventdata3->startdate);	
+				$syear = substr(date_format($sdate, 'D, jS M Y'),14);
+				$smonth = substr(date_format($sdate, 'D, jS M Y'),10);
+				$sday = substr(date_format($sdate, 'D, jS M Y'),5);	
+
+				$edate = date_create($eventdata3->enddate);
+				$eyear = substr(date_format($edate, 'D, jS M Y'),14);
+				$emonth = substr(date_format($edate, 'D, jS M Y'),10);
+				$eday = substr(date_format($edate, 'D, jS M Y'),5);
+
+
+				if($syear == $eyear){
+						$start = substr(date_format($sdate, 'D, jS M Y'),0,13);						
+						$eventdata3->startdate = $start;
+						$eventdata3->enddate   = date_format($edate, 'D, jS M Y');	
+				}
+				if($smonth == $emonth) {									
+						$start = substr(date_format($sdate, 'D, jS M Y'),0,9);												
+						$eventdata3->startdate = $start;
+						$eventdata3->enddate   = date_format($edate, 'D, jS M Y');
+				}
+				if($sday == $eday) {
+						$eventdata3->startdate = date_format($sdate, 'D, jS M Y');
+						$eventdata3->enddate   = date_format($edate, 'D, jS M Y');
+				}
+				if($syear != $eyear) {
+						$eventdata3->startdate = date_format($sdate, 'D, jS M Y');
+						$eventdata3->enddate   = date_format($edate, 'D, jS M Y');
+				}
 				$eventdata3->soldtickets = 0;
 				$eventdata3->checkin     = 0;
 			}

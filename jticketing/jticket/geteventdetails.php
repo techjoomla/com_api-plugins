@@ -57,7 +57,6 @@ class JticketApiResourceGeteventdetails extends ApiResource
 			{
 				$eveidarr[]              = $eventdata->id;
 				$eventdata->totaltickets = $jticketingmainhelper->GetTicketcount($eventdata->id);
-				$eventdata->availabletickets = $eventdata->totaltickets - $eventdata->soldtickets;
 			}
 		}
 
@@ -93,8 +92,10 @@ class JticketApiResourceGeteventdetails extends ApiResource
 		{
 			$config                   = JFactory::getConfig();
 			$return                   = $jticketingmainhelper->getTimezoneString($eventdata->id);
-			$obj_merged[0]->startdate = $return['startdate'];
-			$obj_merged[0]->enddate   = $return['enddate'];
+			$sdate = date_create($return['startdate']);
+			$obj_merged[0]->startdate = date_format($sdate, 'l, jS F Y');
+			$edate = date_create($return['enddate']);
+			$obj_merged[0]->enddate   = date_format($edate, 'l, jS F Y');
 			$datetoshow               = $return['startdate'] . '-' . $return['enddate'];
 
 			if (!empty($return['eventshowtimezone']))
@@ -132,7 +133,6 @@ class JticketApiResourceGeteventdetails extends ApiResource
 			{
 				$obj_merged[0]->checkin = 0;
 			}
-
 			if (empty($obj_merged[0]->availabletickets))
 			{
 				$obj_merged[0]->availabletickets = 0;

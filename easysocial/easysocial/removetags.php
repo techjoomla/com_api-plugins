@@ -1,64 +1,57 @@
 <?php
 /**
- * @package API plugins
- * @copyright Copyright (C) 2009 2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
- * @license GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
- * @link http://www.techjoomla.com
-*/
-
+ * @package     Joomla.Site
+ * @subpackage  Com_api
+ *
+ * @copyright   Copyright (C) 2009-2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
+ * @license     GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
+ * @link        http://techjoomla.com
+ * Work derived from the original RESTful API by Techjoomla (https://github.com/techjoomla/Joomla-REST-API)
+ * and the com_api extension by Brian Edgerton (http://www.edgewebworks.com)
+ */
 defined('_JEXEC') or die( 'Restricted access' );
 
 jimport('joomla.plugin.plugin');
 jimport('joomla.html.html');
 
-//  require_once JPATH_ADMINISTRATOR.'/components/com_easysocial/includes/tag/tag.php';
-require_once JPATH_SITE.'/plugins/api/easysocial/libraries/mappingHelper.php';
-require_once JPATH_SITE.'/components/com_easysocial/controllers/videos.php';
-
+require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
+require_once JPATH_SITE . '/components/com_easysocial/controllers/videos.php';
+/**
+ * API class EasysocialApiResourceRemoveTags
+ *
+ * @since  1.0
+ */
 class EasysocialApiResourceRemoveTags extends ApiResource
 {
 	/**
-	 * get.
+	 * Method post
 	 *
-	 * @see        JController
-	 * @since      1.0
-	 * @return true or null
+	 * @return  mixed
+	 *
+	 * @since 1.0
 	 */
 	public function post()
 	{
+		$app	=	JFactory::getApplication();
 
-		// Check for request forgeries
-		//ES::checkToken();
-
-        $app = JFactory::getApplication();        
-        
 		// Get the tag id
-		$id = $app->input->get('friends_tagsid', 0, 'int');
+		$id		=	$app->input->get('friends_tagsid', 0, 'int');
 
 		// Get the tag
-		$tag = ES::table('Tag');
+		$tag	=	ES::table('Tag');
 		$tag->load($id);
 
 		// Check for permissions to delete this tag
-		$table = ES::table('Video');
+		$table	=	ES::table('Video');
 		$table->load($tag->target_id);
 
-		$video = ES::video($table->uid, $table->type, $table);
+		$video	=	ES::video($table->uid, $table->type, $table);
 
-		/*if (!$video->canRemoveTag()) {
-			return JText::_('COM_EASYSOCIAL_VIDEOS_NOT_ALLOWED_TO_REMOVE_TAGS');
-		}*/
 		// Delete the tag
 		$tag->delete();
-
-        //$tags->status  =1;
-		//$tags->message = JText::_( 'Tags Removed Successfully' );  
-
-        $video = ES::video();
-        $video->load($tag->target_id);
-        $tag_peoples=$video->getTags();
-
-        $this->plugin->setResponse($tag_peoples);
+		$video			=	ES::video();
+		$video->load($tag->target_id);
+		$tag_peoples	=	$video->getTags();
+		$this->plugin->setResponse($tag_peoples);
 	}
 }
-

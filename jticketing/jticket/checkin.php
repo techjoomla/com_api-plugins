@@ -98,7 +98,8 @@ class JticketApiResourceCheckin extends ApiResource
 
 			if (!empty($attendee_details['first_name']))
 			{
-				$attendernm = implode(" ", $attendee_details);
+				//$attendernm = implode(" ", $attendee_details);
+				$attendernm = $attendee_details['first_name']." ".$attendee_details['last_name'];
 			}
 			else
 			{

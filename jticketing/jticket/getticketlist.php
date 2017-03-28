@@ -38,17 +38,17 @@ class JticketApiResourceGetticketlist extends ApiResource
 		$var['tickettypeid']  = $input->get('tickettypeid', '0', 'INT');
 		$search = $input->get('search', '', 'STRING');
 		$jticketingmainhelper = new jticketingmainhelper;
-
 		$results              = $jticketingmainhelper->GetOrderitemsAPI($eventid, $var);
-		
+
 		if (empty($results))
 		{
 			$obj          = new stdClass;
+						
 			$obj->success = "0";
 			$obj->message = JText::_("COM_JTICKETING_INVALID_EVENT");
-			$this->plugin->setResponse($obj);
+			return $this->plugin->setResponse($obj);
 
-			return;
+			//return;
 		}
 
 		if ($eventid)
@@ -70,26 +70,24 @@ class JticketApiResourceGetticketlist extends ApiResource
 					);
 
 					// Get Attendee Details
-					$attendee_details = $jticketingmainhelper->getAttendees_details($orderitem->attendee_id, $field_array, $search);					
+					$attendee_details = $jticketingmainhelper->getAttendees_details($orderitem->attendee_id, $field_array,$search);
 				}
 
 				if (!empty($attendee_details['first_name']))
 				{
-					$attendee_nm = $attendee_details['first_name'] . " " . $attendee_details['last_name'];
-				}
+					$attendee_nm = $attendee_details['first_name']." ".$attendee_details['last_name'];
+				}						
 				else
 				{
 					$attendee_nm = $orderitem->name;
 				}
-
 				if (!empty($attendee_details['phone']))
 				{
-					$attendee_phone = $attendee_details['phone'];
+					$attendee_phone = $attendee_details['phone'];		
 				}
-
 				if (!empty($attendee_details['email']))
 				{
-					$attendee_email = $attendee_details['email'];
+					$attendee_email = $attendee_details['email'];		
 				}
 
 				$obj->ticketid          = $orderitem->oid . '-' . $orderitem->order_items_id;
@@ -103,7 +101,7 @@ class JticketApiResourceGetticketlist extends ApiResource
 				$obj->original_amount   = $orderitem->totalamount;
 				$obj->email   			= $attendee_email;
 				$obj->phone   			= $attendee_phone;
-
+								
 				if ($var['attendtype'] == "all")
 				{
 					$data[] = $obj;
@@ -126,7 +124,8 @@ class JticketApiResourceGetticketlist extends ApiResource
 		}
 		else
 		{
-			$fobj          = new stdClass;
+			$fobj          = new stdClass; 
+			
 			$fobj->success = "0";
 			$fobj->message = JText::_("COM_JTICKETING_INVALID_EVENT");
 		}

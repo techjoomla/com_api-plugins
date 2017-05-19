@@ -53,6 +53,12 @@ class UsersApiResourceLogin extends ApiResource
 			$id = $model->getUserId('email', $username);            
 		}
 
+		$res					=	array();
+		$dataObj				=	new stdClass;
+		$dataObj->results		=	[];
+		$dataObj->empty_message	=	'';
+		$res['data']			=	$dataObj;
+		
 		$kmodel = new ApiModelKey;
 		$model = new ApiModelKeys;
 		$key = null;
@@ -94,17 +100,15 @@ class UsersApiResourceLogin extends ApiResource
 		
 		if( !empty($key) )
 		{
-			$obj->auth = $key;
-			$obj->code = '200';
-			//$obj->id = $user->id;
-			$obj->id = $id;
+			$dataObj->results = $key;
+			$dataObj->id = $id;
 		}
 		else
 		{
-			$obj->code = 403;
-			$obj->message = JText::_('PLG_API_USERS_BAD_REQUEST_MESSAGE');
+			$res['responseCode']		=	403;
+			$res['errorMsg']		=	JText::_('PLG_API_USERS_BAD_REQUEST_MESSAGE');
 		}
-		return( $obj );
+		return( $res );
 	
 	}
 	

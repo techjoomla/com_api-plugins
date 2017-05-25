@@ -54,7 +54,7 @@ class UsersApiResourceLogin extends ApiResource
 		}
 
 		$res					=	array();
-		$dataObj				=	new stdClass;
+		$dataObj['results']		=	new stdClass;
 		$dataObj->results		=	[];
 		$dataObj->empty_message	=	'';
 		$res['data']			=	$dataObj;
@@ -100,13 +100,13 @@ class UsersApiResourceLogin extends ApiResource
 		
 		if( !empty($key) )
 		{
-			$dataObj->results = $key;
-			$dataObj->id = $id;
+			$dataObj['results']->tocken = $key;
+			$dataObj['results']->id 	= $id;
 		}
 		else
 		{
-			$res['responseCode']		=	403;
-			$res['errorMsg']		=	JText::_('PLG_API_USERS_BAD_REQUEST_MESSAGE');
+			$res['err_code']		=	403;
+			$res['err_message']		=	JText::_('PLG_API_USERS_BAD_REQUEST_MESSAGE');
 		}
 		return( $res );
 	

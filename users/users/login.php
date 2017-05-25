@@ -55,8 +55,8 @@ class UsersApiResourceLogin extends ApiResource
 
 		$res					=	array();
 		$dataObj['results']		=	new stdClass;
-		$dataObj->results		=	[];
-		$dataObj->empty_message	=	'';
+		$dataObj -> results		=	[];
+		$dataObj -> empty_message	=	'';
 		$res['data']			=	$dataObj;
 		
 		$kmodel = new ApiModelKey;
@@ -100,8 +100,8 @@ class UsersApiResourceLogin extends ApiResource
 		
 		if( !empty($key) )
 		{
-			$dataObj['results']->tocken = $key;
-			$dataObj['results']->id 	= $id;
+			$dataObj['results'] -> tocken 	= $key;
+			$dataObj['results'] -> id 		= $id;
 		}
 		else
 		{

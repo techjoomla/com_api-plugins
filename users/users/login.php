@@ -100,7 +100,7 @@ class UsersApiResourceLogin extends ApiResource
 		
 		if( !empty($key) )
 		{
-			$dataObj['results'] -> tocken 	= $key;
+			$dataObj['results'] -> token 	= $key;
 			$dataObj['results'] -> id 		= $id;
 		}
 		else

@@ -8,14 +8,6 @@
 
 defined('_JEXEC') or die( 'Restricted access' );
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
-jimport('joomla.application.component.controller');
-jimport('joomla.application.component.model');
-jimport('joomla.user.helper');
-jimport('joomla.user.user');
-jimport('joomla.application.component.helper');
-
 JModelLegacy::addIncludePath(JPATH_SITE . 'components/com_api/models');
 require_once JPATH_SITE . '/components/com_api/libraries/authentication/user.php';
 require_once JPATH_SITE . '/components/com_api/libraries/authentication/login.php';
@@ -53,11 +45,10 @@ class UsersApiResourceLogin extends ApiResource
 			$id = $model->getUserId('email', $username);            
 		}
 
-		$res					=	array();
+		$res					=	new stdClass;;
 		$dataObj['results']		=	new stdClass;
-		$dataObj -> results		=	[];
 		$dataObj -> empty_message	=	'';
-		$res['data']			=	$dataObj;
+		$res -> data				=	$dataObj;
 		
 		$kmodel = new ApiModelKey;
 		$model = new ApiModelKeys;
@@ -105,8 +96,8 @@ class UsersApiResourceLogin extends ApiResource
 		}
 		else
 		{
-			$res['err_code']		=	403;
-			$res['err_message']		=	JText::_('PLG_API_USERS_BAD_REQUEST_MESSAGE');
+			$res -> err_code		=	403;
+			$res -> err_message		=	JText::_('PLG_API_USERS_BAD_REQUEST_MESSAGE');
 		}
 		return( $res );
 	

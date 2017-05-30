@@ -18,12 +18,14 @@ class UsersApiResourceLogin extends ApiResource
 {
 	public function get()
 	{
-		$this->plugin->setResponse( JText::_('PLG_API_USERS_GET_METHOD_NOT_ALLOWED_MESSAGE'));
+		$this->plugin->err_code = 405;
+		$this->plugin->err_message = JText::_('PLG_API_USERS_GET_METHOD_NOT_ALLOWED_MESSAGE');
+		$this->plugin->setApiResponse( true, $result = null );
 	}
 
 	public function post()
 	{
-		$this->plugin->setResponse($this->keygen());
+		$this->plugin->setApiResponse(false, $this->keygen());
 	}
 
 	public function keygen()
@@ -45,11 +47,8 @@ class UsersApiResourceLogin extends ApiResource
 			$id = $model->getUserId('email', $username);            
 		}
 
-		$res = new stdClass;;
-		$dataObj['result'] = new stdClass;
-		$dataObj->empty_message = '';
-		$res->data = $dataObj;
-		
+		$result = new stdClass;
+
 		$kmodel = new ApiModelKey;
 		$model = new ApiModelKeys;
 		$key = null;
@@ -91,16 +90,16 @@ class UsersApiResourceLogin extends ApiResource
 		
 		if( !empty($key) )
 		{
-			$dataObj['result']->token = $key;
-			$dataObj['result']->id = $id;
+			$result->result->token = $key;
+			$result->result->id = $id;
 		}
 		else
 		{
-			$res->err_code = 403;
-			$res->err_message = JText::_('PLG_API_USERS_BAD_REQUEST_MESSAGE');
+			$this->plugin->err_code		=	403;
+			$this->plugin->err_message		=	JText::_('PLG_API_USERS_BAD_REQUEST_MESSAGE');
 		}
-		return( $res );
-	
+		
+		return( $result );
 	}
 	
 	/*

@@ -95,10 +95,9 @@ class UsersApiResourceLogin extends ApiResource
 		}
 		else
 		{
-			$this->plugin->err_code		=	403;
-			$this->plugin->err_message		=	JText::_('PLG_API_USERS_BAD_REQUEST_MESSAGE');
+			$this->plugin->err_code = 403;
+			$this->plugin->err_message = JText::_('PLG_API_USERS_BAD_REQUEST_MESSAGE');
 		}
-		
 		return( $result );
 	}
 	

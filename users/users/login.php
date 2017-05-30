@@ -20,7 +20,7 @@ class UsersApiResourceLogin extends ApiResource
 	{
 		$this->plugin->err_code = 405;
 		$this->plugin->err_message = JText::_('PLG_API_USERS_GET_METHOD_NOT_ALLOWED_MESSAGE');
-		$this->plugin->setApiResponse( true, $result = null );
+		$this->plugin->setApiResponse( true, null );
 	}
 
 	public function post()

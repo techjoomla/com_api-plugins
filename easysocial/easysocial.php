@@ -34,5 +34,6 @@ class PlgAPIEasysocial extends ApiPlugin
 		$this->setResourceAccess('terms', 'public', 'post');
 		$this->setResourceAccess('slogin', 'public', 'post');
 		$this->setResourceAccess('fblogin', 'public', 'post');
+		$this->setResourceAccess('sociallogin', 'public', 'post');
 	}
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension version="3.1" type="plugin" group="api" method="upgrade">
     <name>Api - Easysocial</name>
-    <version>1.8.7</version>
+    <version>2.0.0</version>
     <creationDate>10/11/2014</creationDate>
     <author>Techjoomla</author> 
     <authorEmail>extensions@techjoomla.com</authorEmail> 
@@ -12,7 +12,6 @@
 
     <files>
         <filename plugin="easysocial">easysocial.php</filename>
-        <filename >easysocial/friend.php</filename>
         <folder>libraries</folder>
         <folder>easysocial</folder>
     </files>

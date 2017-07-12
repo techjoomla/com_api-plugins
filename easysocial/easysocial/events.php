@@ -32,7 +32,7 @@ class EasysocialApiResourceEvents extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse($this->get_events());
+		$this->get_events();
 	}
 
 	/**
@@ -63,7 +63,13 @@ class EasysocialApiResourceEvents extends ApiResource
 		$ordering = $this->plugin->get('ordering', 'start', 'STRING');
 		$options = array();
 		$eventResult = array();
-		$res = new stdClass;
+
+		// Response object
+		$res = new stdclass;
+
+		// $res->result = array();
+		$res->empty_message = '';
+
 		$options = array(
 			'state' => SOCIAL_STATE_PUBLISHED, 'ordering' => $ordering
 		);
@@ -80,6 +86,7 @@ class EasysocialApiResourceEvents extends ApiResource
 		$categoryid = $app->input->get('categoryid', 0, 'INT');
 		$mapp = new EasySocialApiMappingHelper;
 		$userObj = FD::user($log_user);
+
 		$options = array(
 			'state' => SOCIAL_STATE_PUBLISHED, 'ordering' => $ordering, 'type' => $userObj->isSiteAdmin() ? 'all' : 'user'
 		);
@@ -107,12 +114,12 @@ class EasysocialApiResourceEvents extends ApiResource
 			}
 			else
 			{
-				$res->message = JText::_('PLG_API_EASYSOCIAL_INVALID_DATE_FORMAT_MESSAGE');
-				$res->status = 0;
-
-				return $res;
+				$res->empty_message = JText::_('PLG_API_EASYSOCIAL_INVALID_DATE_FORMAT_MESSAGE');
+				$res->result = [];
+				$this->plugin->setApiResponse(false, $res);
 			}
 		}
+
 		// Checking wheather the date is in date range or it is past date.then choose appropriate case.
 		if (! empty($start_date) || ! empty($end_date) || ! empty($start_before))
 		{
@@ -152,6 +159,7 @@ class EasysocialApiResourceEvents extends ApiResource
 					$options['ongoing'] = true;
 					$options['upcoming'] = true;
 				}
+
 				break;
 			case 'mine':
 				$options['creator_uid'] = $log_user;
@@ -164,16 +172,17 @@ class EasysocialApiResourceEvents extends ApiResource
 					$options['ongoing'] = true;
 					$options['upcoming'] = true;
 				}
+
 				break;
 			case 'range':
 				$options['start-after'] = $start_date;
 				$options['start-before'] = $end_date;
 				break;
 			case 'past':
-				$options['start-before'] = $start_before;
+				//$options['start-before'] = $start_before;
+				$options['past'] = true;
 				$options['ordering'] = 'created';
 				$options['direction'] = 'desc';
-
 				break;
 			case 'allDate':
 				$data = $this->dfilter($dates);
@@ -195,6 +204,8 @@ class EasysocialApiResourceEvents extends ApiResource
 				$category->load($categoryid);
 				$activeCategory = $category;
 				$options['category'] = $category->id;
+				$options['ongoing'] = true;
+				$options['upcoming'] = true;
 				break;
 		}
 
@@ -208,15 +219,17 @@ class EasysocialApiResourceEvents extends ApiResource
 
 		if (empty($eventResult))
 		{
-			$res->message = JText::_('PLG_API_EASYSOCIAL_EVENT_NOT_FOUND_MESSAGE');
-			$res->status = 0;
-
-			return $res;
+			$res->empty_message = JText::_('PLG_API_EASYSOCIAL_EVENT_NOT_FOUND_MESSAGE');
+			$res->result = [];
+			$this->plugin->setApiResponse(false, $res);
 		}
+
 		// $eventResult = array_slice($eventResult, $limitstart, $limit);
 		$event_list = $mapp->mapItem($eventResult, 'event', $log_user);
-
-		return $event_list;
+		$cat = FD::model('eventcategories');
+		$res->result->events	=	$event_list;
+		$res->result->categories = $cat->getCategories();
+		$this->plugin->setApiResponse(false, $res);
 	}
 
 	/**

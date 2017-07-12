@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Joomla.Site
- * @subpackage  Com_api
+ * @subpackage  Com_api-plugins
  *
  * @copyright   Copyright (C) 2009-2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
  * @license     GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
@@ -34,7 +34,7 @@ class EasysocialApiResourceFollower extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse($this->getFollowers());
+		$this->getFollowers();
 	}
 
 	/**
@@ -46,7 +46,7 @@ class EasysocialApiResourceFollower extends ApiResource
 	 */
 	public function post()
 	{
-		$this->plugin->setResponse($this->follow());
+		$this->follow();
 	}
 
 	/**
@@ -69,10 +69,10 @@ class EasysocialApiResourceFollower extends ApiResource
 
 		if ($target_user == $log_user)
 		{
-			$res->success = 0;
-			$res->message = JText::_('PLG_API_EASYSOCIAL_CANT_FOLLOW_YOURSELF_MESSAGE');
+			$res->result->status = 0;
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_CANT_FOLLOW_YOURSELF_MESSAGE');
 
-			return $res;
+			$this->plugin->setApiResponse(false, $res);
 		}
 
 		//  Load subscription table.
@@ -100,17 +100,17 @@ class EasysocialApiResourceFollower extends ApiResource
 			if ($state)
 			{
 				//  $state = $this->addbadges( $target,$log_user,$subscription->id );
-				$res->success = 1;
-				$res->message = JText::_('PLG_API_EASYSOCIAL_FOLLOWING_MESSAGE') . $target->username;
+				$res->result->status = 1;
+				$res->result->message = JText::_('PLG_API_EASYSOCIAL_FOLLOWING_MESSAGE') . $target->username;
 
-				return $res;
+				$this->plugin->setApiResponse(false, $res);
 			}
 			else
 			{
-				$res->success = 0;
-				$res->message = JText::_('PLG_API_EASYSOCIAL_UNABLE_TO_FOLLOW_MESSAGE') . $target->username;
+				$res->result->status = 0;
+				$res->result->message = JText::_('PLG_API_EASYSOCIAL_UNABLE_TO_FOLLOW_MESSAGE') . $target->username;
 
-				return $res;
+				$this->plugin->setApiResponse(false, $res);
 			}
 		}
 		else
@@ -130,17 +130,17 @@ class EasysocialApiResourceFollower extends ApiResource
 				 * Assign points when user starts new conversation
 				 * $points->assign( 'profile.unfollowed', 'com_easysocial', $user->id );
 				 */
-				$res->success = 1;
-				$res->message = JText::_('PLG_API_EASYSOCIAL_SUCCESSFULLY_UNFOLLW_MESSAGE') . $target->username;
+				$res->result->status = 1;
+				$res->result->message = JText::_('PLG_API_EASYSOCIAL_SUCCESSFULLY_UNFOLLW_MESSAGE') . $target->username;
 
-				return $res;
+				$this->plugin->setApiResponse(false, $res);
 			}
 			else
 			{
-				$res->success = 0;
-				$res->message = JText::_('PLG_API_EASYSOCIAL_UNABLE_TO_UNFOLLW_MESSAGE') . $target->username;
+				$res->result->status = 0;
+				$res->result->message = JText::_('PLG_API_EASYSOCIAL_UNABLE_TO_UNFOLLW_MESSAGE') . $target->username;
 
-				return $res;
+				$this->plugin->setApiResponse(false, $res);
 			}
 		}
 	}
@@ -273,7 +273,12 @@ class EasysocialApiResourceFollower extends ApiResource
 		$options['limitstart'] = $app->input->get('limitstart', 0, 'INT');
 		$options['limit']      = $app->input->get('limit', 10, 'INT');
 
-		//  Load friends model.
+		// Response object
+		$res = new stdClass;
+		$res->result = array();
+		$res->empty_message = '';
+
+		// Load friends model.
 		$foll_model = FD::model('Followers');
 		$frnd_mod   = FD::model('Friends');
 
@@ -285,7 +290,6 @@ class EasysocialApiResourceFollower extends ApiResource
 			$target_user = $user;
 		}
 
-		$data          = array();
 		$mapp          = new EasySocialApiMappingHelper;
 		$raw_followers = array();
 
@@ -304,15 +308,22 @@ class EasysocialApiResourceFollower extends ApiResource
 		// $frnd_list	=	$this->basefrndObj($ttl_list);
 		$fllowers_list = $mapp->mapItem($raw_followers, 'user', $user);
 
-		// Get other data
-		// ~ foreach($fllowers_list as $ky=>$lval)
+		if (count($fllowers_list) < 1)
 		{
-			// $lval->mutual = $frnd_mod->getMutualFriendCount($user,$lval->id);
-			// $lval->isFriend = $frnd_mod->isFriends($users,$lval->id);
+			$res->empty_message = JText::_('COM_EASYSOCIAL_NO_FOLLOWERS_YET');
+
+			$this->plugin->setApiResponse(false, $res);
 		}
 
-		$data['data'] = $fllowers_list;
+		/* Get other data
+		foreach($fllowers_list as $ky=>$lval)
+		{
+			$lval->mutual = $frnd_mod->getMutualFriendCount($user,$lval->id);
+			$lval->isFriend = $frnd_mod->isFriends($users,$lval->id);
+		}*/
 
-		return ($data);
+		$res->result = $fllowers_list;
+
+		$this->plugin->setApiResponse(false, $res);
 	}
 }

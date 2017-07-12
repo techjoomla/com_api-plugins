@@ -39,7 +39,9 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse(JText::_('PLG_API_EASYSOCIAL_USE_POST_OR_DELETE_MESSAGE'));
+		$this->plugin->err_code = 405;
+		$this->plugin->err_message = JText::_('PLG_API_EASYSOCIAL_USE_POST_OR_DELETE_MESSAGE');
+		$this->plugin->setApiResponse(true, null);
 	}
 
 	/**
@@ -51,11 +53,11 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 	 */
 	public function post()
 	{
-		$this->plugin->setResponse($this->inviteGroup());
+		$this->inviteGroup();
 	}
 
 	/**
-	 * Method description
+	 * Method description Method used to leave group or delete group.
 	 *
 	 * @return  mixed
 	 *
@@ -68,21 +70,21 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 		$target_user	=	$app->input->get('target_user', 0, 'INT');
 		$operation		=	$app->input->get('operation', 0, 'STRING');
 		$valid			=	1;
-		$result			=	new stdClass;
+		$res			=	new stdClass;
 		$group			=	FD::group($group_id);
 
 		if (!$group->id || !$group_id)
 		{
-			$result->status		=	0;
-			$result->message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_GROUP_MESSAGE');
-			$valid				=	0;
+			$res->result->status 	=	0;
+			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_GROUP_MESSAGE');
+			$valid					=	0;
 		}
 
 		if (!$target_user)
 		{
-			$result->status		=	0;
-			$result->message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE');
-			$valid				=	0;
+			$res->result->status		=	0;
+			$res->result->message		=	JText::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE');
+			$valid						=	0;
 		}
 
 		// Only allow super admins to delete groups
@@ -90,9 +92,9 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 
 		if ($target_user == $my->id && $operation == 'leave' && $group->creator_uid == $my->id)
 		{
-			$result->status		=	0;
-			$result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_OWNER_NOT_LEAVE_MESSAGE');
-			$valid				=	0;
+			$res->result->status	=	0;
+			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_OWNER_NOT_LEAVE_MESSAGE');
+			$valid					=	0;
 		}
 
 		// Target user obj
@@ -109,7 +111,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 
 	// Notify group members
 								$group->notifyMembers('leave', array('userId' => $my->id));
-								$result->message	=	JText::_('PLG_API_EASYSOCIAL_LEAVE_GROUP_MESSAGE');
+								$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_LEAVE_GROUP_MESSAGE');
 								break;
 				case 'remove':
 
@@ -118,14 +120,14 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 
 								// Notify group member
 								$group->notifyMembers('user.remove', array('userId' => $user->id));
-								$result->message	=	JText::_('PLG_API_EASYSOCIAL_USER_REMOVE_SUCCESS_MESSAGE');
+								$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_USER_REMOVE_SUCCESS_MESSAGE');
 								break;
 			}
 
-			$result->status	=	1;
+			$res->result->status	=	1;
 		}
 
-		$this->plugin->setResponse($result);
+		$this->plugin->setApiResponse(false, $res);
 	}
 
 	/**
@@ -140,7 +142,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 		// Init variable
 		$app			=	JFactory::getApplication();
 		$log_user		=	JFactory::getUser($this->plugin->get('user')->id);
-		$result			=	new stdClass;
+		$res			=	new stdClass;
 		$group_id		=	$app->input->get('group_id', 0, 'INT');
 		$target_users	=	$app->input->get('target_users', null, 'ARRAY');
 		$user			=	FD::user($log_user->id);
@@ -162,7 +164,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 					$target_username = JFactory::getUser($id)->username;
 				}
 
-				// Ensure that the user is not a member or has been invited already
+				// Check that the user is not a member or has been invited already
 				if (!$group->isMember($id) && !$grp_model->isInvited($id, $group_id))
 				{
 					$state		=	$group->invite($id, $log_user->id);
@@ -174,11 +176,11 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 				}
 			}
 
-			$result->status			=	1;
-			$result->invited		=	$invited;
-			$result->not_invtited	=	$not_invi;
+			$res->result->status		=	1;
+			$res->result->invited		=	$invited;
+			$res->result->not_invtited	=	$not_invi;
 		}
 
-		return $result;
+		$this->plugin->setApiResponse(false, $res);
 	}
 }

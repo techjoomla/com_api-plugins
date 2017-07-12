@@ -32,7 +32,7 @@ class EasysocialApiResourceEvent_Category extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse($this->get_cat());
+		$this->get_cat();
 	}
 
 	/**
@@ -49,8 +49,13 @@ class EasysocialApiResourceEvent_Category extends ApiResource
 		// Getting log_user
 		$log_user = $this->plugin->get('user')->id;
 		$cat = FD::model('eventcategories');
-		$res = $cat->getCategories();
 
-		return $res;
+		// Response object
+		$res = new stdclass;
+		$res->result = array();
+		$res->empty_message = '';
+
+		$res->result = $cat->getCategories();
+		$this->plugin->setApiResponse(false, $res);
 	}
 }

@@ -39,7 +39,7 @@ class EasysocialApiResourceGroup_Category extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse($this->getCategory());
+		$this->getCategory();
 	}
 
 	/**
@@ -51,7 +51,9 @@ class EasysocialApiResourceGroup_Category extends ApiResource
 	 */
 	public function post()
 	{
-		$this->plugin->setResponse(JText::_('PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE'));
+		$this->plugin->err_code = 405;
+		$this->plugin->err_message = JText::_('PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE');
+		$this->plugin->setApiResponse(true, null);
 	}
 
 	/**
@@ -64,19 +66,22 @@ class EasysocialApiResourceGroup_Category extends ApiResource
 	public function getCategory()
 	{
 		// Init variable
-		$app			=	JFactory::getApplication();
-		$log_user		=	$this->plugin->get('user')->id;
+		$app = JFactory::getApplication();
+		$log_user = $this->plugin->get('user')->id;
 		$other_user_id	=	$app->input->get('user_id', 0, 'INT');
-		$userid			=	($other_user_id)?$other_user_id:$log_user;
-		$data			=	array();
+		$userid			=	($other_user_id) ? $other_user_id : $log_user;
+
 		$mapp			=	new EasySocialApiMappingHelper;
 		$user			=	FD::user($userid);
+
+		$res = new stdclass;
+		$res->result = array();
+		$res->empty_message = '';
 
 		// Get a list of group categories
 		$catModel		=	FD::model('GroupCategories');
 		$cats			=	$catModel->getCategories(array('state' => SOCIAL_STATE_PUBLISHED, 'ordering' => 'ordering'));
-		$data['data']	=	$mapp->mapItem($cats, 'category', $log_user);
-
-		return $data;
+		$res->result = $mapp->mapItem($cats, 'category', $log_user);
+		$this->plugin->setApiResponse(false, $res);
 	}
 }

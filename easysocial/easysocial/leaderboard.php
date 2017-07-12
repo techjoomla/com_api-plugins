@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Joomla.Site
- * @subpackage  Com_api
+ * @subpackage  Com_api-plugins
  *
  * @copyright   Copyright (C) 2009-2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
  * @license     GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
@@ -10,7 +10,7 @@
  * and the com_api extension by Brian Edgerton (http://www.edgewebworks.com)
  */
 
-defined('JEXEC') or die('Restricted access');
+defined('_JEXEC') or die('Restricted access');
 
 jimport('joomla.plugin.plugin');
 jimport('joomla.html.html');
@@ -33,7 +33,7 @@ class EasysocialApiResourceLeaderboard extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse($this->get_leaderboard());
+		$this->get_leaderboard();
 	}
 
 	/**
@@ -45,7 +45,9 @@ class EasysocialApiResourceLeaderboard extends ApiResource
 	 */
 	public function post()
 	{
-		$this->plugin->setResponse(JText::_('PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE'));
+		$this->plugin->err_code = 405;
+		$this->plugin->err_message = JText::_('PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE');
+		$this->plugin->setApiResponse(true, null);
 	}
 
 	/**
@@ -67,18 +69,23 @@ class EasysocialApiResourceLeaderboard extends ApiResource
 		$options		=	array('ordering' => 'points', 'excludeAdmin' => $excludeAdmin,'state' => 1);
 		$users			=	$model->getLadder($options, false);
 
+		// Response object
+		$res = new stdClass;
+		$res->result = array();
+		$res->empty_message = '';
+
 		if (empty($users))
 		{
-			$res			=	new stdClass;
-			$res->status	=	0;
-			$res->message	=	JText::_('PLG_API_EASYSOCIAL_NO_LEADERS');
+			$res->empty_message	=	JText::_('PLG_API_EASYSOCIAL_NO_LEADERS');
 
-			return $res;
+			$this->plugin->setApiResponse(false, $res);
 		}
 
-		$leaderusers	=	$mapp->mapItem($users, 'user');
-		$output			=	array_slice($leaderusers, $limitstart, $limit);
+		$leaderusers		=	$mapp->mapItem($users, 'user');
 
-		return $output;
+		$output				=	array_slice($leaderusers, $limitstart, $limit);
+		$res->result		=	$output;
+
+		$this->plugin->setApiResponse(false, $res);
 	}
 }

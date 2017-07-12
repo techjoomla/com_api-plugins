@@ -65,6 +65,51 @@ class EasysocialApiResourceShare extends ApiResource
 
 		// Specific user id for sharing
 		$customPrivacy = $app->input->get('privacyCustom', '', 'string');
+
+		$link = $app->input->get('link', '', 'STRING');
+
+		if ($link)
+		{
+			$link = trim($link);
+			$data = array();
+
+			// We need to format the url properly.
+			$video = ES::video();
+			$link = $video->format($link);
+
+			$crawler = ES::crawler();
+			$data = $crawler->scrape($link);
+
+			// Before we proceed, we need to ensure that $data->oembed is really exists.
+			// If not exists, throw the appropriate error message to the user.
+			if (!isset($data->oembed) || !$data->oembed)
+			{
+				return JText::_('COM_EASYSOCIAL_VIDEO_LINK_EMBED_NOT_SUPPORTED');
+			}
+
+			$html = '';
+			$thumbnail = '';
+
+			// If there is an oembed property, try to use it.
+			if (isset($data->oembed->html))
+			{
+				$html = $data->oembed->html;
+			}
+
+			if (isset($data->oembed->thumbnail_url))
+			{
+				$thumbnail = $data->oembed->thumbnail_url;
+			}
+
+			// If there is no thumbnail, we should try to get from the opengraph tag if it exists
+			if (!isset($data->oembed->thumbnail_url) && isset($data->opengraph->image))
+			{
+				$thumbnail = $data->opengraph->image;
+			}
+
+			return $this->plugin->setResponse($data);
+		}
+
 		$log_usr  = intval($this->plugin->get('user')->id);
 
 		// Now take login user stream for target

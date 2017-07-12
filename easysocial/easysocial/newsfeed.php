@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Joomla.Site
- * @subpackage  Com_api
+ * @subpackage  Com_api-plugins
  *
  * @copyright   Copyright (C) 2009-2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
  * @license     GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
@@ -36,7 +36,7 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse($this->getStream());
+		$this->getStream();
 	}
 
 	/**
@@ -48,7 +48,9 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 	 */
 	public function post()
 	{
-		$this->plugin->setResponse($this->getGroups());
+		$this->plugin->err_code = 405;
+		$this->plugin->err_message = JText::_('PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE');
+		$this->plugin->setApiResponse(true, null);
 	}
 
 	/**
@@ -80,6 +82,8 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 		$tag			=	$app->input->get('tag', '', 'STRING');
 		$config			=	JFactory::getConfig();
 		$sef			=	$config->set('sef', 0);
+
+		$res = new stdClass;
 
 		// Map object
 		$mapp			=	new EasySocialApiMappingHelper;
@@ -141,17 +145,22 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 		}
 
 		$stream->get($options);
-		$result	=	$stream->toArray();
-		$data	=	array();
 
-		if (!is_array($result))
+		$result	=	$stream->toArray();
+
+		if (!count($result) || !is_array($result))
 		{
-			return $data;
+			$res->result = array();
+			$res->empty_message	=	JText::_('COM_EASYSOCIAL_STREAM_NO_STREAM_ITEM');
+			$this->plugin->setApiResponse(true, $res);
+		}
+		else
+		{
+			$res->result	=	$mapp->mapItem($result, 'stream', $target_user);
+			$res->empty_message = '';
 		}
 
-		$data	=	$mapp->mapItem($result, 'stream', $target_user);
 		$jrouter->setMode(JROUTER_MODE_SEF);
-
-		return $data;
+		$this->plugin->setApiResponse(false, $res);
 	}
 }

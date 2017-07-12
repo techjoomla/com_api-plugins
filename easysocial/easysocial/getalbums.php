@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Joomla.Site
- * @subpackage  Com_api
+ * @subpackage  Com_api-plugins
  *
  * @copyright   Copyright (C) 2009-2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
  * @license     GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
@@ -35,7 +35,7 @@ class EasysocialApiResourceGetalbums extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse($this->get_albums());
+		$this->get_albums();
 	}
 
 	/**
@@ -52,13 +52,13 @@ class EasysocialApiResourceGetalbums extends ApiResource
 		// Getting log_user
 		$log_user	=	$this->plugin->get('user')->id;
 
-	// Accepting user details.
+		// Accepting user details.
 		$uid		=	$app->input->get('uid', 0, 'INT');
 		$type		=	$app->input->get('type', 0, 'STRING');
 		$mapp		=	new EasySocialApiMappingHelper;
 
 		// Accepting pagination values.
-		$limitstart	=	$app->input->get('limitstart', 5, 'INT');
+		$limitstart	=	$app->input->get('limitstart', 0, 'INT');
 		$limit		=	$app->input->get('limit', 10, 'INT');
 
 		// Taking values in array for pagination of albums.
@@ -72,15 +72,13 @@ class EasysocialApiResourceGetalbums extends ApiResource
 		$mydata['order']			=	'a.assigned_date';
 		$mydata['direction']		=	'DESC';
 
-		// Creating object and calling relatvie method for data fetching.
-		$obj						=	new EasySocialModelAlbums;
+		// Response object
+		$res = new stdclass;
+		$res->result = array();
+		$res->empty_message = '';
 
-		/* $obj->setState('limitstart', $limitstart);
-		* $obj->setState('limit', $limit);
-		* $obj->limitstart = $limitstart;
-		* $obj->limit= $limit;
-		* first param is user id, user type and third contains array for pagination.
-		*/
+		// Creating object and calling relatvie method for data fetching.
+		$obj = new EasySocialModelAlbums;
 
 		$albums = $obj->getAlbums($uid, $type, $mydata);
 
@@ -109,6 +107,15 @@ class EasysocialApiResourceGetalbums extends ApiResource
 		$all_albums	=	$mapp->mapItem($albums, 'albums', $log_user);
 		$output		=	array_slice($all_albums,  $limitstart, $limit);
 
-		return $output;
+		if (count($output) == 0)
+		{
+			$res->empty_message = JText::_('COM_EASYSOCIAL_NO_ALBUM_AVAILABLE');
+		}
+		else
+		{
+			$res->result		=	$output;
+		}
+
+		$this->plugin->setApiResponse(false, $res);
 	}
 }

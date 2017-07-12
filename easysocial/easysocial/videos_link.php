@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Joomla.Site
- * @subpackage  Com_api
+ * @subpackage  Com_api-plugins
  *
  * @copyright   Copyright (C) 2009-2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
  * @license     GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
@@ -33,7 +33,7 @@ class EasysocialApiResourceVideos_Link extends ApiResource
 		 */
 		public function post()
 		{
-			$this->plugin->setResponse($this->save_video());
+			$this->save_video();
 		}
 
 	/**	  
@@ -55,8 +55,10 @@ class EasysocialApiResourceVideos_Link extends ApiResource
 		$post['link'] = $app->input->get('path', '', 'STRING');
 		$post['location'] = $app->input->get('location', '', 'STRING');
 		$post['privacy'] = $app->input->get('privacy', '', 'STRING');
+		$post['type'] = $app->input->get('type', '', 'STRING');
 
 		$video = ES::video();
+		$res = new stdClass;
 
 		if ($post['link'])
 		{
@@ -103,19 +105,20 @@ class EasysocialApiResourceVideos_Link extends ApiResource
 		$state = $video->table->store();
 
 		// Bind the video location
-if (isset($post['location']) && $post['location'] && isset($post['latitude']) && $post['latitude']&& isset($post['longitude']) && $post['longitude'])
-{
-	// Create a location for this video
-	$location = ES::table('Location');
+		if (isset($post['location']) && $post['location'] && isset($post['latitude']) && $post['latitude'] && isset($post['longitude'])
+			&& $post['longitude'])
+		{
+			// Create a location for this video
+			$location = ES::table('Location');
 
-	$location->uid = $video->table->id;
-	$location->type = SOCIAL_TYPE_VIDEO;
-	$location->user_id = $video->my->id;
-	$location->address = $video['location'];
-	$location->latitude = $video['latitude'];
-	$location->longitude = $video['longitude'];
-	$location->store();
-}
+			$location->uid = $video->table->id;
+			$location->type = SOCIAL_TYPE_VIDEO;
+			$location->user_id = $video->my->id;
+			$location->address = $video['location'];
+			$location->latitude = $video['latitude'];
+			$location->longitude = $video['longitude'];
+			$location->store();
+		}
 
 		$privacyData = 'public';
 
@@ -137,9 +140,9 @@ if (isset($post['location']) && $post['location'] && isset($post['latitude']) &&
 			$video->createStream('create', $privacyData);
 		}
 
-		$video->success = 1;
-		$video->message = JText::_('COM_EASYSOCIAL_EMAILS_EVENT_NEW_VIDEO');
+		$res->result->status = 1;
+		$res->result->message = JText::_('COM_EASYSOCIAL_EMAILS_EVENT_NEW_VIDEO');
 
-		return $video;
+		$this->plugin->setApiResponse(false, $res);
 	}
 }

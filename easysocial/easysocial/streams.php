@@ -59,6 +59,7 @@ class EasysocialApiResourceStreams extends ApiResource
 			$app = JFactory::getApplication();
 			$target_id = $app->input->get('target_id', 0, 'INT');
 			$action = $app->input->get('action', 0, 'STRING');
+			$uid = $app->input->get('uid', 0, 'INT');
 
 			switch ($action)
 			{
@@ -70,6 +71,9 @@ class EasysocialApiResourceStreams extends ApiResource
 									break;
 				case 'delete'	:
 									return $res = $this->delete($target_id);
+									break;
+				case 'bookmark' :
+									return $res = $this->bookmark($target_id, $uid);
 									break;
 			}
 		}

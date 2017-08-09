@@ -16,11 +16,6 @@ jimport('joomla.application.component.helper');
 jimport('joomla.application.component.model');
 jimport('joomla.database.table.user');
 
-// Load com_users language file
-$language = JFactory::getLanguage();
-$language->load('com_users');
-$language->load('com_users', JPATH_SITE, 'en-GB', true);
-$language->load('com_users', JPATH_ADMINISTRATOR, 'en-GB', true);
 require_once JPATH_SITE . '/libraries/joomla/filesystem/folder.php';
 require_once JPATH_ROOT . '/administrator/components/com_users/models/users.php';
 
@@ -41,158 +36,14 @@ class UsersApiResourceUsers extends ApiResource
 	 */
 	public function delete()
 	{
-		$app              = JFactory::getApplication();
-		$db 			  = JFactory::getDbo();
-		$data             = array();
-		$eobj             = new stdClass;
-		$eobj->status     = false;
-		$eobj->id         = 0;
-
-		// Get values paased by put in the url
-		$data = $app->input->getArray(array());
-
-		// Check username or user_id to edit the details of user
-		if (isset($data['username']) || isset($data['user_id']))
-		{
-			if (!$data['user_id'] && $data['username'])
-			{
-				// Get user_id with the help of username
-				$query = $db->getQuery(true);
-				$query->select('id');
-				$query->from('#__users');
-				$query->where($db->quoteName('username') . '=' . $db->quote($data['username']));
-				$db->setQuery($query);
-				$user_id = $db->loadResult();
-				$data['user_id'] = $user_id;
-			}
-
-			$user = JUser::getInstance($data['user_id']);
-
-			if ($user->id && $user->delete())
-			{
-					$eobj->status     = true;
-					$eobj->id         = $data['user_id'];
-					$eobj->code       = '200';
-					$eobj->message    = JText::_('COM_USERS_USERS_N_ITEMS_DELETED_1');
-					$this->plugin->setResponse($eobj);
-
-					return;
-			}
-			else
-			{
-					$eobj->code = '400';
-					$eobj->message = JText::_('COM_USERS_USER_NOT_FOUND');
-					$this->plugin->setResponse($eobj);
-
-					return;
-			}
-		}
-		else
-		{
-			// Not given username or user_id to edit the details of user
-			$eobj->code = '400';
-			$eobj->message = JText::_('PLG_API_USERS_REQUIRED_DATA_EMPTY_MESSAGE');
-			$this->plugin->setResponse($eobj);
-
-			return;
-		}
+		$this->plugin->setResponse( JText::_( 'PLG_API_USERS_IN_DELETE_FUNCTION_MESSAGE' ));
 	}
 
 	/**
-		* Function for edit user record.
-		*
-		* @return void
-		*/
-	public function put()
-	{
-		$app              = JFactory::getApplication();
-		$db 			  = JFactory::getDbo();
-		$data             = array();
-		$eobj             = new stdClass;
-		$eobj->status     = false;
-		$eobj->id         = 0;
-
-		// Get values paased by put in the url
-		$data = $app->input->getArray(array());
-
-		// Check username or user_id to edit the details of user
-		if (isset($data['username']) || isset($data['user_id']))
-		{
-			if (!$data['user_id'] && isset($data['username']))
-			{
-				// Get user_id with the help of username
-				$query = $db->getQuery(true);
-				$query->select('id');
-				$query->from('#__users');
-				$query->where($db->quoteName('username') . '=' . $db->quote($data['username']));
-				$db->setQuery($query);
-				$user_id = $db->loadResult();
-				$data['user_id'] = $user_id;
-			}
-
-			// Given username or user_id not exist
-				if (!$data['user_id'])
-				{
-					$eobj->code = '400';
-					$eobj->message = JText::_('COM_USERS_USER_NOT_FOUND');
-					$this->plugin->setResponse($eobj);
-
-					return;
-				}
-
-				$user = JFactory::getUser($data['user_id']);
-
-				// Bind the data.
-				if (!$user->bind($data))
-				{
-					// User deatils are not updated
-					$message = $user->getError();
-					$eobj->code = '400';
-					$eobj->message = $message;
-					$this->plugin->setResponse($eobj);
-
-					return;
-				}
-
-				// Save the user data
-				if (!$user->save())
-				{
-					// User deatils are not updated
-					$message = $user->getError();
-					$eobj->code = '400';
-					$eobj->message = $message;
-					$this->plugin->setResponse($eobj);
-
-					return;
-				}
-				else
-				{
-					// Updated records updated successsfully
-					$eobj->status     = true;
-					$eobj->id         = $data['user_id'];
-					$eobj->code       = '200';
-					$eobj->message    = JText::_('PLG_API_USERS_ACCOUNT_EDITED_SUCCESSFULLY_MESSAGE');
-					$this->plugin->setResponse($eobj);
-
-					return;
-				}
-		}
-		else
-		{
-			// Not given username or user_id to edit the details of user
-			$eobj->code = '400';
-			$eobj->message = JText::_('PLG_API_USERS_REQUIRED_DATA_EMPTY_MESSAGE');
-			$this->plugin->setResponse($eobj);
-
-			return;
-		}
-	}
-
-	/**
-		* Function for edit user record.
-		*
-		* @return void
-		*/
+	 * Function post for create user record.
+	 *
+	 * @return void
+	 */
 	public function post()
 	{
 		$error_messages = array();
@@ -208,10 +59,10 @@ class UsersApiResourceUsers extends ApiResource
 		$data['name']     = $app->input->get('name', '', 'STRING');
 		$data['email']    = $app->input->get('email', '', 'STRING');
 		$data['enabled']    = $app->input->get('enabled', 1, 'INT');
+		$data['activation']    = $app->input->get('activation', 0, 'INT');	
+		$data['app']    = $app->input->get('app_name', 'Easysocial App', 'STRING');	
+		$data['profile_id']    = $app->input->get('profile_id', 1, 'INT');	
 
-		$data['activation']    = $app->input->get('activation', 0, 'INT');
-		$data['app']    = $app->input->get('app_name', 'Easysocial App', 'STRING');
-		$data['profile_id']    = $app->input->get('profile_id', 1, 'INT');
 		global $message;
 
 		$eobj = new stdClass();
@@ -278,25 +129,6 @@ class UsersApiResourceUsers extends ApiResource
 		}
 		else
 		{
-
-			/*
-			// Auto registration
-			if( $data['activation'] == 0)
-			{
-				$emailSubject = 'Email Subject for registration successfully';
-				$emailBody = 'Email body for registration successfully';
-				$return = JFactory::getMailer()->sendMail('sender email', 'sender name', $user->email, $emailSubject, $emailBody);
-
-			}
-			else if( $data['activation'] == 1)
-			{
-				$emailSubject = 'Email Subject for activate the account';
-				$emailBody = 'Email body for for activate the account';
-				$user_activation_url = JURI::base().JRoute::_('index.php?option=com_users&task=registration.activate&token=' . $user->activation, false);  // Append this URL in your email body
-				$return = JFactory::getMailer()->sendMail('sender email', 'sender name', $user->email, $emailSubject, $emailBody);
-
-			}
-			*/
 			/* Update profile type */
 			$profiles = FD::model( 'profiles' );
 			$all_profiles = $profiles->getAllProfiles();
@@ -314,7 +146,6 @@ class UsersApiResourceUsers extends ApiResource
 			if( JFile::exists( $easysocial ) )
 			{
 				$pobj = $this->createEsprofile($user->id);
-				//$message = "created of username-" . $user->username .",send mail of details please check";
 				$message = JText::_('PLG_API_USERS_ACCOUNT_CREATED_SUCCESSFULLY_MESSAGE');
 			}
 			else
@@ -327,9 +158,6 @@ class UsersApiResourceUsers extends ApiResource
 		}
 		$userid = $user->id;
 
-		// Result message
-		//$result = array('user id ' => $userid, 'message' => $message);
-		//$result = ($userid) ? $result : $message;
 		$eobj->status = true;
 		$eobj->id = $userid;
 		$eobj->code = '200';
@@ -440,10 +268,6 @@ class UsersApiResourceUsers extends ApiResource
 			// Build arguments to be passed to the field apps.
 			$args = array( $data , &$my );
 
-			// Ensure that there is no errors.
-			// @trigger onEditValidate
-			//$errors = $fieldsLib->trigger( 'onEditValidate' , SOCIAL_FIELDS_GROUP_USER , $fields , $args, array( $handler, 'validate' ) );
-
 			// Bind the my object with appropriate data.
 			$my->bind($data);
 
@@ -512,7 +336,6 @@ class UsersApiResourceUsers extends ApiResource
 			$fullname = $app->input->get('name', '', 'STRING');
 			$fld_data['first_name'] = $app->input->get('name', '', 'STRING');
 			
-
 			$fobj->first = $fld_data['first_name'];
 			$fobj->middle = '';
 			$fobj->last = '';
@@ -574,7 +397,7 @@ class UsersApiResourceUsers extends ApiResource
 				$base_dt['name'],
 				$data['sitename']
 			);
-
+			$emailBody = '';
 			if ($sendpassword)
 			{
 				$emailBody = JText::sprintf(

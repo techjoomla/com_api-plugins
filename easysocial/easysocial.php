@@ -9,6 +9,10 @@ defined('_JEXEC') or die( 'Restricted access' );
 
 jimport('joomla.plugin.plugin');
 
+/** plgAPIEasysocial
+* 
+* @since  1.8.8
+*/
 class plgAPIEasysocial extends ApiPlugin
 {
 	/** Construct

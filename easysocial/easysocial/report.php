@@ -31,7 +31,9 @@ class EasysocialApiResourceReport extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse(JText::_('PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE'));
+		$this->plugin->err_code = 405;
+		$this->plugin->err_message = JText::_('PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE');
+		$this->plugin->setResponse(null);
 	}
 
 	/**
@@ -43,7 +45,7 @@ class EasysocialApiResourceReport extends ApiResource
 	 */
 	public function post()
 	{
-		$this->plugin->setResponse($this->create_report());
+		$this->create_report();
 	}
 
 	/**
@@ -66,6 +68,9 @@ class EasysocialApiResourceReport extends ApiResource
 		$data['type']		=	$app->input->get('type', 'stream', 'STRING');
 		$data['title']		=	$title;
 		$data['extension']	=	'com_easysocial';
+
+		// Response Object
+		$res = new stdClass;
 
 		// Build share url use for share post through app
 
@@ -92,7 +97,7 @@ class EasysocialApiResourceReport extends ApiResource
 					$group	= FD::group($item_id);
 					$data['url'] = $group->getPermalink(false, true);
 			break;
-			case 'events':
+			case 'event':
 
 			$event = FD::event($item_id);
 			$data['url'] = $event->getPermalink(false, true);
@@ -124,10 +129,9 @@ class EasysocialApiResourceReport extends ApiResource
 
 		if ($access->exceeded('reports.limit', $total))
 		{
-			$final_result['message'] = JText::_('PLG_API_EASYSOCIAL_LIMIT_EXCEEDS_MESSAGE');
-			$final_result['status'] = true;
-
-			return $final_result;
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_LIMIT_EXCEEDS_MESSAGE');
+			$res->result->status = false;
+			$this->plugin->setResponse($res);
 		}
 
 		// Create the report
@@ -146,10 +150,9 @@ class EasysocialApiResourceReport extends ApiResource
 		// If there's an error, throw it
 		if (!$state)
 		{
-			$final_result['message'] = JText::_('PLG_API_EASYSOCIAL_CANT_SAVE_REPORT');
-			$final_result['status'] = true;
-
-			return $final_result;
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_CANT_SAVE_REPORT');
+			$res->result->status = false;
+			$this->plugin->setResponse($res);
 		}
 
 		// @badge: reports.create Add badge for the author when a report is created.
@@ -168,9 +171,9 @@ class EasysocialApiResourceReport extends ApiResource
 			$report->notify();
 		}
 
-		$final_result['message'] = JText::_('COM_EASYSOCIAL_REPORTS_STORED_SUCCESSFULLY');
-		$final_result['status'] = true;
+		$res->result->message = JText::_('COM_EASYSOCIAL_REPORTS_STORED_SUCCESSFULLY');
+		$res->result->status = true;
 
-		return $final_result;
+		$this->plugin->setResponse($res);
 	}
 }

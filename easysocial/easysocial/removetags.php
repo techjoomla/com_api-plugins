@@ -24,6 +24,20 @@ require_once JPATH_SITE . '/components/com_easysocial/controllers/videos.php';
 class EasysocialApiResourceRemoveTags extends ApiResource
 {
 	/**
+	 * Method get
+	 *
+	 * @return  mixed
+	 *
+	 * @since 1.0
+	 */
+	public function get()
+	{
+		$this->plugin->err_code = 405;
+		$this->plugin->err_message = JText::_('PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE');
+		$this->plugin->setApiResponse(null);
+	}
+
+	/**
 	 * Method post
 	 *
 	 * @return  mixed
@@ -52,6 +66,15 @@ class EasysocialApiResourceRemoveTags extends ApiResource
 		$video			=	ES::video();
 		$video->load($tag->target_id);
 		$tag_peoples	=	$video->getTags();
-		$this->plugin->setResponse($tag_peoples);
+
+		$res				=	array();
+		$dataObj			=	new stdClass;
+		$dataObj->results		=	$tag_peoples;
+		$dataObj->empty_message		=	'';
+		$res['data']			=	$dataObj;
+		$res['err_code']		=	200;
+		$res['err_message']		=	'';
+
+		$this->plugin->setResponse($res);
 	}
 }

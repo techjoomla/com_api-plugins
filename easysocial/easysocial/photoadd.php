@@ -58,7 +58,7 @@ class EasysocialApiResourcePhotoadd extends ApiResource
 		$album			=	FD::table('Album');
 		$album->load($album_id);
 		$photo_obj		=	new EasySocialApiUploadHelper;
-		$addphoto		=	$photo_obj->addPhotoAlbum($userid, $album_id);
+		$addphoto		=	$photo_obj->addPhotoAlbum($album_id, $userid);
 		$album->params	=	$addphoto;
 		$album->title	=	JText::_($album->title);
 		$album->caption	=	JText::_($album->caption);

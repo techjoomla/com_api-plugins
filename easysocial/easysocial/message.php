@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Joomla.Site
- * @subpackage  Com_api
+ * @subpackage  Com_api-plugins
  *
  * @copyright   Copyright (C) 2009-2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
  * @license     GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
@@ -38,7 +38,7 @@ class EasysocialApiResourceMessage extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse($this->getConversations());
+		$this->getConversations();
 	}
 
 	/**
@@ -50,7 +50,7 @@ class EasysocialApiResourceMessage extends ApiResource
 	 */
 	public function post()
 	{
-		$this->plugin->setResponse($this->newMessage());
+		$this->newMessage();
 	}
 
 	/**
@@ -73,25 +73,21 @@ class EasysocialApiResourceMessage extends ApiResource
 		// Normalize CRLF (\r\n) to just LF (\n)
 		$msg			=	str_ireplace("\r\n", "\n", $msg);
 
-		$result			=	new stdClass;
+		$res				=	new stdclass;
 
 		if (count($recipients) < 1)
 		{
-			$result->id			=	0;
-			$result->status		=	0;
-			$result->message	=	JText::_('PLG_API_EASYSOCIAL_EMPTY_MESSAGE_MESSAGE');
-
-			return $result;
+			$res->result->status = 0;
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_EMPTY_MESSAGE_MESSAGE');
+			$this->plugin->setResponse($res);
 		}
 
 		// Message should not be empty.
 		if (empty($msg))
 		{
-			$result->id			=	0;
-			$result->status		=	0;
-			$result->message	=	JText::_('PLG_API_EASYSOCIAL_EMPTY_MESSAGE_MESSAGE');
-
-			return $result;
+			$res->result->status = 0;
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_EMPTY_MESSAGE_MESSAGE');
+			$this->plugin->setResponse($res);
 		}
 
 		if ($conversion_id == 0)
@@ -110,17 +106,17 @@ class EasysocialApiResourceMessage extends ApiResource
 
 		if ($state)
 		{
-			$result->status		=	1;
-			$result->message	=	JText::_('PLG_API_EASYSOCIAL_MESSAGE_SENT_MESSAGE');
+			$res->result->status = 1;
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_MESSAGE_SENT_MESSAGE');
 		}
 		else
 		{
 			// Create result obj
-			$result->status		=	0;
-			$result->message	=	JText::_('PLG_API_EASYSOCIAL_UNABLE_SEND_MESSAGE');
+			$res->result->status = 0;
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_UNABLE_SEND_MESSAGE');
 		}
 
-		return $result;
+		$this->plugin->setResponse($res);
 	}
 
 	/**
@@ -163,24 +159,23 @@ class EasysocialApiResourceMessage extends ApiResource
 	{
 		$app			=	JFactory::getApplication();
 		$conversion_id	=	$app->input->get('conversation_id', 0, 'INT');
-		$valid			=	1;
-		$result			=	new stdClass;
+
+		$res				=	new stdclass;
 
 		if (!$conversion_id)
 		{
-			$result->status		=	0;
-			$result->message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_CONVERSATION_MESSAGE');
-			$valid				=	0;
+			$res->result->status = 0;
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_INVALID_CONVERSATION_MESSAGE');
 		}
 		else
 		{
 			// Try to delete the group
-			$conv_model			=	FD::model('Conversations');
-			$result->status		=	$conv_model->delete($conversion_id, $this->plugin->get('user')->id);
-			$result->message	=	JText::_('PLG_API_EASYSOCIAL_CONVERSATION_DELETED_MESSAGE');
+			$conv_model = FD::model('Conversations');
+			$res->result->status = $conv_model->delete($conversion_id, $this->plugin->get('user')->id);
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_CONVERSATION_DELETED_MESSAGE');
 		}
 
-		$this->plugin->setResponse($result);
+		$this->plugin->setResponse($res);
 	}
 
 	/**
@@ -198,16 +193,18 @@ class EasysocialApiResourceMessage extends ApiResource
 		$log_user			=	JFactory::getUser($this->plugin->get('user')->id);
 		$conversation_id	=	$app->input->get('conversation_id', 0, 'INT');
 		$limitstart			=	$app->input->get('limitstart', 0, 'INT');
-		$limit				=	$app->input->get('limit', 20, 'INT');
+		$limit				=	$app->input->get('limit', 500, 'INT');
 		$maxlimit			=	$app->input->get('maxlimit', 100, 'INT');
 		$filter				=	$app->input->get('filter', null, 'STRING');
+
 		$mapp				=	new EasySocialApiMappingHelper;
-		$data				=	array();
-		$data['data']		=	array();
 		$user				=	FD::user($log_user->id);
-		$mapp				=	new EasySocialApiMappingHelper;
+
+		$res				=	new stdclass;
+		$res->result		=	array();
+		$res->empty_message	=	'';
+
 		$conv_model			=	FD::model('Conversations');
-		$conv_model->setState('limitstart', 0);
 
 		// Set the startlimit
 		$conv_model->setState('limitstart', $limitstart);
@@ -216,9 +213,7 @@ class EasysocialApiResourceMessage extends ApiResource
 		{
 			$data['participant']	=	$this->getParticipantUsers($conversation_id);
 			$msg_data				=	$conv_model->setLimit($limit)->getMessages($conversation_id, $log_user->id);
-			$data['data']			=	$mapp->mapItem($msg_data, 'message', $log_user->id);
-
-			return $data;
+			$res->result			=	$mapp->mapItem($msg_data, 'message', $log_user->id);
 		}
 		else
 		{
@@ -236,20 +231,19 @@ class EasysocialApiResourceMessage extends ApiResource
 			 *$conversation = ES::conversation($row->id);
 			 *$msg = $conversation->getMessages();
 			*/
+
 			if (count($conversion) > 0)
 			{
-				$data['data']		=	$mapp->mapItem($conversion, 'conversion', $log_user->id);
-				$data['data']		=	array_slice($data['data'], $limitstart, $limit);
-				$data['status']		=	true;
+				$res->result = $mapp->mapItem($conversion, 'conversion', $log_user->id);
+				$res->result = array_slice($res->result, $limitstart, $limit);
 			}
 			else
 			{
-				$data['message']	=	JText::_('COM_EASYSOCIAL_CONVERSATION_EMPTY_LIST');
-				$data['status']		=	false;
+				$res->empty_message = JText::_('COM_EASYSOCIAL_CONVERSATION_EMPTY_LIST');
 			}
-
-			return $data;
 		}
+
+		$this->plugin->setResponse($res);
 	}
 
 	/**

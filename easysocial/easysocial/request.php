@@ -70,7 +70,10 @@ class EasysocialApiResourceRequest extends ApiResource
 		$req_val       = $app->input->get('request', '', 'STRING');
 		$other_user_id = $app->input->get('target_user', 0, 'INT');
 		$type          = $app->input->get('type', 'group', 'STRING');
+
 		$data = array();
+		$req_val = ($req_val == 'cancel')?'reject':$req_val;
+
 		$user = FD::user($other_user_id);
 		$res  = new stdClass;
 

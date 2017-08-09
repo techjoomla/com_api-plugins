@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Joomla.Site
- * @subpackage  Com_api
+ * @subpackage  Com_api-plugins
  *
  * @copyright   Copyright (C) 2009-2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
  * @license     GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
@@ -37,7 +37,7 @@ class EasysocialApiResourceGroups extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse($this->getGroups());
+		$this->getGroups();
 	}
 
 	/**
@@ -49,7 +49,9 @@ class EasysocialApiResourceGroups extends ApiResource
 	 */
 	public function post()
 	{
-		$this->plugin->setResponse($this->getGroups());
+		$this->plugin->err_code = 405;
+		$this->plugin->err_message = JText::_('PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE');
+		$this->plugin->setResponse(null);
 	}
 
 	/**
@@ -61,20 +63,20 @@ class EasysocialApiResourceGroups extends ApiResource
 	 */
 	public function getGroups()
 	{
-		// Init variable
-
 		$app					=	JFactory::getApplication();
 		$log_user				=	JFactory::getUser($this->plugin->get('user')->id);
-		$db						=	JFactory::getDbo();
-		$nxt_lim				=	20;
 		$search					=	$app->input->get('search', '', 'STRING');
 
-		// $group_id			=	$app->input->get('id', 0, 'INT');
 		$userid					=	$log_user->id;
 		$mapp					=	new EasySocialApiMappingHelper;
+
 		$filters				=	array();
 		$filters['category']	=	$app->input->get('category', 0, 'INT');
 		$filters['uid']			=	$app->input->get('target_user', 0, 'INT');
+
+		$res					=	new stdclass;
+		$res->result = array();
+		$res->empty_message = '';
 
 		// Change target user
 		if ($filters['uid'] != 0)
@@ -84,11 +86,17 @@ class EasysocialApiResourceGroups extends ApiResource
 
 		$filters['types']		=	$app->input->get('type', 0, 'INT');
 		$filters['state']		=	$app->input->get('state', 0, 'INT');
+
+		$filters['all']	=	$app->input->get('all', false, 'BOOLEAN');
 		$filters['featured']	=	$app->input->get('featured', false, 'BOOLEAN');
 		$filters['mygroups']	=	$app->input->get('mygroups', false, 'BOOLEAN');
 		$filters['invited']		=	$app->input->get('invited', false, 'BOOLEAN');
+
+		$filters['uid'] = ($filters['mygroups']) ? $log_user->id : $filters['uid'];
+
 		$limit					=	$app->input->get('limit', 10, 'INT');
 		$limitstart				=	$app->input->get('limitstart', 0, 'INT');
+
 		$model					=	FD::model('Groups');
 		$userObj				=	FD::user($userid);
 		$options				=	array('state' => SOCIAL_STATE_PUBLISHED,'ordering' => 'latest','types' => $userObj->isSiteAdmin() ? 'all' : 'user');
@@ -98,36 +106,39 @@ class EasysocialApiResourceGroups extends ApiResource
 		{
 			$options['featured']	=	true;
 			$featured				=	$model->getGroups($options);
-			$featured_grps			=	$mapp->mapItem($featured, 'group', $log_user->id);
+			$groups = $mapp->mapItem($featured, 'group', $log_user->id);
 
-			if (count($featured_grps) > 0 && $featured_grps != false && is_array($featured_grps))
+			if (count($groups) > 0 && $groups != false && is_array($groups))
 			{
-				$featured_grps		=	array_slice($featured_grps, $limitstart, $limit);
-
-				return $featured_grps;
+				$res->result = array_slice($groups, $limitstart, $limit);
+				$this->plugin->setResponse($res);
 			}
-			else
-			{
-				return $featured_grps;
-			}
+			$res->empty_message	=	JText::_('COM_EASYSOCIAL_GROUPS_EMPTY_FEATURED');
 		}
 		else
 		{
+			if ($filters['all']){
+				$res->empty_message	=	JText::_('COM_EASYSOCIAL_GROUPS_EMPTY_ALL');
+			}
+
 			if ($filters['mygroups'])
 			{
 				$options['uid']		=	$log_user->id;
 				$options['types']	=	'all';
+				$res->empty_message	=	JText::_('COM_EASYSOCIAL_GROUPS_EMPTY_MINE');
 			}
 
 			if ($filters['invited'])
 			{
 				$options['invited']	=	$userid;
 				$options['types']	=	'all';
+				$res->empty_message	=	JText::_('COM_EASYSOCIAL_GROUPS_EMPTY_INVITED');
 			}
 
 			if ($filters['category'])
 			{
 				$options['category']	=	$categoryId;
+				$res->empty_message	=	JText::_('COM_EASYSOCIAL_GROUPS_EMPTY_CATEGORY');
 			}
 
 			if ($filters['uid'] == 0)
@@ -153,32 +164,16 @@ class EasysocialApiResourceGroups extends ApiResource
 
 			$groups	=	$mapp->mapItem($groups, 'group', $log_user->id);
 		}
-
-		return($groups);
-	}
-
-	/**
-	 * Method getActor
-	 *
-	 * @param   string  $id  id
-	 * 
-	 * @return string
-	 *
-	 * @since 1.0
-	 */
-	public function getActor($id=0)
-	{
-		if ($id == 0)
+		if ($groups == null && $res->empty_message == '' )
 		{
-			return 0;
+			$res->empty_message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_NOT_FOUND');
+		}
+		if ($groups != null)
+		{
+			$res->empty_message = '';
+			$res->result = $groups;
 		}
 
-		$user			=	JFactory::getUser($id);
-		$obj			=	new stdclass;
-		$obj->id		=	$user->id;
-		$obj->username	=	$user->username;
-		$obj->url		=	'';
-
-		return $obj;
+		$this->plugin->setResponse($res);
 	}
 }

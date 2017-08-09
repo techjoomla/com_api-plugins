@@ -37,7 +37,7 @@ class EasysocialApiResourceReply extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse($this->getDiscussionReply());
+		$this->getDiscussionReply();
 	}
 
 	/**
@@ -49,7 +49,7 @@ class EasysocialApiResourceReply extends ApiResource
 	 */
 	public function post()
 	{
-		$this->plugin->setResponse($this->postDiscussionReply());
+		$this->postDiscussionReply();
 	}
 
 	/**
@@ -68,15 +68,27 @@ class EasysocialApiResourceReply extends ApiResource
 		$discussId		=	$mainframe->input->get('discussion_id', 0, 'INT');
 		$limit			=	$mainframe->input->get('limit', 10, 'INT');
 		$limitstart		=	$mainframe->input->get('limitstart', 0, 'INT');
-		$wres			=	new stdClass;
 		$valid			=	0;
+		$log_user = JFactory::getUser($this->plugin->get('user')->id);
+
+		// Response object
+		$res = new stdclass;
+		$res->empty_message = '';
+
+		$model = FD::model('Groups');
+		$is_member = $model->isMember($log_user->id, $group_id);
 
 		if (!$group_id)
 		{
-			$wres->status		=	0;
-			$wres->message[]	=	JText::_('PLG_API_EASYSOCIAL_EMPTY_GROUP_ID_MESSAGE');
-
-			return $wres;
+			$res->empty_message	=	JText::_('PLG_API_EASYSOCIAL_EMPTY_GROUP_ID_MESSAGE');
+			$res->result = array();
+			$this->plugin->setResponse($res);
+		}
+		elseif (!$is_member)
+		{
+			$res->empty_message = JText::_('COM_EASYSOCIAL_GROUPS_CLOSED_GROUP_INFO');
+			$res->result = array();
+			$this->plugin->setResponse($res);
 		}
 		else
 		{
@@ -114,7 +126,7 @@ class EasysocialApiResourceReply extends ApiResource
 				$discussion			=	FD::table('Discussion');
 				$discussion->load($discussId);
 				$data_node[]		=	$discussion;
-				$data['discussion']	=	$mapp->mapItem($data_node, 'discussion', $this->plugin->get('user')->id);
+				$res->result->discussion	=	$mapp->mapItem($data_node, 'discussion', $this->plugin->get('user')->id);
 			}
 
 			if ($limitstart)
@@ -122,9 +134,8 @@ class EasysocialApiResourceReply extends ApiResource
 				$reply_rows	=	array_slice($reply_rows, $limitstart, $limit);
 			}
 
-			$data['data']	=	$mapp->mapItem($reply_rows, 'reply', $this->plugin->get('user')->id);
-
-			return( $data );
+			$res->result->replies = $mapp->mapItem($reply_rows, 'reply', $this->plugin->get('user')->id);
+			$this->plugin->setResponse($res);
 		}
 	}
 
@@ -145,11 +156,21 @@ class EasysocialApiResourceReply extends ApiResource
 		$discuss_id		=	$mainframe->input->get('discussion_id', 0, 'INT');
 		$groupId		=	$mainframe->input->get('group_id', 0, 'INT');
 		$content		=	$mainframe->input->get('content', '', 'RAW');
-		$content		=	str_replace('<p>', '', $content);
+
+		/*$content		=	str_replace('<p>', '', $content);
 		$content		=	str_replace('</p>', '', $content);
 		$content		=	str_replace('<', '[', $content);
-		$content		=	str_replace('>', ']', $content);
-		$wres			=	new stdClass;
+		$content		=	str_replace('>', ']', $content);*/
+
+		$content	=	str_replace('<p>', '', $content);
+		$content	=	str_replace('</p>', '', $content);
+		$content	=	str_replace('<', '[', $content);
+		$content	=	str_replace('>', ']', $content);
+		$content	=	str_replace('strong', 'b', $content);
+		$content	=	str_replace('em', 'i', $content);
+		$content	=	str_replace('nbsp;', ' ', $content);
+
+		$res			=	new stdClass;
 		$discussion		=	FD::table('Discussion');
 		$discussion->load($discuss_id);
 
@@ -172,10 +193,10 @@ class EasysocialApiResourceReply extends ApiResource
 		if ($state)
 		{
 			$this->createStream($discussion, $group, $reply, $log_user);
-			$wres->id			=	$discussion->id;
-			$wres->message[]	=	JText::_('PLG_API_EASYSOCIAL_DISCUSSION_REPLY_MESSAGE');
+			$res->result->id			=	$discussion->id;
+			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_DISCUSSION_REPLY_MESSAGE');
 
-			return $wres;
+			$this->plugin->setResponse($res);
 		}
 	}
 

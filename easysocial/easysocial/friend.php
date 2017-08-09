@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Joomla.Site
- * @subpackage  Com_api
+ * @subpackage  Com_api-plugins
  *
  * @copyright   Copyright (C) 2009-2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
  * @license     GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
@@ -35,7 +35,7 @@ class EasysocialApiResourceFriend extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse($this->getFriends());
+		$this->getFriends();
 	}
 
 	/**
@@ -47,7 +47,7 @@ class EasysocialApiResourceFriend extends ApiResource
 	 */
 	public function post()
 	{
-		$this->plugin->setResponse($this->manageFriends());
+		$this->manageFriends();
 	}
 
 	/**
@@ -59,11 +59,11 @@ class EasysocialApiResourceFriend extends ApiResource
 	 */
 	public function delete()
 	{
-		$this->plugin->setResponse($this->deletefriend());
+		$this->deletefriend();
 	}
 
 	/**
-	 * Method this common function is for getting dates for month,year,today,tomorrow filters.
+	 * Method used to delete friend or unfriend.
 	 * 
 	 * @return string
 	 *
@@ -89,24 +89,24 @@ class EasysocialApiResourceFriend extends ApiResource
 		// API validations.
 		if (!$state)
 		{
-			$res->status	=	0;
-			$res->message	=	JText::_('PLG_API_EASYSOCIAL_UNABLE_DELETE_FRIEND_MESSAGE');
+			$res->result->status	=	0;
+			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_UNABLE_DELETE_FRIEND_MESSAGE');
 
-			return $res;
+			$this->plugin->setResponse($res);
 		}
 
 		//  Throw errors when there's a problem removing the friends
 		if (!$friend_table->unfriend($log_user))
 		{
-			$res->status	=	0;
-			$res->message	=	JText::_('PLG_API_EASYSOCIAL_UNABLE_DELETE_FRIEND_MESSAGE');
+			$res->result->status	=	0;
+			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_UNABLE_DELETE_FRIEND_MESSAGE');
 		}
 		else
 		{
-			$res->status	=	1;
-			$res->message	=	JText::_('PLG_API_EASYSOCIAL_FRIEND_DELETED_MESSAGE');
+			$res->result->status	=	1;
+			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_FRIEND_DELETED_MESSAGE');
 
-			return $res;
+			$this->plugin->setResponse($res);
 		}
 	}
 
@@ -125,6 +125,7 @@ class EasysocialApiResourceFriend extends ApiResource
 		$userid		=	$app->input->get('target_user', $this->plugin->get('user')->id, 'INT');
 		$search		=	$app->input->get('search', '', 'STRING');
 		$mapp		=	new EasySocialApiMappingHelper;
+		$res		=	new stdClass;
 
 		if ($userid == 0)
 		{
@@ -143,16 +144,16 @@ class EasysocialApiResourceFriend extends ApiResource
 			$ttl_list	=	$frnd_mod->search($userid, $search, 'username');
 		}
 
-		$frnd_list		=	$mapp->mapItem($ttl_list, 'user', $userid);
+		$res->result	=	$mapp->mapItem($ttl_list, 'user', $userid);
 
-//  Get other data
+		//  Get other data
 		foreach ($frnd_list as $ky => $lval)
 		{
 			$lval->mutual	=	$frnd_mod->getMutualFriendCount($user->id, $lval->id);
 			$lval->isFriend	=	$frnd_mod->isFriends($user->id, $lval->id);
 		}
 
-		return $frnd_list;
+		$this->plugin->setResponse($res);
 	}
 
 	/**
@@ -208,11 +209,15 @@ class EasysocialApiResourceFriend extends ApiResource
 		$db			=	JFactory::getDbo();
 		$frnd_id	=	$app->input->get('target_userid', 0, 'INT');
 		$userid		=	$log_user->id;
+		$result 	=	new stdClass;
 		$res		=	new stdClass;
 
 		if (!$frnd_id)
 		{
-			return 'Friend id not found';
+			$res->result->status = 0;
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_FRIEND_ID_NOT_FOUND');
+
+			$this->plugin->setResponse($res);
 		}
 
 		$frnds_obj	=	new EasySocialModelFriends;
@@ -220,13 +225,15 @@ class EasysocialApiResourceFriend extends ApiResource
 
 		if ($result->id)
 		{
-			$res->status = 1;
+			$res->result->status = 1;
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_FRIEND_REQUEST_SENT_SUCCESSFULL');
 		}
 		else
 		{
-			$res->status = 0;
+			$res->result->status = 0;
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_FRIEND_SENT_FRIEND_REQ');
 		}
 
-		return $res;
+		$this->plugin->setResponse($res);
 	}
 }

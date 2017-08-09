@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Joomla.Site
- * @subpackage  Com_api
+ * @subpackage  Com_api-plugin
  *
  * @copyright   Copyright (C) 2009-2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
  * @license     GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
@@ -48,7 +48,7 @@ class EasysocialApiResourceNotification extends ApiResource
 	 */
 	public function post()
 	{
-		$this->plugin->setResponse($this->friend_add_remove());
+		$this->friend_add_remove();
 	}
 
 	/**
@@ -108,6 +108,8 @@ class EasysocialApiResourceNotification extends ApiResource
 		$state			=	SOCIAL_FRIENDS_STATE_FRIENDS;
 		$status			=	$friendmodel->isFriends($user, $target, $state);
 
+		$res = new stdClass;
+
 		if (!$status)
 		{
 			/* final call to Cancel friend request.
@@ -115,11 +117,15 @@ class EasysocialApiResourceNotification extends ApiResource
 			*/
 
 			$final	=	ES::friends($target, $user)->cancel();
-
-			return true;
+			$res->result->status = 1;
+			$this->plugin->setResponse($res);
+		}
+		else
+		{
+			$res->result->status = 0;
 		}
 
-		return false;
+		$this->plugin->setResponse($res);
 	}
 
 	/**
@@ -141,16 +147,16 @@ class EasysocialApiResourceNotification extends ApiResource
 		// Loading friend model for getting id.
 		$friendmodel	=	FD::model('Friends');
 		$state			=	SOCIAL_FRIENDS_STATE_FRIENDS;
-		$res			=	new stdClass;
 		$status			=	$friendmodel->isFriends($user, $target, $state);
 		$addstate		=	$friend->loadByUser($user, $target);
 
+		$res = new stdClass;
+
 		if (!$addstate)
 		{
-			$res->message	=	JText::_('PLG_API_EASYSOCIAL_UNABLE_REJECT_FRIEND_REQ');
-			$res->status	=	false;
-
-			return $res;
+			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_UNABLE_REJECT_FRIEND_REQ');
+			$res->result->status	=	false;
+			$this->plugin->setResponse($res);
 		}
 
 		if (!$status)
@@ -160,16 +166,14 @@ class EasysocialApiResourceNotification extends ApiResource
 		}
 		else
 		{
-			$res->message	=	JText::_('PLG_API_EASYSOCIAL_UNABLE_REJECT_FRIEND_REQ');
-			$res->status	=	false;
-
-			return $res;
+			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_UNABLE_REJECT_FRIEND_REQ');
+			$res->result->status	=	false;
+			$this->plugin->setResponse($res);
 		}
 
-		$res->message	=	JText::_('PLG_API_EASYSOCIAL_FRIEND_REQ_CANCEL');
-		$res->status	=	true;
-
-		return $res;
+		$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_FRIEND_REQ_CANCEL');
+		$res->result->status	=	true;
+		$this->plugin->setResponse($res);
 	}
 
 	/**
@@ -185,18 +189,19 @@ class EasysocialApiResourceNotification extends ApiResource
 		$user			=	$app->input->get('user_id', 0, 'INT');
 		$target			=	$app->input->get('target_id', 0, 'INT');
 		$friend			=	FD::table('Friend');
-		$res			=	new stdClass;
+
 		$state			=	SOCIAL_FRIENDS_STATE_FRIENDS;
 		$friendmodel	=	FD::model('Friends');
 		$status			=	$friendmodel->isFriends($user, $target, $state);
 		$addstate		=	$friend->loadByUser($user, $target);
 
+		$res			=	new stdClass;
+
 		if (!$addstate)
 		{
-			$res->message	=	JText::_('PLG_API_EASYSOCIAL_UNBALE_ADD_FRIEND_REQ');
-			$res->status	=	false;
-
-			return $res;
+			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_UNBALE_ADD_FRIEND_REQ');
+			$res->result->status	=	false;
+			$this->plugin->setResponse($res);
 		}
 
 		if (!$status)
@@ -205,20 +210,18 @@ class EasysocialApiResourceNotification extends ApiResource
 		}
 		else
 		{
-			$res->message	=	JText::_('PLG_API_EASYSOCIAL_UNBALE_ADD_FRIEND_REQ');
-			$res->status	=	false;
-
-			return $res;
+			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_UNBALE_ADD_FRIEND_REQ');
+			$res->result->status	=	false;
+			$this->plugin->setResponse($res);
 		}
 
-		$res->message	=	JText::_('PLG_API_EASYSOCIAL_FRIEND_REQ_ACCEPT');
-		$res->status	=	true;
-
-		return $res;
+		$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_FRIEND_REQ_ACCEPT');
+		$res->result->status	=	true;
+		$this->plugin->setResponse($res);
 	}
 
 	/**
-	 * Method common function for forking other functions	
+	 * Method common function for forking other functions
 	 *
 	 * @return  mixed
 	 *

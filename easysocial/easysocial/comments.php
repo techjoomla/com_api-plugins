@@ -29,7 +29,7 @@ class EasysocialApiResourceComments extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse($this->getComments());
+		$this->getComments();
 	}
 
 	/** Post
@@ -38,37 +38,37 @@ class EasysocialApiResourceComments extends ApiResource
 	 */
 	public function post()
 	{
-		$app		=	JFactory::getApplication;
+		$app		=	JFactory::getApplication();
 		$element	=	$app->input->get('element', '', 'string');
 		$group		=	$app->input->get('group', '', 'string');
 		$verb		=	$app->input->get('verb', '', 'string');
 
-// Element id
+		// Element id
 		$uid		=	$app->input->get('uid', 0, 'int');
 		$input		=	$app->input->get('comment', "", 'RAW');
 		$params		=	$app->input->get('params', array(), 'ARRAY');
 		$streamid	=	$app->input->get('stream_id', '', 'INT');
 
-// Parent comment id
+		// Parent comment id
 		$parent		=	$app->input->get('parent', 0, 'INT');
-		$result		=	new stdClass;
+		$res 		=	new stdClass;
 		$valid = 1;
 
 		if (!$uid)
 		{
-			$result->id			=	0;
-			$result->status		=	0;
-			$result->message	=	JText::_('PLG_API_EASYSOCIAL_EMPTY_ELEMENT_NOT_ALLOWED_MESSAGE');
+			$res->result->id			=	0;
+			$res->result->status		=	0;
+			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_EMPTY_ELEMENT_NOT_ALLOWED_MESSAGE');
 			$valid				=	0;
 		}
 
 		// Message should not be empty.
 		if (empty($input))
 		{
-			$result->id			=	0;
-			$result->status		=	0;
-			$result->message	=	JText::_('PLG_API_EASYSOCIAL_EMPTY_COMMENT_NOT_ALLOWED_MESSAGE');
-			$valid				=	0;
+			$res->result->id			=	0;
+			$res->result->status		=	0;
+			$res->result->message		=	JText::_('PLG_API_EASYSOCIAL_EMPTY_COMMENT_NOT_ALLOWED_MESSAGE');
+			$valid						=	0;
 		}
 		elseif ($valid)
 		{
@@ -118,18 +118,18 @@ class EasysocialApiResourceComments extends ApiResource
 					$dispatcher->trigger($group, 'onPrepareComments', $args);
 
 					// Create result obj
-					$result->status		=	1;
-					$result->message	=	JText::_('PLG_API_EASYSOCIAL_COMMENT_SAVE_SUCCESS_MESSAGE');
+					$res->result->status		=	1;
+					$res->result->message		=	JText::_('PLG_API_EASYSOCIAL_COMMENT_SAVE_SUCCESS_MESSAGE');
 				}
 				else
 				{
 					// Create result obj
-					$result->status		=	0;
-					$result->message	=	JText::_('PLG_API_EASYSOCIAL_COMMENT_SAVE_UNSUCCESS_MESSAGE');
+					$res->result->status		=	0;
+					$res->result->message		=	JText::_('PLG_API_EASYSOCIAL_COMMENT_SAVE_UNSUCCESS_MESSAGE');
 				}
 		}
 
-		$this->plugin->setResponse($result);
+		$this->plugin->setResponse($res);
 	}
 
 	/** GetComments
@@ -138,11 +138,16 @@ class EasysocialApiResourceComments extends ApiResource
 	 */
 	public function getComments()
 	{
-		$app				=	JFactory::getApplication;
+		$app				=	JFactory::getApplication();
 		$log_user			=	JFactory::getUser($this->plugin->get('user')->id);
 		$row				=	new stdClass;
 		$row->uid			=	$app->input->get('uid', 0, 'INT');
 		$row->element		=	$app->input->get('element', '', 'STRING');
+
+		// Response object
+		$res = new stdclass;
+		$res->result = array();
+		$res->empty_message = '';
 
 // Discussions.group.reply
 		$row->stream_id		=	$app->input->get('stream_id', 0, 'INT');
@@ -151,11 +156,19 @@ class EasysocialApiResourceComments extends ApiResource
 		$row->limitstart	=	$app->input->get('limitstart', 0, 'INT');
 		$row->limit			=	$app->input->get('limit', 10, 'INT');
 		$row->userid		=	$log_user->id;
-		$data				=	array;
 		$mapp				=	new EasySocialApiMappingHelper;
-		$data['data']		=	$mapp->createCommentsObj($row, $row->limitstart, $row->limit);
+		$data				=	$mapp->createCommentsObj($row, $row->limitstart, $row->limit);
 
-		return $data;
+		if (count($data['data']) < 1)
+		{
+			$res->empty_message	=	JText::_('APP_USER_KOMENTO_NO_COMMENTS_FOUND');
+		}
+		else
+		{
+			$res->result	=	$data;
+		}
+
+		$this->plugin->setResponse($res);
 	}
 
 	/** Delete

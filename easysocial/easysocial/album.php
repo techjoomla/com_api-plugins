@@ -32,7 +32,7 @@ class EasysocialApiResourceAlbum extends ApiResource
 
 	public function get()
 	{
-		return $this->plugin->setResponse($this->get_album_images());
+		$this->get_album_images();
 	}
 
 	/** POST Call
@@ -42,7 +42,7 @@ class EasysocialApiResourceAlbum extends ApiResource
 
 	public function post()
 	{
-		return $this->plugin->setResponse($this->create_album());
+		$this->create_album();
 	}
 
 	/** DELETE Call
@@ -79,7 +79,7 @@ class EasysocialApiResourceAlbum extends ApiResource
 	/** 
 	 * This function is use to delete photo from album
 	 * 
-	 * @return	array		messages
+	 * @return	array messages
 	 */
 
 	public function delete_photo()
@@ -149,6 +149,11 @@ class EasysocialApiResourceAlbum extends ApiResource
 		$ob					=	new EasySocialModelPhotos;
 		$photos				=	$ob->getPhotos($mydata);
 
+		// Response object
+		$res = new stdclass;
+		$res->result = array();
+		$res->empty_message = '';
+
 		// Loading photo table
 		$photo				=	FD::table('Photo');
 
@@ -166,7 +171,16 @@ class EasysocialApiResourceAlbum extends ApiResource
 		// Mapping function
 		$all_photos					=	$mapp->mapItem($photos, 'photos', $log_user);
 
-		return $all_photos;
+		if (count($all_photos) < 1)
+		{
+			$res->empty_message	=	JText::_('COM_EASYSOCIAL_NO_ITEMS_FOUND');
+		}
+		else
+		{
+			$res->result	=	$all_photos;
+		}
+
+		$this->plugin->setResponse($res);
 	}
 
 	/**
@@ -207,6 +221,8 @@ class EasysocialApiResourceAlbum extends ApiResource
 
 	public function create_album()
 	{
+		//file_put_contents(JPATH_ROOT . '/test.log', print_r("herer", true), FILE_APPEND);
+
 		// Get the uid and type
 		$app	=	JFactory::getApplication();
 		$uid	=	$app->input->get('uid', 0, 'INT');
@@ -233,10 +249,10 @@ class EasysocialApiResourceAlbum extends ApiResource
 
 		if ($isNew && !$lib->canCreateAlbums())
 		{
-			$res->success	=	0;
+			$res->status	=	0;
 			$res->message	=	JText::_('COM_EASYSOCIAL_ALBUMS_ACCESS_NOT_ALLOWED');
 
-			return $res;
+			$this->plugin->setResponse($res);
 		}
 
 		// Set the album uid and type
@@ -247,10 +263,10 @@ class EasysocialApiResourceAlbum extends ApiResource
 		// Determine if the user has already exceeded the album creation
 		if ($isNew && $lib->exceededLimits())
 		{
-			$res->success	=	0;
+			$res->status	=	0;
 			$res->message	=	JText::_('COM_EASYSOCIAL_ALBUMS_EXCEEDED');
 
-			return $res;
+			$this->plugin->setResponse($res);
 		}
 
 		// Set the album creation alias
@@ -273,14 +289,15 @@ class EasysocialApiResourceAlbum extends ApiResource
 
 		if (!$state)
 		{
-			$res->success	=	0;
+			$res->status	=	0;
 			$res->message	=	JText::_('COM_EASYSOCIAL_ALBUMS_EXCEEDED');
 
-			return $res;
+			$this->plugin->setResponse($res);
 		}
 
 		$photo_obj		=	new EasySocialApiUploadHelper;
-		$photodata		=	$photo_obj->albumPhotoUpload($uid, $type, $album->id);
+		$photodata		=	$photo_obj->albumPhotoUpload($album->id, $uid, $type);
+
 		$album->params	=	$photodata;
 
 		if (!$album->cover_id)
@@ -291,6 +308,6 @@ class EasysocialApiResourceAlbum extends ApiResource
 			$album->store();
 		}
 
-		return $album;
+		$this->plugin->setResponse($album);
 	}
 }

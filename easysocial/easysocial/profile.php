@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Joomla.Site
- * @subpackage  Com_api
+ * @subpackage  Com_api-plugins
  *
  * @copyright   Copyright (C) 2009-2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
  * @license     GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
@@ -39,7 +39,7 @@ class EasysocialApiResourceProfile extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse($this->getProfile());
+		$this->getProfile();
 	}
 
 	/**
@@ -52,7 +52,9 @@ class EasysocialApiResourceProfile extends ApiResource
 
 	public function post()
 	{
-		$this->plugin->setResponse(JText::_('PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE'));
+		$this->plugin->err_code = 405;
+		$this->plugin->err_message = JText::_('PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE');
+		$this->plugin->setResponse(null);
 	}
 
 	/**
@@ -69,15 +71,17 @@ class EasysocialApiResourceProfile extends ApiResource
 		$log_user		=	$this->plugin->get('user')->id;
 		$other_user_id	=	$app->input->get('user_id', 0, 'INT');
 		$userid			=	($other_user_id)?$other_user_id:$log_user;
+
+		$res = new stdClass;
+
 		$data			=	array();
 		$user			=	FD::user($userid);
 
 		if ($user->id == 0)
 		{
-			$result				=	new stdClass;
-			$result->message	=	JText::_('COM_USERS_USER_NOT_FOUND');
-
-			return $result;
+			$this->plugin->err_code = 404;
+			$this->plugin->err_message = JText::_('COM_USERS_USER_NOT_FOUND');
+			$this->plugin->setResponse(null);
 		}
 
 		// Easysocial default profile
@@ -130,33 +134,28 @@ class EasysocialApiResourceProfile extends ApiResource
 				}
 			}
 
-			// For change data type
-			foreach ($field_arr as $ky => $fld)
+			$friendmodel = FD::model('Friends');
+			$friendsObj	=	ES::friends($other_user_id, $log_user);
+			$user_obj->isrequestor = $friendsObj->isRequester();
+
+			/* $pending_req = $friendmodel->getPendingRequests($log_user);
+			$user_obj->isrequestor=false;
+
+			if($pending_req)
 			{
-				if ($fld->field_name == 'Password'|| $fld->field_name == 'Timezone' || $fld->field_name == 'Home Church')
+				foreach($pending_req as $pr)
 				{
-					unset($field_arr[$ky]);
+					if($pr->actor_id == $other_user_id)
+					$user_obj->isrequestor=true;
 				}
 			}
+			*/
 
-			$friendmodel			=	FD::model('Friends');
-			$result					=	$friendmodel->getPendingRequests($log_user);
-			$user_obj->isrequestor	=	false;
-
-			if ($result)
-			{
-				foreach ($result as $res)
-				{
-					if ($res->actor_id == $other_user_id)
-					{
-						$user_obj->isrequestor	=	true;
-					}
-				}
-			}
-
-			$user_obj->more_info	=	$field_arr;
+			$user_obj->more_info[] = $field_arr;
 		}
 
-		return($user_obj);
+		$res->result = $user_obj;
+
+		$this->plugin->setResponse($res);
 	}
 }

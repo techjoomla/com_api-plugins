@@ -134,7 +134,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 			}
 			else
 			{
-				$res->empty_message	=	'No discussion here';
+				$res->empty_message	=	JText::_('PLG_API_EASYSOCIAL_NO_DISCUSSION_FOUNDS');
 			}
 
 			$this->plugin->setResponse($res);

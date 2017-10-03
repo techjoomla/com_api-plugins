@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Joomla.Site
- * @subpackage  Com_api
+ * @subpackage  Com_api-plugins
  *
  * @copyright   Copyright (C) 2009-2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
  * @license     GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
@@ -38,7 +38,34 @@ class EasysocialApiResourceGroup extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse($this->getGroup());
+		// Init variable
+		$app			=	JFactory::getApplication();
+		$log_user		=	JFactory::getUser($this->plugin->get('user')->id);
+		$group_id		=	$app->input->get('id', 0, 'INT');
+		$other_user_id	=	$app->input->get('user_id', 0, 'INT');
+		$userid			=	($other_user_id)?$other_user_id:$log_user->id;
+
+		// $user			=	FD::user($userid);
+		$mapp			=	new EasySocialApiMappingHelper;
+
+		// $grp_model		=	FD::model('Groups');
+
+		$res				=	new stdclass;
+		$res->result		=	array();
+		$res->empty_message	=	'';
+
+		if ($group_id)
+		{
+			$group[] = FD::group($group_id);
+			$res->result =	$mapp->mapItem($group, 'group', $log_user->id);
+			$this->plugin->setResponse($res);
+		}
+		else
+		{
+			$this->plugin->err_code = 403;
+			$this->plugin->err_message = 'Group Not Found';
+			$this->plugin->setResponse(null);
+		}
 	}
 
 	/**
@@ -51,7 +78,7 @@ class EasysocialApiResourceGroup extends ApiResource
 
 	public function post()
 	{
-		$this->plugin->setResponse($this->CreateGroup());
+		$this->CreateGroup();
 	}
 
 	/**
@@ -66,23 +93,24 @@ class EasysocialApiResourceGroup extends ApiResource
 		$app		=	JFactory::getApplication();
 		$group_id	=	$app->input->get('id', 0, 'INT');
 		$valid		=	1;
-		$result		=	new stdClass;
 		$group		=	FD::group($group_id);
+		$groupsModel =	FD::model('groups');
+		$res		=	new stdclass;
 
 		if (!$group->id || !$group_id)
 		{
-			$result->status		=	0;
-			$result->message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_GROUP_MESSAGE');
-			$valid				=	0;
+			$res->result->status = 0;
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_INVALID_GROUP_MESSAGE');
+			$valid = 0;
 		}
 
 		// Only allow super admins to delete groups
 		$my	=	FD::user($this->plugin->get('user')->id);
 
-		if (!$my->isSiteAdmin() && !$group->isOwner())
+		if (!$my->isSiteAdmin() && !$groupsModel->isOwner($my->id, $group_id))
 		{
-			$result->status		=	0;
-			$result->message	=	JText::_('PLG_API_EASYSOCIAL_ACCESS_DENIED_MESSAGE');
+			$res->result->status = 0;
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_ACCESS_DENIED_MESSAGE');
 			$valid				=	0;
 		}
 
@@ -90,40 +118,11 @@ class EasysocialApiResourceGroup extends ApiResource
 		{
 			// Try to delete the group
 			$group->delete();
-			$result->status		=	1;
-			$result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_DELETED_MESSAGE');
+			$res->result->status = 1;
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_GROUP_DELETED_MESSAGE');
 		}
 
-		$this->plugin->setResponse($result);
-	}
-
-	/**
-	 * Method function use for get friends data
-	 *
-	 * @return  mixed
-	 *
-	 * @since 1.0
-	 */
-	public function getGroup()
-	{
-		// Init variable
-		$app			=	JFactory::getApplication();
-		$log_user		=	JFactory::getUser($this->plugin->get('user')->id);
-		$group_id		=	$app->input->get('id', 0, 'INT');
-		$other_user_id	=	$app->input->get('user_id', 0, 'INT');
-		$userid			=	($other_user_id)?$other_user_id:$log_user->id;
-		$data			=	array();
-		$user			=	FD::user($userid);
-		$mapp			=	new EasySocialApiMappingHelper;
-		$grp_model		=	FD::model('Groups');
-
-		if ($group_id)
-		{
-			$group[]		=	FD::group($group_id);
-			$data['data']	=	$mapp->mapItem($group, 'group', $log_user->id);
-		}
-
-		return $data;
+		$this->plugin->setResponse($res);
 	}
 
 	/**
@@ -142,7 +141,6 @@ class EasysocialApiResourceGroup extends ApiResource
 
 		// Create group post structure
 		$grp_data		=	array();
-		$result			=	new stdClass;
 		$valid			=	1;
 		$title			=	$app->input->get('title', null, 'STRING');
 		$parmalink		=	$app->input->get('parmalink', null, 'STRING');
@@ -153,6 +151,9 @@ class EasysocialApiResourceGroup extends ApiResource
 		$avtar_scr		=	'';
 		$avtar_typ		=	'';
 		$phto_obj		=	null;
+
+		// Response object
+		$res				=	new stdclass;
 
 		if (!empty($_FILES['file']['name']))
 		{
@@ -179,38 +180,38 @@ class EasysocialApiResourceGroup extends ApiResource
 		// Check title
 		if (empty($title) || $title == null)
 		{
-			$valid				=	0;
-			$result->status		=	0;
-			$result->message[]	=	JText::_('PLG_API_EASYSOCIAL_INVALID_GROUP_NAME');
+			$valid = 0;
+			$res->result->status = 0;
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_INVALID_GROUP_NAME');
 		}
 
 		// Check parmalink
 		if (empty($parmalink) || $parmalink == null)
 		{
-			$valid				=	0;
-			$result->status		=	0;
-			$result->message[]	=	JText::_('PLG_API_EASYSOCIAL_INVALID_PARMALINK');
+			$valid = 0;
+			$res->result->status = 0;
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_INVALID_PARMALINK');
 		}
 
 		// Check description
 		if (empty($description) || $description == null)
 		{
-			$valid				=	0;
-			$result->status		=	0;
-			$result->message[]	=	JText::_('PLG_API_EASYSOCIAL_EMPTY_DESCRIPTION');
+			$valid = 0;
+			$res->result->status = 0;
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_EMPTY_DESCRIPTION');
 		}
 
 		// Check group type
 		if (empty($type) || $type == 0)
 		{
-			$valid				=	0;
-			$result->status		=	0;
-			$result->message[]	=	JText::_('PLG_API_EASYSOCIAL_ADD_GROUP_TYPE_MESSAGE');
+			$valid = 0;
+			$res->result->status = 0;
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_ADD_GROUP_TYPE_MESSAGE');
 		}
 
 		if (!$valid)
 		{
-			return $result;
+			$this->plugin->setResponse($res);
 		}
 		else
 		{
@@ -261,11 +262,11 @@ class EasysocialApiResourceGroup extends ApiResource
 										break;
 						case 'URL':		$grp_data['es-fields-' . $field['id']] = $app->input->get('website', null, 'STRING');
 										break;
-						case 'PHOTOS':	$grp_data['photo_albums'] = $app->input->get('photo_album', 0, 'INT');
+						case 'PHOTOS':	$grp_data['photo_albums'] = $app->input->get('photo_album', false, 'BOOLEAN');
 										break;
-						case 'NEWS':	$grp_data['es-fields-' . $field['id']] = $app->input->get('announcements', 0, 'INT');
+						case 'NEWS':	$grp_data['es-fields-' . $field['id']] = $app->input->get('announcements', false, 'BOOLEAN');
 										break;
-						case 'DISCUSSIONS': $grp_data['es-fields-' . $field['id']] = $app->input->get('discussions', 0, 'INT');
+						case 'DISCUSSIONS': $grp_data['es-fields-' . $field['id']] = $app->input->get('discussions', false, 'BOOLEAN');
 											break;
 						case 'AVATAR':	$grp_data['es-fields-' . $field['id']] = Array
 												(
@@ -287,21 +288,19 @@ class EasysocialApiResourceGroup extends ApiResource
 				// For check group exceed limit
 				if (!$user->getAccess()->allowed('groups.create') && !$user->isSiteAdmin())
 				{
-					$valid				=	0;
-					$result->status		=	0;
-					$result->message[]	=	JText::_('PLG_API_EASYSOCIAL_CREATE_GROUP_ACCESS_DENIED');
-
-					return $result;
+					$valid = 0;
+					$res->result->status = 0;
+					$res->result->message = JText::_('PLG_API_EASYSOCIAL_CREATE_GROUP_ACCESS_DENIED');
+					$this->plugin->setResponse($res);
 				}
 
 				// Ensure that the user did not exceed their group creation limit
 				if ($user->getAccess()->intervalExceeded('groups.limit', $user->id) && !$user->isSiteAdmin())
 				{
-					$valid				=	0;
-					$result->status		=	0;
-					$result->message[]	=	JText::_('PLG_API_EASYSOCIAL_GROUP_CREATION_LIMIT_EXCEEDS');
-
-					return $result;
+					$valid = 0;
+					$res->result->status = 0;
+					$res->result->message = JText::_('PLG_API_EASYSOCIAL_GROUP_CREATION_LIMIT_EXCEEDS');
+					$this->plugin->setResponse($res);
 				}
 
 				// Get current user's info
@@ -373,8 +372,8 @@ class EasysocialApiResourceGroup extends ApiResource
 
 				if ($group->id)
 				{
-					$result->status = 1;
-					$result->id = $group->id;
+					$res->result->status = 1;
+					$res->result->id = $group->id;
 
 					// @points: groups.create
 					// Assign points to the user when a group is created
@@ -386,15 +385,27 @@ class EasysocialApiResourceGroup extends ApiResource
 					{
 						$this->addTostream($user, $group, $config);
 					}
+
+					$my 			= FD::user();
+					$group->state 	= $my->getAccess()->get('groups.moderate');
+
+					if ($group->state)
+					{
+							$res->result->message = JText::_('COM_EASYSOCIAL_GROUPS_CREATED_PENDING_APPROVAL');
+					}
+					else
+					{
+						$res->result->message = JText::_('COM_EASYSOCIAL_GROUPS_CREATED_SUCCESSFULLY');
+					}
 				}
 				else
 				{
-					$result->status		=	0;
-					$result->id			=	0;
-					$result->message	=	JText::_('PLG_API_EASYSOCIAL_UNABLE_CREATE_GROUP_MESSAGE');
+					$res->result->status		=	0;
+					$res->result->id			=	0;
+					$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_UNABLE_CREATE_GROUP_MESSAGE');
 				}
 
-				return $result;
+				$this->plugin->setResponse($res);
 		}
 	}
 

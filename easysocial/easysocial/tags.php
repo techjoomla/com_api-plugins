@@ -34,7 +34,7 @@ class EasysocialApiResourceTags extends ApiResource
 	 */
 		public function get()
 		{
-			$this->plugin->setResponse($this->getTags());
+			$this->getTags();
 		}
 
 	/**
@@ -47,6 +47,7 @@ class EasysocialApiResourceTags extends ApiResource
 	public function getTags()
 	{
 		$app = JFactory::getApplication();
+		$log_user	=	$this->plugin->get('user')->id;
 
 		// Get the video
 		$videoid = $app->input->get('video_id', 0, 'INT');
@@ -61,11 +62,17 @@ class EasysocialApiResourceTags extends ApiResource
 		{
 			foreach ( $tag_peoples as $tusr )
 			{
-				$tusr->target_user_obj = $mapp->mapItem($tusr->target_id, 'profile', $log_user);
+				$tusr->target_user_obj[] = $mapp->mapItem($tusr->item_id, 'profile', $log_user);
 			}
 		}
 
-		return $tag_peoples;
+		// Response object
+		$res = new stdclass;
+		$res->result = array();
+		$res->empty_message = '';
+
+		$res->result = $tag_peoples;
+		$this->plugin->setResponse($res);
 	}
 
 	/**
@@ -99,6 +106,7 @@ class EasysocialApiResourceTags extends ApiResource
 		$video->load($cluster);
 		$model = ES::model('Tags');
 		$tag_peoples = $model->getTags($videoid, SOCIAL_TYPE_VIDEO);
+
 		$this->plugin->setResponse($tag_peoples);
 	}
 }

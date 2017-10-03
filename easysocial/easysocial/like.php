@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Joomla.Site
- * @subpackage  Com_api
+ * @subpackage  Com_api-plugins
  *
  * @copyright   Copyright (C) 2009-2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
  * @license     GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
@@ -38,7 +38,9 @@ class EasysocialApiResourceLike extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse(JText::_('PLG_API_EASYSOCIAL_USE_POST_OR_DELETE_MESSAGE'));
+		$this->plugin->err_code = 405;
+		$this->plugin->err_message = JText::_('PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE');
+		$this->plugin->setResponse(null);
 	}
 
 	/**
@@ -50,7 +52,7 @@ class EasysocialApiResourceLike extends ApiResource
 	 */
 	public function post()
 	{
-		$this->plugin->setResponse($this->toggleLike());
+		$this->toggleLike();
 	}
 
 	/**
@@ -62,7 +64,9 @@ class EasysocialApiResourceLike extends ApiResource
 	 */
 	public function delete()
 	{
-		$this->plugin->setResponse(JText::_('PLG_API_EASYSOCIAL_NOT_SUPPORTED_MESSAGE'));
+		$this->plugin->err_code = 405;
+		$this->plugin->err_message = JText::_('PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE');
+		$this->plugin->setResponse(null);
 	}
 
 	/**
@@ -77,13 +81,14 @@ class EasysocialApiResourceLike extends ApiResource
 		// Init variable
 		$app		=	JFactory::getApplication();
 		$log_user	=	JFactory::getUser($this->plugin->get('user')->id);
-		$result		=	new stdClass;
 		$id			=	$app->input->get('id', 0, 'INT');
 		$type		=	$app->input->get('type', null, 'STRING');
 		$group		=	$app->input->get('group', 'user', 'STRING');
 		$itemVerb	=	$app->input->get('verb', null, 'STRING');
 		$streamid	=	$app->input->get('stream_id', 0, 'INT');
 		$my			=	FD::user($log_user->id);
+
+		$res		=	new stdClass;
 
 		// Load likes library.
 		$model		=	FD::model('Likes');
@@ -135,10 +140,11 @@ class EasysocialApiResourceLike extends ApiResource
 
 		// The current action
 		$verb				=	$hasLiked ? JText::_('PLG_API_EASYSOCIAL_UNLIKE') : JText::_('PLG_API_EASYSOCIAL_LIKE');
-		$result->status		= $state;
-		$result->data		=	($state && $verb == 'like')?$model->getLikesCount($id, $type):0;
-		$result->message	=	($state)? $verb . JText::_('PLG_API_EASYSOCIAL_SUCCESSFULL'): $verb . JText::_('PLG_API_EASYSOCIAL_UNSUCCESSFULL');
+		$res->result->status		= $state;
 
-		return($result);
+		// $res->data		=	($state && $verb == 'like')?$model->getLikesCount($id, $type):0;
+		$res->result->message	=	($state)? $verb . JText::_('PLG_API_EASYSOCIAL_SUCCESSFULL'): $verb . JText::_('PLG_API_EASYSOCIAL_UNSUCCESSFULL');
+
+		$this->plugin->setResponse($res);
 	}
 }

@@ -9,6 +9,7 @@ defined('_JEXEC') or die( 'Restricted access' );
 
 jimport('joomla.plugin.plugin');
 
+// Added this line to EasySocial api compatible with EasySocial 2.1.0 package
 ES::import('site:/controllers/controller');
 
 /** plgAPIEasysocial

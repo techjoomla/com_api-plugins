@@ -363,7 +363,15 @@ class UsersApiResourceUsers extends ApiResource
 		}
 		else
 		{
-			$model = new UsersModelUsers;
+			$model = new UsersModelUsers;			
+
+			/**
+			 * Hack to skip pagination limit and fetch all users at once
+			 */
+			// $model->getState();
+			// $model->setState('list.limit', 0);
+			// $model->setState('list.start', 0);
+
 			$users = $model->getItems();
 
 			foreach ($users as $k => $v)

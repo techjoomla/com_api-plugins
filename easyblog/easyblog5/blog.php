@@ -80,6 +80,7 @@ class EasyblogApiResourceBlog extends ApiResource
 			$uid = $post->uid;
 		}
 
+		$key = 'post:'.$post->id;
 		$file = JRequest::getVar('file', '', 'FILES', 'array');
 		$data['image'] = basename($data['image']);
 		$data['image'] = $key . '/' . $data['image'];

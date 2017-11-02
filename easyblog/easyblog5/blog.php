@@ -81,6 +81,8 @@ class EasyblogApiResourceBlog extends ApiResource
 		}
 
 		$key = 'post:'.$post->id;
+
+		// @TODO get this from JInput object
 		$file = JRequest::getVar('file', '', 'FILES', 'array');
 		$data['image'] = basename($data['image']);
 		$data['image'] = $key . '/' . $data['image'];
@@ -225,7 +227,7 @@ class EasyblogApiResourceBlog extends ApiResource
 		// Get the target folder
 		$placeId = EBMM::getUri($key);
 
-		// Get the file input
+		// @TODO get this from JInput object
 		$file = JRequest::getVar('file', '', 'FILES', 'array');
 
 		// Check if the file is really allowed to be uploaded to the site.

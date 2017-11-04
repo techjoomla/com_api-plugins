@@ -1,29 +1,46 @@
 <?php
 /**
- * @package API plugins
- * @copyright Copyright (C) 2009 2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
- * @license GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
- * @link http://www.techjoomla.com
-*/
+ * @version    SVN: <svn_id>
+ * @package    Users
+ * @author     Techjoomla <extensions@techjoomla.com>
+ * @copyright  Copyright (c) 2009-2016 TechJoomla. All rights reserved.
+ * @license    GNU General Public License version 2 or later.
+ */
 
 defined('_JEXEC') or die( 'Restricted access' );
 
 jimport('joomla.plugin.plugin');
 
-class plgAPIUsers extends ApiPlugin
+/**
+ * Base Class for api plugin
+ *
+ * @package     Users
+ * @subpackage  component
+ * @since       1.0
+ */
+
+class PlgAPIUsers extends ApiPlugin
 {
+	/**
+	 * Users api plugin to load com_api classes
+	 *
+	 * @param   string  &$subject  originalamount
+	 * @param   array   $config    coupon_code
+	 *
+	 * @since   1.0
+	 */
 	public function __construct(&$subject, $config = array())
 	{
 		parent::__construct($subject, $config = array());
 
-		ApiResource::addIncludePath(dirname(__FILE__).'/users');
-		
-		/*load language file for plugin frontend*/ 
-		$lang = JFactory::getLanguage(); 
-		$lang->load('plg_api_users', JPATH_ADMINISTRATOR,'',true);
-		
+		ApiResource::addIncludePath(dirname(__FILE__) . '/users');
+
+		/*load language file for plugin frontend*/
+		$lang = JFactory::getLanguage();
+		$lang->load('plg_api_users', JPATH_ADMINISTRATOR, '', true);
+
 		// Set the login resource to be public
-		$this->setResourceAccess('login', 'public','get');
+		$this->setResourceAccess('login', 'public', 'get');
 		$this->setResourceAccess('users', 'public', 'post');
 		$this->setResourceAccess('config', 'public', 'get');
 	}

@@ -1,10 +1,10 @@
 <?php
 /**
- * @package     Joomla.Administrator
- * @subpackage  com_trading
- *
- * @copyright   Copyright (C) 2005 - 2014 Open Source Matters, Inc. All rights reserved.
- * @license     GNU General Public License version 2 or later; see LICENSE.txt
+ * @version    SVN: <svn_id>
+ * @package    com_api.plugins
+ * @author     Techjoomla <extensions@techjoomla.com>
+ * @copyright  Copyright (c) 2009-2017 TechJoomla. All rights reserved.
+ * @license    GNU General Public License version 2 or later.
  */
 // No direct access.
 defined('_JEXEC') or die;
@@ -27,8 +27,8 @@ require_once JPATH_ROOT . '/administrator/components/com_users/models/users.php'
 /**
  * User Api.
  *
- * @package     Joomla.Administrator
- * @subpackage  com_api
+ * @package     com_api.plugins
+ * @subpackage  plugins
  *
  * @since       1.0
  */

@@ -1,7 +1,7 @@
 <?php
 /**
  * @version    SVN: <svn_id>
- * @package    Users
+ * @package    com_api.plugins
  * @author     Techjoomla <extensions@techjoomla.com>
  * @copyright  Copyright (c) 2009-2017 TechJoomla. All rights reserved.
  * @license    GNU General Public License version 2 or later.
@@ -14,8 +14,8 @@ jimport('joomla.plugin.plugin');
 /**
  * Base Class for api plugin
  *
- * @package     Users
- * @subpackage  component
+ * @package     com_api.plugins
+ * @subpackage  plugins
  * @since       1.0
  */
 

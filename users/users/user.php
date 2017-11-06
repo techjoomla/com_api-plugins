@@ -1,7 +1,7 @@
 <?php
 /**
  * @version    SVN: <svn_id>
- * @package    Users
+ * @package    com_api.plugins
  * @author     Techjoomla <extensions@techjoomla.com>
  * @copyright  Copyright (c) 2009-2017 TechJoomla. All rights reserved.
  * @license    GNU General Public License version 2 or later.
@@ -14,8 +14,8 @@ require JPATH_SITE . '/plugins/api/users/users/userService.php';
 /**
  * User Api.
  *
- * @package     Joomla.Administrator
- * @subpackage  com_api
+ * @package     com_api.plugins
+ * @subpackage  plugins
  *
  * @since       1.0
  */

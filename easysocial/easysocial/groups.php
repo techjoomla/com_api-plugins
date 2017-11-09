@@ -9,17 +9,13 @@
  * Work derived from the original RESTful API by Techjoomla (https://github.com/techjoomla/Joomla-REST-API)
  * and the com_api extension by Brian Edgerton (http://www.edgewebworks.com)
  */
-
 defined('_JEXEC') or die('Restricted access');
 
 jimport('joomla.plugin.plugin');
 jimport('joomla.html.html');
 
-require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
-require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/groups.php';
-require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/covers.php';
-require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/fields.php';
-require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
+// @TODO - must be include at bootsraping
+JLoader::register("EasySocialApiMappingHelper", JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php');
 
 /**
  * API class EasysocialApiResourceGroups
@@ -29,151 +25,142 @@ require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
 class EasysocialApiResourceGroups extends ApiResource
 {
 	/**
-	 * Method description
+	 * Method to get groups list
 	 *
 	 * @return  mixed
+	 *
+	 * @deprecated 2.0 use post instead
 	 *
 	 * @since 1.0
 	 */
 	public function get()
 	{
-		$this->getGroups();
+		$app = JFactory::getApplication();
+		$mygroups = $app->input->get('mygroups', false, 'BOOLEAN');
+		$inputArray = $app->input->getArray();
+
+		// Set values for post
+		foreach ($inputArray as $key => $value)
+		{
+			$app->input->post->set($key, $value);
+		}
+
+		// Special case for my groups
+		if ($mygroups)
+		{
+			$app->input->post->set('mine', true);
+		}
+
+		$this->post();
 	}
 
 	/**
-	 * Method description
+	 * Method to get groups list
 	 *
-	 * @return  mixed
+	 * @return  ApiPlugin response object
 	 *
-	 * @since 1.0
+	 * @since 2.0
 	 */
 	public function post()
 	{
-		$this->plugin->err_code = 405;
-		$this->plugin->err_message = JText::_('PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE');
-		$this->plugin->setResponse(null);
-	}
+		$app = JFactory::getApplication();
+		$input = $app->input;
+		$filters = $input->post->getArray();
+		$user = ES::user();
 
-	/**
-	 * Method function use for get friends data
-	 *
-	 * @return  mixed
-	 *
-	 * @since 1.0
-	 */
-	public function getGroups()
-	{
-		$app					=	JFactory::getApplication();
-		$log_user				=	JFactory::getUser($this->plugin->get('user')->id);
-		$search					=	$app->input->get('search', '', 'STRING');
+		$apiResponse = new stdclass;
+		$apiResponse->result = array();
+		$apiResponse->empty_message = JText::_('COM_API_GROUPS_EMPTY_ALL');
 
-		$userid					=	$log_user->id;
-		$mapp					=	new EasySocialApiMappingHelper;
+		$limit = $app->input->get('limit', 10, 'INT');
+		$filters['limit'] = $limit;
 
-		$filters				=	array();
-		$filters['category']	=	$app->input->get('category', 0, 'INT');
-		$filters['uid']			=	$app->input->get('target_user', 0, 'INT');
+		// Set default filters
+		$options['state'] = isset($filters['state']) ? $filters['state'] : SOCIAL_CLUSTER_PUBLISHED;
+		$options['types'] = isset($filters['types']) ? $filters['types'] : $user->isSiteAdmin() ? 'all' : 'user';
+		$options['ordering'] = isset($filters['ordering']) ? $filters['ordering'] : 'latest';
 
-		$res					=	new stdclass;
-		$res->result = array();
-		$res->empty_message = '';
+		$model = ES::model('Groups');
+		$MappingHelper = new EasySocialApiMappingHelper;
+		$groups = array();
 
-		// Change target user
-		if ($filters['uid'] != 0)
+		if (isset($filters['mine']))
 		{
-			$userid	=	$filters['uid'];
+			$options['userid'] = $user->id;
+			$options['types'] = 'participated';
+			$options['featured'] = '';
+			$apiResponse->empty_message = JText::_('COM_API_GROUPS_EMPTY_CREATED');
 		}
-
-		$filters['types']		=	$app->input->get('type', 0, 'INT');
-		$filters['state']		=	$app->input->get('state', 0, 'INT');
-
-		$filters['all']	=	$app->input->get('all', false, 'BOOLEAN');
-		$filters['featured']	=	$app->input->get('featured', false, 'BOOLEAN');
-		$filters['mygroups']	=	$app->input->get('mygroups', false, 'BOOLEAN');
-		$filters['invited']		=	$app->input->get('invited', false, 'BOOLEAN');
-
-		$filters['uid'] = ($filters['mygroups']) ? $log_user->id : $filters['uid'];
-
-		$limit					=	$app->input->get('limit', 10, 'INT');
-		$limitstart				=	$app->input->get('limitstart', 0, 'INT');
-
-		$model					=	FD::model('Groups');
-		$userObj				=	FD::user($userid);
-		$options				=	array('state' => SOCIAL_STATE_PUBLISHED,'ordering' => 'latest','types' => $userObj->isSiteAdmin() ? 'all' : 'user');
-		$groups					=	array();
-
-		if ($filters['featured'])
+		elseif (isset($filters['invited']))
 		{
-			$options['featured']	=	true;
-			$featured				=	$model->getGroups($options);
-			$groups = $mapp->mapItem($featured, 'group', $log_user->id);
-
-			if (count($groups) > 0 && $groups != false && is_array($groups))
-			{
-				$res->result = array_slice($groups, $limitstart, $limit);
-				$this->plugin->setResponse($res);
-			}
-			$res->empty_message	=	JText::_('COM_EASYSOCIAL_GROUPS_EMPTY_FEATURED');
+			$options['invited'] = $user->id;
+			$options['types'] = 'all';
+			$apiResponse->empty_message = JText::_('COM_API_GROUPS_EMPTY_INVITED');
 		}
-		else
+		elseif (isset($filters['pending']))
 		{
-			if ($filters['all']){
-				$res->empty_message	=	JText::_('COM_EASYSOCIAL_GROUPS_EMPTY_ALL');
-			}
+			$options['uid'] = $user->id;
+			$options['state'] = SOCIAL_CLUSTER_DRAFT;
+			$options['types'] = 'user';
+			$apiResponse->empty_message = JText::_('COM_API_CLUSTER_NO_PENDING_MODERATION_GROUP');
+		}
+		elseif (isset($filters['featured']))
+		{
+			$options['featured'] = true;
+			$apiResponse->empty_message = JText::_('COM_API_GROUPS_EMPTY_FEATURED');
+		}
+		elseif (isset($filters['participated']) && $user->id)
+		{
+			$options['userid'] = $user->id;
+			$options['types'] = 'participated';
+		}
+		elseif (isset($filters['category']))
+		{
+			$categoryId = $filters['category'];
+			$category = ES::table('GroupCategory');
+			$category->load($categoryId);
 
-			if ($filters['mygroups'])
+			// Check if this category is a container or not
+			if ($category->container)
 			{
-				$options['uid']		=	$log_user->id;
-				$options['types']	=	'all';
-				$res->empty_message	=	JText::_('COM_EASYSOCIAL_GROUPS_EMPTY_MINE');
-			}
+				// Get all child ids from this category
+				$categoryModel = ES::model('ClusterCategory');
+				$childs = $categoryModel->getChildCategories($category->id);
 
-			if ($filters['invited'])
-			{
-				$options['invited']	=	$userid;
-				$options['types']	=	'all';
-				$res->empty_message	=	JText::_('COM_EASYSOCIAL_GROUPS_EMPTY_INVITED');
-			}
+				$childIds = array();
 
-			if ($filters['category'])
-			{
-				$options['category']	=	$categoryId;
-				$res->empty_message	=	JText::_('COM_EASYSOCIAL_GROUPS_EMPTY_CATEGORY');
-			}
+				foreach ($childs as $child)
+				{
+					$childIds[] = $child->id;
+				}
 
-			if ($filters['uid'] == 0)
-			{
-				$groups	=	$model->getGroups($options);
-			}
-			elseif ($search)
-			{
-				// Get exclusion list
-				$exclusion	=	$app->input->get('exclusion', array(), 'array');
-				$options	=	array('unpublished' => false, 'exclusion' => $exclusion);
-				$groups		=	$model->getGroups($search, $options);
+				// If the childs is empty, we assign the parent itself
+				if (empty($childIds))
+				{
+					$options['category'] = $categoryId;
+				}
+				else
+				{
+					$options['category'] = $childIds;
+				}
 			}
 			else
 			{
-				$groups		=	$model->getUserGroups($filters['uid']);
+				$options['category'] = $categoryId;
 			}
 
-			if ($limit)
-			{
-				$groups		=	array_slice($groups, $limitstart, $limit);
-			}
-
-			$groups	=	$mapp->mapItem($groups, 'group', $log_user->id);
-		}
-		if ($groups == null && $res->empty_message == '' )
-		{
-			$res->empty_message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_NOT_FOUND');
-		}
-		if ($groups != null)
-		{
-			$res->empty_message = '';
-			$res->result = $groups;
+			$apiResponse->empty_message = JText::_('COM_API_GROUPS_EMPTY_CATEGORY');
 		}
 
-		$this->plugin->setResponse($res);
+		$groups = $model->getGroups($options);
+		$groups = $MappingHelper->mapItem($groups, 'group', $user->id);
+
+		if (! empty($groups))
+		{
+			$apiResponse->empty_message = '';
+			$apiResponse->result = $groups;
+		}
+
+		$this->plugin->setResponse($apiResponse);
 	}
 }

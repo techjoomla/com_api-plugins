@@ -57,7 +57,7 @@ class EasySocialApiMappingHelper
 	 * @param   string  $strip_tags   strip tags
 	 * @param   int     $text_length  text length
 	 * @param   string  $skip         skip
-	 * 
+	 *
 	 * @return string
 	 *
 	 * @since 1.0
@@ -128,7 +128,7 @@ class EasySocialApiMappingHelper
 	 *
 	 * @param   string  $rows    array of data
 	 * @param   int     $userid  user id
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -183,7 +183,7 @@ class EasySocialApiMappingHelper
 	 *
 	 * @param   string  $rows    array of data
 	 * @param   int     $userid  user id
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -251,7 +251,7 @@ class EasySocialApiMappingHelper
 	 * @param   string  $rows    array of data
 	 * @param   int     $userid  user id
 	 * @param   int     $type    type
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -380,7 +380,7 @@ class EasySocialApiMappingHelper
 	 *
 	 * @param   string  $rows    array of data
 	 * @param   int     $userid  user id
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -616,7 +616,7 @@ class EasySocialApiMappingHelper
 	 *
 	 * @param   string  $row     array of data
 	 * @param   int     $userid  user id
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -651,7 +651,7 @@ class EasySocialApiMappingHelper
 	 * To build poll content
 	 *
 	 * @param   int  $pid  poll id
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -732,7 +732,7 @@ class EasySocialApiMappingHelper
 	 *
 	 * @param   object  $poll  poll object
 	 * @param   array   $opts  opts array
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -764,7 +764,7 @@ class EasySocialApiMappingHelper
 	 *
 	 * @param   date  $date    date
 	 * @param   int   $userid  user id
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -790,7 +790,7 @@ class EasySocialApiMappingHelper
 	 * @param   array  $row         array of data
 	 * @param   int    $limitstart  limitstart value
 	 * @param   int    $limit       limit
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -858,7 +858,7 @@ class EasySocialApiMappingHelper
 	 * To build ablum object
 	 *
 	 * @param   string  $rows  array of data
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -903,7 +903,7 @@ class EasySocialApiMappingHelper
 	 * To build ablum object
 	 *
 	 * @param   string  $rows  array of data
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -938,7 +938,7 @@ class EasySocialApiMappingHelper
 	 * Function for create category schema
 	 *
 	 * @param   string  $rows  array of data
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -970,7 +970,7 @@ class EasySocialApiMappingHelper
 	 *
 	 * @param   string  $rows    array of data
 	 * @param   int     $userid  user id
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -1148,7 +1148,7 @@ class EasySocialApiMappingHelper
 	 *
 	 * @param   string  $rows    array of data
 	 * @param   int     $userid  user id
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -1161,26 +1161,19 @@ class EasySocialApiMappingHelper
 		}
 
 		$result  = array();
-		$user    = JFactory::getUser($userid);
-		$user1   = FD::user($userid);
 
-		// Easysocial default profile
-		$profile = $user1->getProfile();
-		$fmod_obj = new EasySocialModelFields;
+		$grp_model		=	ES::model('Groups');
 
 		foreach ($rows as $ky => $row)
 		{
-			$group = ES::group($row->id);
-			$grp_model		=	FD::model('Groups');
-			$steps = $grp_model->getAbout($group, $activeStep);
-
+			$steps = $grp_model->getAbout($row);
 			$fieldsArray = array();
 
 			// Get custom fields model.
-			$fieldsModel = FD::model('Fields');
+			$fieldsModel = ES::model('Fields');
 
 			// Get custom fields library.
-			$fields      = FD::fields();
+			$fields      = ES::fields();
 			$field_arr   = array();
 
 			if ($steps)
@@ -1197,7 +1190,7 @@ class EasySocialApiMappingHelper
 						$fobj->title = JText::_($groupInfo->title);
 						$fobj->field_name = JText::_($groupInfo->title);
 						$fobj->step = $groupInfo->step_id;
-						$fobj->field_value = $groupInfo->output;
+						$fobj->field_value = isset($groupInfo->output)?$groupInfo->output:'';
 
 						if ($fobj->unique_key == 'DESCRIPTION')
 						{
@@ -1228,7 +1221,6 @@ class EasySocialApiMappingHelper
 
 			if (isset($row->id))
 			{
-				$grpobj = FD::group($row->id);
 				$item   = new GroupSimpleSchema;
 				$item->id           = $row->id;
 				$item->type = 'group';
@@ -1245,10 +1237,9 @@ class EasySocialApiMappingHelper
 				$item->category_id   = $row->category_id;
 				$item->category_name = $category->get('title');
 				$item->group_type = $row->type;
-				$item->cover         = $grpobj->getCover();
-				$grpobj               = FD::group($row->id);
-				$x                    = $grpobj->cover->x;
-				$y                    = $grpobj->cover->y;
+				$item->cover         = $row->getCover();
+				$x                    = $row->cover->x;
+				$y                    = $row->cover->y;
 				$item->cover_position = $x . '% ' . $y . '%';
 				$item->created_by   = $row->creator_uid;
 				$item->creator_name = JFactory::getUser($row->creator_uid)->username;
@@ -1268,7 +1259,6 @@ class EasySocialApiMappingHelper
 					}
 				}
 
-				$grp_obj   = FD::model('Groups');
 				$alb_model = FD::model('Albums');
 				$uid       = $row->id . ':' . $row->title;
 				$filters   = array(
@@ -1278,11 +1268,11 @@ class EasySocialApiMappingHelper
 
 				// Get total album count
 				$item->album_count      = $alb_model->getTotalAlbums($filters);
-				$item->member_count     = $grp_obj->getTotalMembers($row->id);
-				$item->isowner          = $grp_obj->isOwner($userid, $row->id);
-				$item->ismember         = $grp_obj->isMember($userid, $row->id);
-				$item->isinvited        = $grp_obj->isInvited($userid, $row->id);
-				$item->approval_pending = $grp_obj->isPendingMember($userid, $row->id);
+				$item->member_count     = $row->getTotalMembers($row->id);
+				$item->isowner          = $row->isOwner($userid, $row->id);
+				$item->ismember         = $row->isMember($userid, $row->id);
+				$item->isinvited        = $row->isInvited($userid, $row->id);
+				$item->approval_pending = $row->isPendingMember($userid, $row->id);
 				$result[] = $item;
 			}
 		}
@@ -1295,7 +1285,7 @@ class EasySocialApiMappingHelper
 	 *
 	 * @param   string  $other_user_id  other user id
 	 * @param   int     $userid         user id
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -1329,7 +1319,7 @@ class EasySocialApiMappingHelper
 	 * create badge object list
 	 *
 	 * @param   string  $rows  array of data
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -1360,7 +1350,7 @@ class EasySocialApiMappingHelper
 	 * function for create user schema
 	 *
 	 * @param   string  $rows  array of data
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -1387,7 +1377,7 @@ class EasySocialApiMappingHelper
 	 *
 	 * @param   string  $rows      array of data
 	 * @param   int     $log_user  user object
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -1437,7 +1427,7 @@ class EasySocialApiMappingHelper
 	 * function for create message schema
 	 *
 	 * @param   string  $rows  array of data
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -1473,7 +1463,7 @@ class EasySocialApiMappingHelper
 	 * To build ablum object
 	 *
 	 * @param   string  $rows  array of data
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -1507,7 +1497,7 @@ class EasySocialApiMappingHelper
 	 * Calculate laps time
 	 *
 	 * @param   date  $date  date
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -1526,7 +1516,7 @@ class EasySocialApiMappingHelper
 	 * Create user object
 	 *
 	 * @param   int  $id  id
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -1575,10 +1565,10 @@ class EasySocialApiMappingHelper
 	}
 
 	/**
-	 * date formatting for ios 9 
+	 * date formatting for ios 9
 	 *
 	 * @param   date  $date  date
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -1602,7 +1592,7 @@ class EasySocialApiMappingHelper
 	 * format date for event
 	 *
 	 * @param   date  $dt  date
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -1618,7 +1608,7 @@ class EasySocialApiMappingHelper
 	 * To build ablum object
 	 *
 	 * @param   string  $text  text
-	 * 
+	 *
 	 * @return array
 	 *
 	 * @since 1.0
@@ -1636,7 +1626,7 @@ class EasySocialApiMappingHelper
 	 *
 	 * @param   array  $data  array of data
 	 * @param   array  $user  user object
-	 * 
+	 *
 	 * @return  array
 	 *
 	 * @since   1.0
@@ -1664,7 +1654,7 @@ class EasySocialApiMappingHelper
 	 * function for getting polls
 	 *
 	 * @param   array  $rows  array of data
-	 * 
+	 *
 	 * @return  array
 	 *
 	 * @since   1.0
@@ -1697,7 +1687,7 @@ class EasySocialApiMappingHelper
 	 *
 	 * @param   array  $rows    array of data
 	 * @param   int    $userid  user id
-	 * 
+	 *
 	 * @return  array
 	 *
 	 * @since   1.0
@@ -1783,7 +1773,7 @@ class EasySocialApiMappingHelper
 	 * Function for mapping video object
 	 *
 	 * @param   array  $rows  array of data
-	 * 
+	 *
 	 * @return  array
 	 *
 	 * @since   1.0

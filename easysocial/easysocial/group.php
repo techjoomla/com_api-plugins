@@ -9,19 +9,18 @@
  * Work derived from the original RESTful API by Techjoomla (https://github.com/techjoomla/Joomla-REST-API)
  * and the com_api extension by Brian Edgerton (http://www.edgewebworks.com)
  */
-
 defined('_JEXEC') or die('Restricted access');
 
 jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
-require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
-require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/groups.php';
-require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/covers.php';
-require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/albums.php';
-require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/fields.php';
-require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
-require_once JPATH_SITE . '/plugins/api/easysocial/libraries/uploadHelper.php';
+use Joomla\Registry\Registry;
+
+JLoader::register("EasySocialApiUploadHelper", JPATH_SITE . '/plugins/api/easysocial/libraries/uploadHelper.php');
+JLoader::register("EasySocialApiMappingHelper", '/plugins/api/easysocial/libraries/mappingHelper.php');
+
+
+ES::import('fields:/group/permalink/helper');
+
 /**
  * API class EasysocialApiResourceGroup
  *
@@ -30,422 +29,608 @@ require_once JPATH_SITE . '/plugins/api/easysocial/libraries/uploadHelper.php';
 class EasysocialApiResourceGroup extends ApiResource
 {
 	/**
-	 * Method description
+	 * Method to get details of single Easysocial group
 	 *
-	 * @return  mixed
+	 * @return  ApiPlugin response object
 	 *
 	 * @since 1.0
 	 */
 	public function get()
 	{
-		// Init variable
-		$app			=	JFactory::getApplication();
-		$log_user		=	JFactory::getUser($this->plugin->get('user')->id);
-		$group_id		=	$app->input->get('id', 0, 'INT');
-		$other_user_id	=	$app->input->get('user_id', 0, 'INT');
-		$userid			=	($other_user_id)?$other_user_id:$log_user->id;
+		$input = JFactory::getApplication()->input;
 
-		// $user			=	FD::user($userid);
-		$mapp			=	new EasySocialApiMappingHelper;
+		// Get the group object
+		$id = $input->get('id', 0, 'int');
 
-		// $grp_model		=	FD::model('Groups');
+		$user = ES::user();
+		$group = ES::group($id);
 
-		$res				=	new stdclass;
-		$res->result		=	array();
-		$res->empty_message	=	'';
-
-		if ($group_id)
+		// Ensure that the id provided is valid
+		if (! $group || ! $group->id)
 		{
-			$group[] = FD::group($group_id);
-			$res->result =	$mapp->mapItem($group, 'group', $log_user->id);
-			$this->plugin->setResponse($res);
+			ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_GROUPS_INVALID_GROUP_ID'));
 		}
-		else
+
+		// Ensure that the user has access to view group's item
+		if (! $group->canViewItem() || !$group->isPublished() || ($user->id != $group->creator_uid && $user->isBlockedBy($group->creator_uid)))
 		{
-			$this->plugin->err_code = 403;
-			$this->plugin->err_message = 'Group Not Found';
-			$this->plugin->setResponse(null);
+			ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_GROUPS_NO_ACCESS'));
 		}
+
+		$EasySocialApiMappingHelper = new EasySocialApiMappingHelper;
+
+		$apiResponse = new stdclass;
+		$apiResponse->result = array();
+		$apiResponse->empty_message = '';
+
+		$apiResponse->result = $EasySocialApiMappingHelper->mapItem([$group], 'group', $user->id);
+		$this->plugin->setResponse($apiResponse);
 	}
 
 	/**
-	 * Method description
+	 * Method to create/update single Easysocial group
 	 *
-	 * @return  mixed
+	 * @return  ApiPlugin response object
 	 *
 	 * @since 1.0
 	 */
-
 	public function post()
 	{
-		$this->CreateGroup();
+		$user = ES::user();
+		$input = JFactory::getApplication()->input;
+		$id = $input->get('id', 0, 'int');
+		$cid = $id;
+		$apiResponse = new stdClass;
+		$apiResponse->result = new stdClass;
+		$postValues = $input->post->getArray();
+
+		if (empty($postValues['title']))
+		{
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_GROUP_NAME'));
+		}
+
+		// Check parmalink
+		if (empty($postValues['permalink']))
+		{
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_PARMALINK'));
+		}
+
+		// Check description
+		if (empty($postValues['description']))
+		{
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_EMPTY_DESCRIPTION'));
+		}
+
+		// Check group type
+		if (empty($postValues['type']))
+		{
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_ADD_GROUP_TYPE_MESSAGE'));
+		}
+
+		// Flag to see if this is new or edit
+		$isNew = empty($id);
+
+		if ($isNew)
+		{
+			if (! $user->getAccess()->allowed('groups.create') && ! $user->isSiteAdmin())
+			{
+				ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_GROUPS_NO_ACCESS_CREATE_GROUP'));
+			}
+
+			// Ensure that the user did not exceed their group creation limit
+			if ($user->getAccess()->intervalExceeded('groups.limit', $user->id) && ! $user->isSiteAdmin())
+			{
+				ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_GROUPS_EXCEEDED_LIMIT'));
+			}
+
+			$this->validateGroupPermalink($postValues['permalink'], 0);
+
+			// Load the group category
+			$category = ES::table('GroupCategory');
+			$category->load($postValues['category_id']);
+
+			if (! $category->id || ($category->type != SOCIAL_FIELDS_GROUP_GROUP))
+			{
+				ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_GROUPS_INVALID_CATEGORY_ID'));
+			}
+
+			// Check if the user really has access to create groups
+			if (! $user->getAccess()->allowed('groups.create') && ! $user->isSiteAdmin())
+			{
+				ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_GROUPS_NO_ACCESS_CREATE_GROUP'));
+			}
+
+			// Need to check if this clsuter category has creation limit based on user points or not.
+			if (! $category->hasPointsToCreate($user->id))
+			{
+				ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_GROUPS_INSUFFICIENT_POINTS'));
+			}
+
+			$options = array();
+			$options['workflow_id'] = $category->getWorkflow()->id;
+			$options['group'] = SOCIAL_FIELDS_GROUP_GROUP;
+
+			// Get fields model
+			$fieldsModel = ES::model('Fields');
+
+			// Special case for group AVTAR and COVER
+			$files = $input->post->files;
+
+			// Retrieve all file objects if needed
+
+			if ($files->get('cover'))
+			{
+				$uploadObj = new EasySocialApiUploadHelper;
+				$coverMeta = $uploadObj->ajax_cover($files->get('cover'), 'cover', $category->id, SOCIAL_TYPE_GROUP);
+
+				if (! $coverMeta)
+				{
+					ApiError::raiseError(400, $uploadObj->getError());
+				}
+
+				$postValues['cover'] = $coverMeta;
+			}
+
+			if ($files->get('avatar'))
+			{
+				$uploadObj = new EasySocialApiUploadHelper;
+				$avtarMeta = $uploadObj->ajax_avatar($files->get('avatar'), 'avatar', $category->id, SOCIAL_TYPE_GROUP);
+
+				if (empty($avtarMeta))
+				{
+					ApiError::raiseError(400, $uploadObj->getError());
+				}
+
+				$postValues['avatar'] = array(
+					'source' => $avtarMeta['temp_uri'], 'path' => $avtarMeta['temp_path'], 'data' => '', 'type' => 'upload',
+						'name' => $files->get('avatar')['name']
+				);
+			}
+
+			// Get the custom fields
+			$fields = $fieldsModel->getCustomFields($options);
+
+			// Now map the post values with Easysocial custom fields
+			$fieldArray = $this->createFieldArr($postValues, $options);
+
+			// Get current user's info
+			$session = JFactory::getSession();
+
+			// Get necessary info about the current registration process.
+			$stepSession = ES::table('StepSession');
+			$stepSession->load($session->getId());
+			$stepSession->uid = $category->id;
+
+			// Step is eliminated from here since it is single step registration
+
+			// Merge the post values
+			$registry = ES::get('Registry');
+			$registry->load($stepSession->values);
+
+			// Load up groups model
+			$groupsModel = ES::model('Groups');
+
+			// Load json library.
+			$json = ES::json();
+
+			$post = $input->post->getArray();
+
+			$disallow = array(
+				'option', 'cid', 'controller', 'task', 'option', 'currentStep'
+			);
+
+			// Process $_POST vars
+			foreach ($fieldArray as $key => $value)
+			{
+				if (! in_array($key, $disallow))
+				{
+					if (is_array($value))
+					{
+						$value = ES::json()->encode($value);
+					}
+
+					$registry->set($key, $value);
+				}
+			}
+
+			// Convert the values into an array.
+			$data = $registry->toArray();
+			$args = array(
+				&$data, 'conditionalRequired' => '', &$stepSession
+			);
+
+			// Perform field validations here. Validation should only trigger apps that are loaded on the form
+			// @trigger onRegisterValidate
+			$fieldsLib = ES::fields();
+
+			// Format conditional data
+			$fieldsLib->trigger('onConditionalFormat', SOCIAL_FIELDS_GROUP_GROUP, $fields, $args);
+
+			// Rebuild the arguments since the data is already changed previously.
+			$args = array(
+				&$data, 'conditionalRequired' => '', &$stepSession
+			);
+
+			// Some data need to be retrieved in raw value. let fire another trigger. #730
+			$fieldsLib->trigger('onFormatData', SOCIAL_FIELDS_GROUP_GROUP, $fields, $args);
+
+			// Get the trigger handler
+			$handler = $fieldsLib->getHandler();
+
+			// Get error messages
+			$errors = $fieldsLib->trigger('onRegisterValidate', SOCIAL_FIELDS_GROUP_GROUP, $fields, $args, array($handler, 'validate'));
+
+			// The values needs to be stored in a JSON notation.
+			$stepSession->values = $json->encode($data);
+
+			// Store registration into the temporary table.
+			$stepSession->store();
+
+			// Bind any errors into the registration object
+			$stepSession->setErrors($errors);
+
+			// Saving was intercepted by one of the field applications.
+			if (is_array($errors) && count($errors) > 0)
+			{
+				ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_REGISTRATION_SOME_ERRORS_IN_THE_REGISTRATION_FORM'));
+			}
+
+			// Update creation date
+			$stepSession->created = ES::date()->toMySQL();
+
+			// Save the temporary data.
+			$stepSession->store();
+
+			// Create the group now.
+			$group = $groupsModel->createGroup($stepSession);
+
+			// If there's no id, we know that there's some errors.
+			if (! $group->id)
+			{
+				$errors = $groupsModel->getError();
+				ApiError::raiseError(400, $errors);
+			}
+
+			$points = ES::points();
+			$points->assign('groups.create', 'com_easysocial', $user->id);
+
+			// Add this action into access logs.
+			ES::access()->log('groups.limit', $user->id, $group->id, SOCIAL_TYPE_GROUP);
+			$message = JText::_('COM_EASYSOCIAL_GROUPS_CREATED_PENDING_APPROVAL');
+
+			// If the group is published, we need to perform other activities
+			if ($group->state == SOCIAL_STATE_PUBLISHED)
+			{
+				$message = JText::_('COM_EASYSOCIAL_GROUPS_CREATED_SUCCESSFULLY');
+				$this->addTostream($user, $group);
+
+				// Update social goals
+				$user->updateGoals('joincluster');
+			}
+
+			$apiResponse->result->status = 1;
+			$apiResponse->result->message = $message;
+
+			$this->plugin->setResponse($apiResponse);
+		}
+		else
+		{
+			$group = ES::group($id);
+
+			if (!$id || !$group->id)
+			{
+				ApiError::raiseError(400, JText::_("COM_EASYSOCIAL_GROUPS_INVALID_GROUP_ID"));
+			}
+
+			if (!$group->isOwner() && !$group->isAdmin() && !$user->isSiteAdmin())
+			{
+				ApiError::raiseError(400, JText::_("COM_EASYSOCIAL_GROUPS_NO_ACCESS"));
+			}
+
+			if (! SocialFieldsGroupPermalinkHelper::valid($postValues['permalink'], new Registry))
+			{
+				ApiError::raiseError(400, JText::_('PLG_FIELDS_GROUP_PERMALINK_INVALID_PERMALINK'));
+			}
+
+			$this->validateGroupPermalink($postValues['permalink'], $group);
+
+			// Special case for group AVTAR and COVER
+			$files = $input->post->files;
+
+			// Retrieve all file objects if needed
+			if ($files->get('cover'))
+			{
+				$uploadObj = new EasySocialApiUploadHelper;
+				$coverMeta = $uploadObj->ajax_cover($files->get('cover'), 'cover', $group->category_id, SOCIAL_TYPE_GROUP);
+
+				if (! $coverMeta)
+				{
+					ApiError::raiseError(400, $uploadObj->getError());
+				}
+
+				$postValues['cover'] = $coverMeta;
+			}
+
+			if ($files->get('avatar'))
+			{
+				$uploadObj = new EasySocialApiUploadHelper;
+				$avtarMeta = $uploadObj->ajax_avatar($files->get('avatar'), 'avatar', $group->category_id, SOCIAL_TYPE_GROUP);
+
+				if (empty($avtarMeta))
+				{
+					ApiError::raiseError(400, $uploadObj->getError());
+				}
+
+				$postValues['avatar'] = array(
+						'source' => $avtarMeta['temp_uri'], 'path' => $avtarMeta['temp_path'], 'data' => '', 'type' => 'upload',
+						'name' => $files->get('avatar')['name']
+				);
+			}
+
+			$fieldsModel = ES::model('Fields');
+
+			$options = array(
+			'group' => SOCIAL_TYPE_GROUP ,
+			'workflow_id' => $group->getWorkflow()->id,
+			'data' => true, 'dataId' => $group->id,
+			'dataType' => SOCIAL_TYPE_GROUP,
+			'visible' => SOCIAL_PROFILES_VIEW_EDIT);
+
+			$fields = $fieldsModel->getCustomFields($options);
+			$groupData = $this->generateGroupFieldData($fields);
+			$postValues = $this->createFieldArr($postValues, $options);
+			$registry = ES::registry();
+
+			foreach ($groupData as $key => $value)
+			{
+				if (isset($postValues[$key]))
+				{
+					$value = $postValues[$key];
+				}
+
+				if (is_array($value))
+				{
+					$value = json_encode($value);
+				}
+
+				$registry->set($key, $value);
+			}
+
+			$data = $data = $registry->toArray();
+			$fieldsLib	= ES::fields();
+			$handler = $fieldsLib->getHandler();
+
+			// @TODO Add conditional field support
+			$args = array(&$data, 'conditionalRequired' => '', &$group);
+			$fieldsLib->trigger('onConditionalFormat', SOCIAL_FIELDS_GROUP_GROUP, $fields, $args, array($handler));
+			$args = array(&$data, 'conditionalRequired' => '', &$group);
+			$errors = $fieldsLib->trigger('onAdminEditValidate', SOCIAL_FIELDS_GROUP_GROUP, $fields, $args, array($handler, 'validate'));
+
+			if (is_array($errors) && count($errors) > 0)
+			{
+				ApiError::raiseError(400, JText::_("COM_EASYSOCIAL_GROUPS_PROFILE_SAVE_ERRORS"));
+			}
+
+			$errors = $fieldsLib->trigger('onEditBeforeSave', SOCIAL_FIELDS_GROUP_GROUP, $fields, $args, array($handler, 'beforeSave'));
+
+			if (is_array($errors) && count($errors) > 0)
+			{
+				ApiError::raiseError(400, JText::_("COM_EASYSOCIAL_PROFILE_ERRORS_IN_FORM"));
+			}
+
+			if ($group->isDraft() || $user->getAccess()->get('groups.moderate'))
+			{
+				$group->state = SOCIAL_CLUSTER_PENDING;
+			}
+
+			if ($user->isSiteAdmin())
+			{
+				$group->state = SOCIAL_CLUSTER_PUBLISHED;
+			}
+
+			$group->save();
+			$args = array(&$data, &$group);
+			$fieldsLib->trigger('onEditAfterSave', SOCIAL_FIELDS_GROUP_GROUP, $fields, $args);
+			$group->bindCustomFields($data);
+			$args = array(&$data, &$group);
+			$fieldsLib->trigger('onEditAfterSaveFields', SOCIAL_FIELDS_GROUP_GROUP, $fields, $args);
+
+			if ($group->isPublished())
+			{
+				$points = ES::points();
+				$points->assign('groups.update', 'com_easysocial', $user->id);
+				$group->createStream($user->id, 'update');
+			}
+
+			$messageLang = $group->isPending() ? 'COM_EASYSOCIAL_GROUPS_UPDATED_PENDING_APPROVAL' : 'COM_EASYSOCIAL_GROUPS_PROFILE_UPDATED_SUCCESSFULLY';
+
+			$apiResponse->result->status = 1;
+			$apiResponse->result->message = JText::_($messageLang);
+
+			$this->plugin->setResponse($apiResponse);
+		}
 	}
 
 	/**
-	 * Method description
+	 * Method to delete single Easysocial group
 	 *
-	 * @return  mixed
+	 * @return  ApiPlugin response object
 	 *
 	 * @since 1.0
 	 */
 	public function delete()
 	{
-		$app		=	JFactory::getApplication();
-		$group_id	=	$app->input->get('id', 0, 'INT');
-		$valid		=	1;
-		$group		=	FD::group($group_id);
-		$groupsModel =	FD::model('groups');
-		$res		=	new stdclass;
+		$input = JFactory::getApplication()->input;
 
-		if (!$group->id || !$group_id)
+		$user = ES::user();
+
+		// Get the group
+		$id = $input->get('id', 0, 'int');
+		$group = ES::group($id);
+
+		if (! $group->id || ! $id)
 		{
-			$res->result->status = 0;
-			$res->result->message = JText::_('PLG_API_EASYSOCIAL_INVALID_GROUP_MESSAGE');
-			$valid = 0;
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_GROUP_MESSAGE'));
 		}
 
-		// Only allow super admins to delete groups
-		$my	=	FD::user($this->plugin->get('user')->id);
-
-		if (!$my->isSiteAdmin() && !$groupsModel->isOwner($my->id, $group_id))
+		// Only group owner and site admins are allowed to delete the group
+		if (! $user->isSiteAdmin() && ! $group->isOwner())
 		{
-			$res->result->status = 0;
-			$res->result->message = JText::_('PLG_API_EASYSOCIAL_ACCESS_DENIED_MESSAGE');
-			$valid				=	0;
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_ACCESS_DENIED_MESSAGE'));
 		}
 
-		if ($valid)
-		{
-			// Try to delete the group
-			$group->delete();
-			$res->result->status = 1;
-			$res->result->message = JText::_('PLG_API_EASYSOCIAL_GROUP_DELETED_MESSAGE');
-		}
+		// Try to delete the group
+		$group->delete();
 
-		$this->plugin->setResponse($res);
+		$apiResponse = new stdclass;
+
+		$apiResponse->result->status = 1;
+		$apiResponse->result->message = JText::_('PLG_API_EASYSOCIAL_GROUP_DELETED_MESSAGE');
+
+		$this->plugin->setResponse($apiResponse);
 	}
 
 	/**
-	 * Method function for create new group
+	 * Method to create stream on Easysocial wall
 	 *
-	 * @return  mixed
+	 * @param   Object  $user    SocialUser Object
+	 * @param   Object  $group   SocialGroup Object
+	 * @param   array   $config  config object
+	 *
+	 * @return  boolean
 	 *
 	 * @since 1.0
 	 */
-	public function CreateGroup()
+	public function addTostream($user, $group, $config)
 	{
-		$app			=	JFactory::getApplication();
-		$log_user		=	JFactory::getUser($this->plugin->get('user')->id);
-		$user			=	FD::user($log_user->id);
-		$config			=	FD::config();
+		// Add activity logging when a user creates a new group.
+		$stream = ES::stream();
+		$streamTemplate = $stream->getTemplate();
 
-		// Create group post structure
-		$grp_data		=	array();
-		$valid			=	1;
-		$title			=	$app->input->get('title', null, 'STRING');
-		$parmalink		=	$app->input->get('parmalink', null, 'STRING');
-		$description	=	$app->input->get('description', null, 'STRING');
-		$type			=	$app->input->get('type', 0, 'INT');
-		$categoryId		=	$app->input->get('category_id', 0, 'INT');
-		$avtar_pth		=	'';
-		$avtar_scr		=	'';
-		$avtar_typ		=	'';
-		$phto_obj		=	null;
+		// Set the actor
+		$streamTemplate->setActor($user, SOCIAL_TYPE_USER);
 
-		// Response object
-		$res				=	new stdclass;
+		// Set the context
+		$streamTemplate->setContext($group->id, SOCIAL_TYPE_GROUPS);
 
-		if (!empty($_FILES['file']['name']))
-		{
-			$upload_obj			=	new EasySocialApiUploadHelper;
+		$streamTemplate->setVerb('create');
+		$streamTemplate->setSiteWide();
+		$streamTemplate->setAccess('core.view');
+		$streamTemplate->setCluster($group->id, SOCIAL_TYPE_GROUP, $group->type);
 
-			// Checking upload cover
-			$phto_obj			=	$upload_obj->ajax_avatar($_FILES['file']);
-			$avtar_pth			=	$phto_obj['temp_path'];
-			$avtar_scr			=	$phto_obj['temp_uri'];
-			$avtar_typ			=	'upload';
-			$avatar_file_name	=	$_FILES['file']['name'];
-		}
+		// Set the params to cache the group data
+		$registry = ES::registry();
+		$registry->set('group', $group);
 
-		$cover_data	=	null;
+		// Set the params to cache the group data
+		$streamTemplate->setParams($registry);
 
-		if (!empty($_FILES['cover_file']['name']))
-		{
-			$upload_obj	=	new EasySocialApiUploadHelper;
+		// Add stream template.
+		$stream->add($streamTemplate);
 
-			// Ckecking upload cover
-			$cover_data	=	$upload_obj->ajax_cover($_FILES['cover_file'], 'cover_file');
-		}
-
-		// Check title
-		if (empty($title) || $title == null)
-		{
-			$valid = 0;
-			$res->result->status = 0;
-			$res->result->message = JText::_('PLG_API_EASYSOCIAL_INVALID_GROUP_NAME');
-		}
-
-		// Check parmalink
-		if (empty($parmalink) || $parmalink == null)
-		{
-			$valid = 0;
-			$res->result->status = 0;
-			$res->result->message = JText::_('PLG_API_EASYSOCIAL_INVALID_PARMALINK');
-		}
-
-		// Check description
-		if (empty($description) || $description == null)
-		{
-			$valid = 0;
-			$res->result->status = 0;
-			$res->result->message = JText::_('PLG_API_EASYSOCIAL_EMPTY_DESCRIPTION');
-		}
-
-		// Check group type
-		if (empty($type) || $type == 0)
-		{
-			$valid = 0;
-			$res->result->status = 0;
-			$res->result->message = JText::_('PLG_API_EASYSOCIAL_ADD_GROUP_TYPE_MESSAGE');
-		}
-
-		if (!$valid)
-		{
-			$this->plugin->setResponse($res);
-		}
-		else
-		{
-				// Create steps
-				$db		=	FD::db();
-				$group	=	FD::table('Group');
-				FD::import('admin:/includes/group/group');
-				$group	=	new SocialGroup;
-
-				// Load front end's language file
-				FD::language()->loadSite();
-
-				$category	=	FD::table('GroupCategory');
-				$category->load($categoryId);
-
-				// Get the steps
-				$stepsModel	=	FD::model('Steps');
-				$steps		=	$stepsModel->getSteps($categoryId,  SOCIAL_TYPE_CLUSTERS);
-
-				// Get the fields
-				$lib			=	FD::fields();
-				$fieldsModel	=	FD::model('Fields');
-
-				// Query written due to commented function not working
-				$query = "SELECT a.id, a.unique_key	FROM `#__social_fields` AS `a` 
-						LEFT JOIN `#__social_apps` AS `b` ON `b`.`id` = `a`.`app_id`
-						LEFT JOIN `#__social_fields_steps` AS `d` ON `a`.`step_id` = `d`.`id` 
-						WHERE `a`.`step_id` = '" . $steps[0]->id . "' ORDER BY `d`.`sequence` ASC, `a`.`ordering` ASC";
-
-				$db->setQuery($query);
-				$field_ids	= $db->loadAssocList();
-
-				foreach ($field_ids as $field)
-				{
-					$grp_data['cid'][] = $field['id'];
-
-					switch ($field['unique_key'])
-					{
-						case 'HEADER':
-										break;
-						case 'TITLE':	$grp_data['es-fields-' . $field['id']] = $title;
-										break;
-						case 'PERMALINK':	$grp_data['es-fields-' . $field['id']] = $parmalink;
-											break;
-						case 'DESCRIPTION':	$grp_data['es-fields-' . $field['id']] = $description;
-											break;
-						case 'TYPE':	$grp_data['group_type'] = $type;
-										break;
-						case 'URL':		$grp_data['es-fields-' . $field['id']] = $app->input->get('website', null, 'STRING');
-										break;
-						case 'PHOTOS':	$grp_data['photo_albums'] = $app->input->get('photo_album', false, 'BOOLEAN');
-										break;
-						case 'NEWS':	$grp_data['es-fields-' . $field['id']] = $app->input->get('announcements', false, 'BOOLEAN');
-										break;
-						case 'DISCUSSIONS': $grp_data['es-fields-' . $field['id']] = $app->input->get('discussions', false, 'BOOLEAN');
-											break;
-						case 'AVATAR':	$grp_data['es-fields-' . $field['id']] = Array
-												(
-													'source' => $avtar_scr,
-													'path' => $avtar_pth,
-													'data' => '',
-													'type' => $avtar_typ,
-													'name' => $avatar_file_name
-												);
-										break;
-						case 'COVER':	$grp_data['es-fields-' . $field['id']]	=	Array(
-																							'data' => $cover_data,
-																							'position' => '{"x":0.5, "y":0.5}'
-																					);
-										break;
-					}
-				}
-
-				// For check group exceed limit
-				if (!$user->getAccess()->allowed('groups.create') && !$user->isSiteAdmin())
-				{
-					$valid = 0;
-					$res->result->status = 0;
-					$res->result->message = JText::_('PLG_API_EASYSOCIAL_CREATE_GROUP_ACCESS_DENIED');
-					$this->plugin->setResponse($res);
-				}
-
-				// Ensure that the user did not exceed their group creation limit
-				if ($user->getAccess()->intervalExceeded('groups.limit', $user->id) && !$user->isSiteAdmin())
-				{
-					$valid = 0;
-					$res->result->status = 0;
-					$res->result->message = JText::_('PLG_API_EASYSOCIAL_GROUP_CREATION_LIMIT_EXCEEDS');
-					$this->plugin->setResponse($res);
-				}
-
-				// Get current user's info
-				$session    = JFactory::getSession();
-
-				// Get necessary info about the current registration process.
-				$stepSession	= FD::table('StepSession');
-				$stepSession->load($session->getId());
-				$stepSession->uid = $categoryId;
-
-				// Load the group category
-				$category 	= FD::table('GroupCategory');
-				$category->load($stepSession->uid);
-
-				$sequence = $category->getSequenceFromIndex($stepSession->step,  SOCIAL_GROUPS_VIEW_REGISTRATION);
-
-				// Load the current step.
-				$step 		= FD::table('FieldStep');
-				$step->load(array('uid' => $category->id,  'type' => SOCIAL_TYPE_CLUSTERS,  'sequence' => $sequence));
-
-				// Merge the post values
-				$registry 	= FD::get('Registry');
-				$registry->load($stepSession->values);
-
-				// Load up groups model
-				$groupsModel		= FD::model('Groups');
-
-				// Get all published fields apps that are available in the current form to perform validations
-				$fieldsModel 		= FD::model('Fields');
-				$fields				= $fieldsModel->getCustomFields(array('step_id' => $step->id,  'visible' => SOCIAL_GROUPS_VIEW_REGISTRATION));
-
-				// Load json library.
-				$json		=	FD::json();
-				$token		=	FD::token();
-				$disallow	=	array($token,  'option', 'cid', 'controller', 'task', 'option', 'currentStep');
-
-				foreach ($grp_data as $key => $value)
-				{
-					if (!in_array($key, $disallow))
-					{
-						if (is_array($value))
-						{
-							$value	=	FD::json()->encode($value);
-						}
-
-						$registry->set($key, $value);
-					}
-				}
-
-				// Convert the values into an array.
-				$data		=	$registry->toArray();
-				$args		=	array(&$data, &$stepSession);
-
-				/** Perform field validations here. Validation should only trigger apps that are loaded on the form
-				* @trigger onRegisterValidate
-				*/
-				$fieldsLib			= FD::fields();
-
-				// Get the trigger handler
-				$handler			= $fieldsLib->getHandler();
-
-				// Get error messages
-				$errors		= $fieldsLib->trigger('onRegisterValidate', SOCIAL_FIELDS_GROUP_GROUP, $fields, $args, array($handler, 'validate'));
-
-				// The values needs to be stored in a JSON notation.
-				$stepSession->values   = $json->encode($data);
-				$stepSession->created 	= FD::date()->toMySQL();
-				$group 	= $groupsModel->createGroup($stepSession);
-
-				if ($group->id)
-				{
-					$res->result->status = 1;
-					$res->result->id = $group->id;
-
-					// @points: groups.create
-					// Assign points to the user when a group is created
-					$points = FD::points();
-					$points->assign('groups.create', 'com_easysocial', $log_user);
-
-					// If the group is published,  we need to perform other activities
-					if ($group->state == SOCIAL_STATE_PUBLISHED)
-					{
-						$this->addTostream($user, $group, $config);
-					}
-
-					$my 			= FD::user();
-					$group->state 	= $my->getAccess()->get('groups.moderate');
-
-					if ($group->state)
-					{
-							$res->result->message = JText::_('COM_EASYSOCIAL_GROUPS_CREATED_PENDING_APPROVAL');
-					}
-					else
-					{
-						$res->result->message = JText::_('COM_EASYSOCIAL_GROUPS_CREATED_SUCCESSFULLY');
-					}
-				}
-				else
-				{
-					$res->result->status		=	0;
-					$res->result->id			=	0;
-					$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_UNABLE_CREATE_GROUP_MESSAGE');
-				}
-
-				$this->plugin->setResponse($res);
-		}
+		return true;
 	}
 
 	/**
-	 * Method addTostream
+	 * create field array as per easysocial format for storing custom field data
 	 *
-	 * @param   array  $my      my 
-	 * @param   array  $group   group object
-	 * @param   array  $config  config object
-	 * 
-	 * @return string
+	 * @param   Object  $postValues    The group post data
+	 * @param   Object  $fieldsOption  The options required to get field data
+	 *
+	 * @return  Array
 	 *
 	 * @since 1.0
 	 */
-	public function addTostream($my, $group, $config)
+	public function createFieldArr($postValues, $fieldsOption)
 	{
-			$stream				=	FD::stream();
-			$streamTemplate		=	$stream->getTemplate();
+		$userfields = array();
+		$fieldsModel = ES::model('Fields');
 
-			// Set the actor
-			$streamTemplate->setActor($my->id, SOCIAL_TYPE_USER);
+		foreach ($postValues as $key => $value)
+		{
+			$fieldsOption['key'] = $key;
 
-			// Set the context
-			$streamTemplate->setContext($group->id, SOCIAL_TYPE_GROUPS);
+			$localfield = $fieldsModel->getCustomFields($fieldsOption);
 
-			$streamTemplate->setVerb('create');
-			$streamTemplate->setSiteWide();
-			$streamTemplate->setAccess('core.view');
-			$streamTemplate->setCluster($group->id,  SOCIAL_TYPE_GROUP,  $group->type);
+			if (! empty($localfield))
+			{
+				switch ($key)
+				{
+					case 'cover':
+						$userfields[SOCIAL_FIELDS_PREFIX . $localfield['0']->id] = array(
+							'data' => $value, 'position' => '{"x":0, "y":0}'
+						);
+						break;
+					default:
+						$userfields[SOCIAL_FIELDS_PREFIX . $localfield['0']->id] = $value;
+				}
+			}
+		}
 
-			// Set the params to cache the group data
-			$registry	= FD::registry();
-			$registry->set('group', $group);
+		return $userfields;
+	}
 
-			// Set the params to cache the group data
-			$streamTemplate->setParams($registry);
+	/**
+	 * create field array as per easysocial format for updating custom field data
+	 *
+	 * @param   Array  $fields  The array SocialFields class object
+	 *
+	 * @return  Array
+	 *
+	 * @since 2.0
+	 */
+	private function generateGroupFieldData($fields)
+	{
+		$groupFields = array();
 
-			// Add stream template.
-			$stream->add($streamTemplate);
+		if (!empty($fields))
+		{
+			foreach ($fields as $field)
+			{
+				$groupFields[SOCIAL_FIELDS_PREFIX . $field->id] = $field->data;
+			}
+		}
 
-			return true;
+		return $groupFields;
+	}
+
+	/**
+	 * Check the permalink value provided for the group
+	 *
+	 * @param   String  $permalink  The permalink value
+	 * @param   Object  $group      The SocialGroup class object
+	 *
+	 * @return  boolean
+	 *
+	 * @since 2.0
+	 */
+	private function validateGroupPermalink($permalink, $group)
+	{
+		if ($group)
+		{
+			// If the permalink is the same, just return true.
+			if ($group->alias == $permalink)
+			{
+				return true;
+			}
+		}
+
+		if (!SocialFieldsGroupPermalinkHelper::allowed($permalink))
+		{
+			ApiError::raiseError(400, JText::_('PLG_FIELDS_PERMALINK_CONFLICTS_WITH_SYSTEM'));
+		}
+
+		// Peramalink validation
+		if (SocialFieldsGroupPermalinkHelper::exists($permalink))
+		{
+			ApiError::raiseError(400, JText::_('PLG_FIELDS_GROUP_PERMALINK_NOT_AVAILABLE'));
+		}
+
+		if (! SocialFieldsGroupPermalinkHelper::valid($permalink, new Registry))
+		{
+			ApiError::raiseError(400, JText::_('PLG_FIELDS_GROUP_PERMALINK_INVALID_PERMALINK'));
+		}
+
+		return true;
 	}
 }

@@ -69,11 +69,18 @@ class EasysocialApiResourceMessage extends ApiResource
 		// $target_usr	=	$app->input->get('target_user', 0, 'INT');
 		$conversion_id	=	$app->input->get('conversion_id', 0, 'INT');
 		$log_usr		=	$this->plugin->get('user')->id;
+		$canCreate = ES::user();
 
 		// Normalize CRLF (\r\n) to just LF (\n)
 		$msg			=	str_ireplace("\r\n", "\n", $msg);
 
 		$res				=	new stdclass;
+
+		// Check if the user really has access to create groups
+		if (! $canCreate->getAccess()->allowed('conversations.create') && ! $canCreate->isSiteAdmin())
+			{
+				ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_CONVERSATIONS_ERROR_NOT_ALLOWED'));
+			}
 
 		if (count($recipients) < 1)
 		{

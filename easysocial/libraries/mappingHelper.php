@@ -36,6 +36,7 @@ require_once JPATH_SITE . '/plugins/api/easysocial/libraries/schema/photos.php';
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/schema/createalbum.php';
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/schema/events.php';
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/schema/videos.php';
+require_once JPATH_SITE . '/plugins/api/easysocial/libraries/schema/page.php';
 
 
 /**
@@ -75,6 +76,9 @@ class EasySocialApiMappingHelper
 				break;
 			case 'group':
 				return $this->groupSchema($rows, $userid);
+				break;
+			case 'page':
+				return $this->pageSchema($rows, $userid);
 				break;
 			case 'profile':
 				return $this->profileSchema($rows, $userid);
@@ -1096,7 +1100,7 @@ class EasySocialApiMappingHelper
 				$NameLocationLabel        = $item->location;
 				$item->event_map_url_andr = "geo:" . $item->latitude . "," . $item->longitude . "?q=" . $NameLocationLabel;
 				$item->event_map_url_ios  = "http://maps.apple.com/?q=" . $NameLocationLabel . "&sll=" . $item->latitude . "," . $item->longitude;
-				$item->share_url          = JURI::root() . $eventobj->getPermalink(true, false, 'item', false);
+				$item->share_url = JURI::root() . substr(JRoute::_($eventobj->getPermalink(true, false, 'item', false), false), strlen(JUri::base(true)) + 1);
 
 				// Getting cover image of event
 				$eve                      = FD::table('Cover');
@@ -1204,23 +1208,6 @@ class EasySocialApiMappingHelper
 							$fobj->field_value = preg_replace("~[[:alpha:]]+://[^<>[:space:]]+[[:alnum:]/]~", "<a href=\"\\0\">\\0</a>", $fobj->field_value);
 						}
 
-						/*$fobj->field_value = $fmod_obj->getCustomFieldsValue($groupInfo->id,$groupInfo->uid,SOCIAL_FIELDS_GROUP_GROUP);
-
-						if($fobj->field_value == ''){
-							$fobj->field_value = strip_tags($groupInfo->output);
-							$temp = explode(":",$fobj->field_value);
-							$fobj->field_value = $temp[1];
-						}
-						if(substr( $fobj->unique_key, 0, 3 ) == "URL" && $fobj->field_value != null)
-						{
-							if(substr( $fobj->field_value, 0, 4 ) != "http")
-								$fobj->field_value = 'http://'.$fobj->field_value;
-
-							$fobj->field_value = '<a href="'.$fobj->field_value.'">'.$fobj->field_value.'</a>';
-						}
-
-						$fobj->field_value = ($fobj->field_value == '')?strip_tags($groupInfo->output):$fobj->field_value;
-						*/
 						array_push($fieldsArray, $fobj);
 					}
 				}
@@ -1283,6 +1270,133 @@ class EasySocialApiMappingHelper
 				$item->ismember         = $grp_obj->isMember($userid, $row->id);
 				$item->isinvited        = $grp_obj->isInvited($userid, $row->id);
 				$item->approval_pending = $grp_obj->isPendingMember($userid, $row->id);
+				$result[] = $item;
+			}
+		}
+
+		return $result;
+	}
+
+	// Function for create page schema
+	/**
+	 * To build ablum object
+	 *
+	 * @param   string  $rows    array of data
+	 * @param   int     $userid  user id
+	 * 
+	 * @return array
+	 *
+	 * @since 2.0
+	 */
+	public function pageSchema($rows = null, $userid = 0)
+	{
+		if ($rows == null || $userid == 0)
+		{
+			return null;
+		}
+
+		$result  = array();
+		$user   = FD::user($userid);
+
+		// Easysocial default profile
+		$profile = $user->getProfile();
+		$fmod_obj = new EasySocialModelFields;
+
+		foreach ($rows as $ky => $row)
+		{
+			$page = ES::page($row->id);
+			$page_model		=	FD::model('Pages');
+			$steps = $page_model->getAbout($page, $activeStep);
+
+			$fieldsArray = array();
+
+			// Get custom fields model.
+			$fieldsModel = FD::model('Fields');
+
+			// Get custom fields library.
+			$fields      = FD::fields();
+			$field_arr   = array();
+
+			if ($steps)
+			{
+				$pageInfo = new stdClass;
+
+				foreach ($steps as $step)
+				{
+					foreach ($step->fields as $pageInfo)
+					{
+						$fobj = new fildsSimpleSchema;
+						$fobj->field_id = $pageInfo->id;
+						$fobj->unique_key = $pageInfo->unique_key;
+						$fobj->title = JText::_($pageInfo->title);
+						$fobj->field_name = JText::_($pageInfo->title);
+						$fobj->step = $pageInfo->step_id;
+						$fobj->field_value = $pageInfo->output;
+
+						if ($fobj->unique_key == 'DESCRIPTION')
+						{
+							$fobj->field_value = preg_replace("~[[:alpha:]]+://[^<>[:space:]]+[[:alnum:]/]~", "<a href=\"\\0\">\\0</a>", $fobj->field_value);
+						}
+
+						array_push($fieldsArray, $fobj);
+					}
+				}
+			}
+
+			if (isset($row->id))
+			{
+				$pageobj = FD::page($row->id);
+				$item   = new PageSimpleSchema;
+				$item->id           = $row->id;
+				$item->type = 'page';
+				$item->title        = $row->title;
+				$item->alias        = $row->alias;
+				$item->description  = $row->description;
+				$item->hits         = $row->hits;
+				$item->state        = $row->state;
+				$item->created_date = $this->dateCreate($row->created);
+
+				// Get category name
+				$category = FD::table('PageCategory');
+				$category->load($row->category_id);
+				$item->category_id   = $row->category_id;
+				$item->category_name = $category->get('title');
+				$item->page_type = $row->type;
+				$item->cover         = $pageobj->getCover();
+				$pageobj               = FD::page($row->id);
+				$x                    = $pageobj->cover->x;
+				$y                    = $pageobj->cover->y;
+				$item->cover_position = $x . '% ' . $y . '%';
+				$item->created_by   = $row->creator_uid;
+				$item->creator_name = JFactory::getUser($row->creator_uid)->username;
+				$item->params       = (!empty($row->params)) ? $row->params : false;
+				$item->more_info = $fieldsArray;
+
+				foreach ($row->avatars As $ky => $avt)
+				{
+					$avt_key        = 'avatar_' . $ky;
+					$item->$avt_key = JURI::root() . 'media/com_easysocial/avatars/page/' . $row->id . '/' . $avt;
+					$fst = JFile::exists('media/com_easysocial/avatars/page/' . $row->id . '/' . $avt);
+
+					// Set default image
+					if (!$fst)
+					{
+						$item->$avt_key = JURI::root() . 'media/com_easysocial/defaults/avatars/page/' . $ky . '.png';
+					}
+				}
+
+				$page_obj   = FD::model('Pages');
+				$alb_model = FD::model('Albums');
+				$uid       = $row->id . ':' . $row->title;
+				$filters   = array(
+					'uid' => $uid,
+					'type' => 'page'
+				);
+
+				// Get total album count
+				$item->album_count      = $alb_model->getTotalAlbums($filters);
+				$item->member_count     = count($page_obj->getMembers($row->id));
+				$item->friends = $page_obj->getMembers($row->id);
 				$result[] = $item;
 			}
 		}

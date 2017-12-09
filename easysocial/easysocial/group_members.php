@@ -63,6 +63,7 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 		$app		=	JFactory::getApplication();
 		$log_user	=	$this->plugin->get('user')->id;
 		$group_id	=	$app->input->get('group_id', 0, 'INT');
+		$page_id	=	$app->input->get('page_id', 0, 'INT');
 		$limitstart	=	$app->input->get('limitstart', 0, 'INT');
 		$limit		=	$app->input->get('limit', 10, 'INT');
 		$mapp		=	new EasySocialApiMappingHelper;
@@ -91,6 +92,10 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 		elseif ($type == 'event')
 		{
 			$data	=	$this->getEventMembers($group_id, $filter, $log_user, $mapp);
+		}
+		elseif ($type == 'page')
+		{
+			$data	=	$this->getEventMembers($page_id, $filter, $log_user, $mapp);
 		}
 
 		if (empty($data))
@@ -212,6 +217,36 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 			$user->isInvited		=	$grp_model->isInvited($user->id, $group_id);
 			$user->isPendingMember	=	$grp_model->isPendingMember($user->id, $group_id);
 		}
+
+		return $user_list;
+	}
+
+	/**
+	 * Method this function is getting pages member list
+	 *
+	 * @param   string  $group_id  page id
+	 * @param   string  $limit     limit
+	 * @param   string  $log_user  logged user id
+	 * @param   string  $mapp      mapp object
+	 * 
+	 * @return string
+	 *
+	 * @since 1.0
+	 */
+	public function fetchPageMembers($group_id, $limit, $log_user, $mapp)
+	{
+		$page_model		=	FD::model('Pages');
+		$options		=	array('pageid' => $page_id);
+		$pageuserob		=	new EasySocialModelPageMembers;
+		$pageuserob->setState('limit', $limit);
+		$data			=	$pageuserob->getItems($options);
+
+		foreach ($data as $val)
+		{
+			$val->id	=	$val->uid;
+		}
+
+		$user_list		=	$mapp->mapItem($data, 'user', $log_user);
 
 		return $user_list;
 	}

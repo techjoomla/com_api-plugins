@@ -115,6 +115,16 @@ class EasysocialApiResourceSearch extends ApiResource
 					$res->empty_message = JText::_('PLG_API_EASYSOCIAL_SEARCH_EVENT_NOT_FOUND');
 				}
 			}
+			elseif ($type == 'page')
+			{
+				$res->result = $this->getPageList($log_user, $search, $limitstart, $limit);
+
+				if (empty($res->result->events))
+				{
+					// Message to show when the list is empty
+					$res->empty_message = JText::_('PLG_API_EASYSOCIAL_PAGE_NOT_FOUND');
+				}
+			}
 			else
 			{
 				$res->result = $this->getGroupList($log_user, $search, $limitstart, $limit);
@@ -302,6 +312,73 @@ class EasysocialApiResourceSearch extends ApiResource
 		$group = array_slice($group, $limitstart, $limit);
 
 		return $mapp->mapItem($group, 'group', $log_user->id);
+	}
+
+	// Fetch Pages data
+	/**
+	 * Method Format page object into required object
+	 *
+	 * @param   object   $log_user    user object
+	 * @param   string   $search      search keyword
+	 * @param   integer  $limitstart  limitstart
+	 * @param   integer  $limit       limit
+	 * 
+	 * @return  mixed
+	 *
+	 * @since 1.0
+	 */
+
+	public function getPageList($log_user, $search, $limitstart, $limit)
+	{
+		$mapp = new EasySocialApiMappingHelper;
+		$res = new stdClass;
+		$group = array();
+
+		$db = JFactory::getDbo();
+
+		$query1 = $db->getQuery(true);
+		$query1->select($db->quoteName(array('cl.id')));
+		$query1->from($db->quoteName('#__social_clusters', 'cl'));
+
+		if (!empty($search))
+		{
+			$query1->where("(cl.title LIKE '%" . $search . "%' )");
+		}
+
+		$query1->where('cl.state = 1');
+		$query1->order($db->quoteName('cl.id') . 'ASC');
+		$db->setQuery($query1);
+
+		$gdata = $db->loadObjectList();
+		$grp_model = FD::model('Pages');
+
+		foreach ($gdata as $grp)
+		{
+			$page_load = FD::page($grp->id);
+			$is_inviteonly = $page_load->isInviteOnly();
+			$is_member = $page_load->isMember($log_user->id);
+
+			if ($is_inviteonly && !$is_member)
+			{
+				if ($page_load->creator_uid == $log_user->id)
+				{
+					$page[] = FD::page($grp->id);
+				}
+				else
+				{
+					continue;
+				}
+			}
+			else
+			{
+				$page[] = FD::page($grp->id);
+			}
+		}
+
+		// Manual pagination
+		$page = array_slice($page, $limitstart, $limit);
+
+		return $mapp->mapItem($page, 'page', $log_user->id);
 	}
 
 	/**

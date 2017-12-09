@@ -119,7 +119,7 @@ class EasysocialApiResourceFriend extends ApiResource
 	 */
 	public function getFriends()
 	{
-		//  Init variable
+		// Init variable
 		$app		=	JFactory::getApplication();
 		$user		=	JFactory::getUser($this->plugin->get('user')->id);
 		$userid		=	$app->input->get('target_user', $this->plugin->get('user')->id, 'INT');
@@ -134,7 +134,7 @@ class EasysocialApiResourceFriend extends ApiResource
 
 		$frnd_mod	=	new EasySocialModelFriends;
 
-		//  If search word present then search user as per term and given id
+		// If search word present then search user as per term and given id
 		if (empty($search))
 		{
 			$ttl_list	=	$frnd_mod->getFriends($userid);

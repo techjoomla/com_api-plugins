@@ -71,6 +71,7 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 		$log_user		=	JFactory::getUser($this->plugin->get('user')->id);
 		$group_id		=	$app->input->get('group_id', 0, 'INT');
 		$event_id		=	$app->input->get('event_id', 0, 'INT');
+		$page_id		=	$app->input->get('page_id', 0, 'INT');
 		$view			=	$app->input->get('view', 'dashboard', 'STRING');
 		$id				=	$this->plugin->get('user')->id;
 		$target_user	=	$app->input->get('target_user', 0, 'INT');
@@ -110,6 +111,12 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 			$options	=	array('clusterId' => $group_id, 'clusterType' => $clusterType, 'startlimit' => $startlimit, 'limit' => $limit);
 		}
 
+		if ($page_id)
+		{
+			$clusterType	=	SOCIAL_TYPE_PAGE;
+			$options	=	array('clusterId' => $page_id, 'clusterType' => $clusterType, 'startlimit' => $startlimit, 'limit' => $limit);
+		}
+
 		if ($target_user == $id)
 		{
 			switch ($filter)
@@ -128,7 +135,7 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 					$options['guest']	=	true;
 					$options['type']	=	'bookmarks';
 				case 'me':
-					$options['view']	=	$view;
+					$options['view']	=	'profile';
 					break;
 				case 'hashtag':
 					$options['tag']	=	$tag;

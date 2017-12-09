@@ -69,7 +69,8 @@ class EasysocialApiResourceGetalbums extends ApiResource
 
 		// $mydata['limit']			=	$limit;
 		$mydata['privacy']			=	true;
-		$mydata['order']			=	'a.assigned_date';
+
+		// $mydata['order']			=	'a.assigned_date';
 		$mydata['direction']		=	'DESC';
 
 		// Response object
@@ -80,7 +81,27 @@ class EasysocialApiResourceGetalbums extends ApiResource
 		// Creating object and calling relatvie method for data fetching.
 		$obj = new EasySocialModelAlbums;
 
-		$albums = $obj->getAlbums($uid, $type, $mydata);
+		if ($type == 'user')
+		{
+			$albums = $obj->getAlbums($uid, $type, $mydata);
+		}
+		elseif ($type == 'page')
+		{
+			$albums = $obj->getAlbums($uid, $type, $mydata);
+		}
+		elseif ($type == 'all')
+		{
+			$options = array(
+				'pagination' => true,
+				'direction' => 'DESC',
+				'core' => false
+			);
+
+			$options['privacy'] = true;
+			$options['excludedisabled'] = true;
+			$options['withCovers'] = true;
+			$albums = $obj->getAlbums('', '', $options);
+		}
 
 		// Use to load table of album.
 		$album	=	FD::table('Album');

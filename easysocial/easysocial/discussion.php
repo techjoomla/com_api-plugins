@@ -228,7 +228,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 		}
 
 		// Process any files that needs to be created.
-		$discussion->mapFiles();
+		//$discussion->mapFiles();
 
 		// If it is a new discussion, we want to run some other stuffs here.
 		if (!$discuss_id && $state)

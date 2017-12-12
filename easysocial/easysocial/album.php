@@ -234,6 +234,14 @@ class EasysocialApiResourceAlbum extends ApiResource
 		$album->load();
 		$res	=	new stdClass;
 
+		$canCreate = ES::user();
+
+		// Check if the user really has access to create event
+		if (! $canCreate->getAccess()->allowed('albums.create') && ! $canCreate->isSiteAdmin())
+			{
+				ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_ALBUMS_ACCESS_NOT_ALLOWED'));
+			}
+
 		// Determine if this item is a new item
 		$isNew	=	true;
 

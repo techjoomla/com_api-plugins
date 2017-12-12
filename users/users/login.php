@@ -8,14 +8,6 @@
 
 defined('_JEXEC') or die( 'Restricted access' );
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
-jimport('joomla.application.component.controller');
-jimport('joomla.application.component.model');
-jimport('joomla.user.helper');
-jimport('joomla.user.user');
-jimport('joomla.application.component.helper');
-
 JModelLegacy::addIncludePath(JPATH_SITE . 'components/com_api/models');
 require_once JPATH_SITE . '/components/com_api/libraries/authentication/user.php';
 require_once JPATH_SITE . '/components/com_api/libraries/authentication/login.php';
@@ -26,12 +18,14 @@ class UsersApiResourceLogin extends ApiResource
 {
 	public function get()
 	{
-		$this->plugin->setResponse( JText::_('PLG_API_USERS_GET_METHOD_NOT_ALLOWED_MESSAGE'));
+		$this->plugin->err_code = 405;
+		$this->plugin->err_message = JText::_('PLG_API_USERS_GET_METHOD_NOT_ALLOWED_MESSAGE');
+		$this->plugin->setApiResponse( true, null );
 	}
 
 	public function post()
 	{
-		$this->plugin->setResponse($this->keygen());
+		$this->plugin->setApiResponse(false, $this->keygen());
 	}
 
 	public function keygen()
@@ -52,6 +46,8 @@ class UsersApiResourceLogin extends ApiResource
 			$model = FD::model('Users');
 			$id = $model->getUserId('email', $username);            
 		}
+
+		$result = new stdClass;
 
 		$kmodel = new ApiModelKey;
 		$model = new ApiModelKeys;
@@ -94,18 +90,15 @@ class UsersApiResourceLogin extends ApiResource
 		
 		if( !empty($key) )
 		{
-			$obj->auth = $key;
-			$obj->code = '200';
-			//$obj->id = $user->id;
-			$obj->id = $id;
+			$result->result->token = $key;
+			$result->result->id = $id;
 		}
 		else
 		{
-			$obj->code = 403;
-			$obj->message = JText::_('PLG_API_USERS_BAD_REQUEST_MESSAGE');
+			$this->plugin->err_code = 403;
+			$this->plugin->err_message = JText::_('PLG_API_USERS_BAD_REQUEST_MESSAGE');
 		}
-		return( $obj );
-	
+		return( $result );
 	}
 	
 	/*

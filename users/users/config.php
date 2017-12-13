@@ -9,17 +9,19 @@
  * Work derived from the original RESTful API by Techjoomla (https://github.com/techjoomla/Joomla-REST-API)
  * and the com_api extension by Brian Edgerton (http://www.edgewebworks.com)
  */
+
 defined('_JEXEC') or die( 'Restricted access' );
 
-jimport('joomla.plugin.plugin');
 jimport('joomla.html.html');
-jimport('joomla.application.component.controller');
-jimport('joomla.application.component.model');
+jimport('joomla.plugin.plugin');
 jimport('joomla.user.helper');
 jimport('joomla.user.user');
+jimport('joomla.application.component.controller');
 jimport('joomla.application.component.helper');
+jimport('joomla.application.component.model');
 
 JModelLegacy::addIncludePath(JPATH_SITE . 'components/com_api/models');
+
 require_once JPATH_SITE . '/components/com_api/libraries/authentication/user.php';
 require_once JPATH_SITE . '/components/com_api/libraries/authentication/login.php';
 
@@ -40,22 +42,10 @@ class UsersApiResourceConfig extends ApiResource
 	public function get()
 	{
 		$obj = new stdClass;
-		$result = new stdClass;
 
-		$app = JFactory::getApplication();
-		$acl = $app->input->get('acl', false, boolean);
-		$userId = $app->input->get('userId', 0, 'INT');
-
-		if ($acl && $userId != 0)
-		{
-			$this->getProfileACL($userId);
-		}
-		else
-		{
 		// Get joomla,easyblog and easysocial configuration
 		// Get version of easysocial and easyblog
-
-		$easyblog = JPATH_ADMINISTRATOR . '/components/com_easyblog/easyblog.php';
+		$easyblog   = JPATH_ADMINISTRATOR . '/components/com_easyblog/easyblog.php';
 		$easysocial = JPATH_ADMINISTRATOR . '/components/com_easysocial/easysocial.php';
 
 		// Eb version
@@ -67,40 +57,23 @@ class UsersApiResourceConfig extends ApiResource
 		// Es version
 		if (JFile::exists($easysocial))
 		{
+			/*$xml = JFactory::getXML(JPATH_ADMINISTRATOR .'/components/com_easysocial/easyblog.xml');
+			$obj->easysocial_version = (string)$xml->version;*/
 			$obj->easysocial = $this->getCompParams('com_easysocial', 'easysocial');
 		}
 
 		$obj->global_config = $this->getJoomlaConfig();
 		$obj->plugin_config = $this->getpluginConfig();
 
-		$installed_languages = JLanguageHelper::getLanguages();
-		$languages	=	array();
-
-		foreach ($installed_languages as $lang)
-		{
-			$languages[] = substr($lang->lang_code, 0, 2);
-		}
-
-		$obj->languages	=	$languages;
-
-		// $getACL = EB::acl($log_user);
-		// $obj->ACL = $getACL;
-
-		$xml = JFactory::getXML(JPATH_SITE . '/plugins/api/users/users.xml');
-		$obj->plugin_version = (string) $xml->version;
-
-		$result->result = $obj;
-
-		$this->plugin->setResponse($result);
-		}
+		$this->plugin->setResponse($obj);
 	}
 
 	/**
-	 * Method post
+	 * Method to get groups list
 	 *
-	 * @return  mixed
+	 * @return  ApiPlugin response object
 	 *
-	 * @since 1.0
+	 * @since 2.0
 	 */
 	public function post()
 	{
@@ -108,11 +81,11 @@ class UsersApiResourceConfig extends ApiResource
 	}
 
 	/**
-	 * Method to update auth keys
+	 * Method to update Easyblog auth keys
 	 *
 	 * @param   number  $cname  The  table
 	 * @param   number  $name   The table
-	 * 
+	 *
 	 * @return  ApiPlugin response object
 	 *
 	 * @since 2.0
@@ -120,15 +93,19 @@ class UsersApiResourceConfig extends ApiResource
 	public function getCompParams($cname=null,$name=null)
 	{
 		jimport('joomla.application.component.helper');
-		$app = JFactory::getApplication();
+
+		$app   = JFactory::getApplication();
 		$cdata = array();
 
-		$xml = JFactory::getXML(JPATH_ADMINISTRATOR . '/components/' . $cname . '/' . $name . '.xml');
+		$xml              = JFactory::getXML(JPATH_ADMINISTRATOR . '/components/' . $cname . '/' . $name . '.xml');
 		$cdata['version'] = (string) $xml->version;
-		$jconfig = JFactory::getConfig();
+		$jconfig          = JFactory::getConfig();
 
 		if ($cname == 'com_easyblog')
 		{
+			/*$xml = JFactory::getXML(JPATH_ADMINISTRATOR .'/components/com_easyblog/easyblog.xml');
+			$version = (string)$xml->version;*/
+
 			if ($cdata['version'] < 5)
 			{
 				require_once JPATH_ROOT . '/components/com_easyblog/helpers/helper.php';
@@ -140,13 +117,13 @@ class UsersApiResourceConfig extends ApiResource
 				$eb_params = EB::config();
 			}
 
-			$cdata['main_max_relatedpost']					= $eb_params->get('main_max_relatedpost');
-			$cdata['layout_pagination_bloggers']			= $eb_params->get('layout_pagination_bloggers');
-			$cdata['layout_pagination_categories']			= $eb_params->get('layout_pagination_categories');
-			$cdata['layout_pagination_categories_per_page']	= $eb_params->get('layout_pagination_categories_per_page');
-			$cdata['layout_pagination_bloggers_per_page']	= $eb_params->get('layout_pagination_bloggers_per_page');
-			$cdata['layout_pagination_archive']				= $eb_params->get('layout_pagination_archive');
-			$cdata['layout_pagination_teamblogs']			= $eb_params->get('layout_pagination_teamblogs');
+			$cdata['main_max_relatedpost']                  = $eb_params->get('main_max_relatedpost');
+			$cdata['layout_pagination_bloggers']            = $eb_params->get('layout_pagination_bloggers');
+			$cdata['layout_pagination_categories']          = $eb_params->get('layout_pagination_categories');
+			$cdata['layout_pagination_categories_per_page'] = $eb_params->get('layout_pagination_categories_per_page');
+			$cdata['layout_pagination_bloggers_per_page']   = $eb_params->get('layout_pagination_bloggers_per_page');
+			$cdata['layout_pagination_archive']             = $eb_params->get('layout_pagination_archive');
+			$cdata['layout_pagination_teamblogs']           = $eb_params->get('layout_pagination_teamblogs');
 		}
 		else
 		{
@@ -154,24 +131,25 @@ class UsersApiResourceConfig extends ApiResource
 			$es_params = FD::config();
 			$profiles = FD::model('profiles');
 
-			// $cdata['conversations_limit'] = $es_params->get('conversations')->limit;
-			$cdata['activity_limit']			= $es_params->get('activity')->pagination;
-			$cdata['lists_limit']				= $es_params->get('lists')->display->limit;
-			$cdata['comments_limit']			= $es_params->get('comments')->limit;
-			$cdata['stream_pagination_limit']	= $es_params->get('stream')->pagination->pagelimit;
-			$cdata['photos_pagination_limit']	= $es_params->get('photos')->pagination->photo;
-			$cdata['album_pagination_limit']	= $es_params->get('photos')->pagination->album;
-			$cdata['emailasusername']			= $es_params->get('registrations')->emailasusername;
-			$cdata['displayName']				= $es_params->get('users')->displayName;
-			$cdata['groups']['enabled']			= $es_params->get('groups')->enabled;
-			$profiles_data						= $profiles->getAllProfiles();
+			// $cdata['conversations_limit']  = $es_params->get('conversations')->limit;
+			$cdata['activity_limit']          = $es_params->get('activity')->pagination;
+			$cdata['lists_limit']             = $es_params->get('lists')->display->limit;
+			$cdata['comments_limit']          = $es_params->get('comments')->limit;
+			$cdata['stream_pagination_limit'] = $es_params->get('stream')->pagination->pagelimit;
+			$cdata['photos_pagination_limit'] = $es_params->get('photos')->pagination->photo;
+			$cdata['album_pagination_limit']  = $es_params->get('photos')->pagination->album;
+			$cdata['emailasusername']         = $es_params->get('registrations')->emailasusername;
+			$cdata['displayName']             = $es_params->get('users')->displayName;
+			$cdata['groups']['enabled']       = $es_params->get('groups')->enabled;
+
+			$profiles_data = $profiles->getAllProfiles();
 
 			/* Check for profile_type is allowed for Registration by vivek*/
 			$allowed_profile_types = array();
 
-			foreach ($profiles_data as $key)
+			foreach ($profiles_data as $key )
 			{
-				if ($key->registration == '1' && $key->state == '1')
+				if ($key->registration == '1')
 				{
 					array_push($allowed_profile_types, $key);
 				}
@@ -184,16 +162,16 @@ class UsersApiResourceConfig extends ApiResource
 	}
 
 	/**
-	 * Method get fb plugin config
+	 * Method to Get fb plugin config
 	 *
-	 * @return  mixed
+	 * @return  ApiPlugin response object
 	 *
-	 * @since 1.0
+	 * @since 2.0
 	 */
 	public function getpluginConfig()
 	{
-		$data = array();
-		$plugin = JPluginHelper::getPlugin('api', 'users');
+		$data         = array();
+		$plugin       = JPluginHelper::getPlugin('api', 'users');
 		$pluginParams = new JRegistry($plugin->params);
 
 		// Code for future use
@@ -201,27 +179,27 @@ class UsersApiResourceConfig extends ApiResource
 		/* $plugin_es = JPluginHelper::getPlugin('api', 'easysocial');
 		$pluginParams_es = new JRegistry($plugin_es->params); */
 
-		$data['fb_login'] = $pluginParams->get('fb_login');
+		$data['fb_login']  = $pluginParams->get('fb_login');
 		$data['fb_app_id'] = $pluginParams->get('fb_app_id');
-		$data['google_client_id']	=	$pluginParams->get('google_client_id');
+		$data['quick2art'] = $pluginParams->get('quick2art');
 
 		return $data;
 	}
 
 	/**
-	 * Method get joomla config changes
+	 * Method to Get joomla config changes
 	 *
-	 * @return  mixed
+	 * @return  ApiPlugin response object
 	 *
-	 * @since 1.0
+	 * @since 2.0
 	 */
 	public function getJoomlaConfig()
 	{
-		$jconfig						= JFactory::getConfig();
-		$jarray 						= array();
-		$jarray['global_list_limit']	= $jconfig->get('list_limit');
-		$jarray['offset']				= $jconfig->get('offset');
-		$jarray['offset_user']			= $jconfig->get('offset_user');
+		$jconfig                     = JFactory::getConfig();
+		$jarray                      = array();
+		$jarray['global_list_limit'] = $jconfig->get('list_limit');
+		$jarray['offset']            = $jconfig->get('offset');
+		$jarray['offset_user']       = $jconfig->get('offset_user');
 
 		return $jarray;
 	}
@@ -231,7 +209,7 @@ class UsersApiResourceConfig extends ApiResource
 	 *
 	 * @param   string  $user  The  table
 	 * @param   string  $key   The table
-	 * 
+	 *
 	 * @return  ApiPlugin response object
 	 *
 	 * @since 2.0
@@ -239,44 +217,13 @@ class UsersApiResourceConfig extends ApiResource
 	public function updateEauth($user=null,$key=null)
 	{
 		require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
-		$model			= FD::model('Users');
-		$id 			= $model->getUserId('username', $user->username);
-		$user			= FD::user($id);
-		$user->alias	= $user->username;
-		$user->auth 	= $key;
+		$model       = FD::model('Users');
+		$id          = $model->getUserId('username', $user->username);
+		$user        = FD::user($id);
+		$user->alias = $user->username;
+		$user->auth  = $key;
 		$user->store();
 
 		return $id;
-	}
-
-	/**
-	 * Method use to get ACL config
-	 *
-	 * @param   string  $userId  The  table
-	 * 
-	 * @return  ApiPlugin response object
-	 * 	
-	 * @since  1.0
-	 */
-	public function getProfileACL($userId)
-	{
-		$access = ES::access($userId, SOCIAL_TYPE_USER);
-		$res = new stdClass;
-
-		$res->result->comments		= $access->get('comments');
-		$res->result->conversations	= $access->get('conversations');
-		$res->result->events		= $access->get('events');
-		$res->result->files			= $access->get('files');
-		$res->result->friends		= $access->get('friends');
-		$res->result->groups		= $access->get('groups');
-		$res->result->albums		= $access->get('albums');
-		$res->result->photos		= $access->get('photos');
-		$res->result->polls			= $access->get('polls');
-		$res->result->reports		= $access->get('reports');
-		$res->result->story			= $access->get('story');
-		$res->result->stream		= $access->get('stream');
-		$res->result->videos		= $access->get('videos');
-
-		$this->plugin->setResponse($res);
 	}
 }

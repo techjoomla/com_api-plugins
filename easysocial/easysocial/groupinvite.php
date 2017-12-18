@@ -72,7 +72,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 		$valid			=	1;
 		$res			=	new stdClass;
 		$group			=	FD::group($group_id);
-		
+
 		if (!$group->id)
 		{
 			$group			=	FD::page($group_id);

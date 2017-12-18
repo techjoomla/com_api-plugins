@@ -328,5 +328,5 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 
 			$this->plugin->setResponse($res);
 		}
-}
+	}
 }

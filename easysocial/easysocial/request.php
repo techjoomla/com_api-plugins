@@ -139,7 +139,7 @@ class EasysocialApiResourceRequest extends ApiResource
 					case 'Withdraw':
 					case 'withdraw':
 						$res->success = $group->deleteMember($other_user_id);
-						$res->message = ($res->success) ? JText::_('PLG_API_EASYSOCIAL_PAGE_REQUEST_WITHDRAWN') : JText::_('PLG_API_EASYSOCIAL_PAGE_UNABLE_WITHDRAWN_REQ');
+			$res->message = ($res->success) ? JText::_('PLG_API_EASYSOCIAL_PAGE_REQUEST_WITHDRAWN') : JText::_('PLG_API_EASYSOCIAL_PAGE_UNABLE_WITHDRAWN_REQ');
 						break;
 				}
 			}

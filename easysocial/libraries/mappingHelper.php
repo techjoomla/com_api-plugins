@@ -1386,6 +1386,7 @@ class EasySocialApiMappingHelper
 				}
 
 				$page_obj   = FD::model('Pages');
+				$grp_obj   = FD::model('Groups');
 				$alb_model = FD::model('Albums');
 				$uid       = $row->id . ':' . $row->title;
 				$filters   = array(
@@ -1397,6 +1398,12 @@ class EasySocialApiMappingHelper
 				$item->album_count      = $alb_model->getTotalAlbums($filters);
 				$item->member_count     = count($page_obj->getMembers($row->id));
 				$item->friends = $page_obj->getMembers($row->id);
+
+				$item->isowner			= $grp_obj->isOwner($userid, $row->id);
+				$item->ismember			= $grp_obj->isMember($userid, $row->id);
+				$item->isinvited		= $grp_obj->isInvited($userid, $row->id);
+				$item->approval_pending	= $grp_obj->isPendingMember($userid, $row->id);
+
 				$result[] = $item;
 			}
 		}

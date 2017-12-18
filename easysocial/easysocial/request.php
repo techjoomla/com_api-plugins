@@ -64,12 +64,13 @@ class EasysocialApiResourceRequest extends ApiResource
 	public function request()
 	{
 		// Init variable
-		$app      = JFactory::getApplication();
-		$log_user = JFactory::getUser($this->plugin->get('user')->id);
-		$group_id      = $app->input->get('group_id', 0, 'INT');
-		$req_val       = $app->input->get('request', '', 'STRING');
-		$other_user_id = $app->input->get('target_user', 0, 'INT');
-		$type          = $app->input->get('type', 'group', 'STRING');
+		$app		= JFactory::getApplication();
+		$log_user	= JFactory::getUser($this->plugin->get('user')->id);
+		$group_id	= $app->input->get('group_id', 0, 'INT');
+		$group_id	= !$group_id ? $app->input->get('page_id', 0, 'INT') : 0;
+		$req_val	= $app->input->get('request', '', 'STRING');
+		$other_user_id	= $app->input->get('target_user', 0, 'INT');
+		$type		= $app->input->get('type', 'group', 'STRING');
 
 		$data = array();
 		$req_val = ($req_val == 'cancel')?'reject':$req_val;
@@ -116,6 +117,29 @@ class EasysocialApiResourceRequest extends ApiResource
 					case 'withdraw':
 						$res->success = $group->deleteMember($other_user_id);
 						$res->message = ($res->success) ? JText::_('PLG_API_EASYSOCIAL_REQUEST_WITHDRAWN') : JText::_('PLG_API_EASYSOCIAL_UNABLE_WITHDRAWN_REQ');
+						break;
+				}
+			}
+			elseif ($type == 'page')
+			{
+				switch ($req_val)
+				{
+					case 'Approve':
+					case 'approve':
+						$res->success = $group->approveUser($other_user_id);
+						$res->message = ($res->success) ? JText::_('PLG_API_EASYSOCIAL_PAGE_USER_REQ_GRANTED') :
+						JText::_('PLG_API_EASYSOCIAL_PAGE_USER_REQ_UNSUCCESS');
+						break;
+					case 'Reject':
+					case 'reject':
+						$res->success = $group->rejectUser($other_user_id);
+						$res->message = ($res->success) ? JText::_('PLG_API_EASYSOCIAL_PAGE_USER_APPLICATION_REJECTED') :
+						JText::_('PLG_API_EASYSOCIAL_UNABLE_REJECT_APPLICATION');
+						break;
+					case 'Withdraw':
+					case 'withdraw':
+						$res->success = $group->deleteMember($other_user_id);
+						$res->message = ($res->success) ? JText::_('PLG_API_EASYSOCIAL_PAGE_REQUEST_WITHDRAWN') : JText::_('PLG_API_EASYSOCIAL_PAGE_UNABLE_WITHDRAWN_REQ');
 						break;
 				}
 			}

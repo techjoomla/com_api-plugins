@@ -63,7 +63,6 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 		$app		=	JFactory::getApplication();
 		$log_user	=	$this->plugin->get('user')->id;
 		$group_id	=	$app->input->get('group_id', 0, 'INT');
-		$page_id	=	$app->input->get('page_id', 0, 'INT');
 		$limitstart	=	$app->input->get('limitstart', 0, 'INT');
 		$limit		=	$app->input->get('limit', 10, 'INT');
 		$mapp		=	new EasySocialApiMappingHelper;
@@ -85,17 +84,13 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 		$state		=	$app->input->get('state', 1, 'INT');
 		$getAdmin	=	$app->input->get('admin', 1, 'INT');
 
-		if ($type == 'group')
+		if ($type == 'group' || $type == 'page')
 		{
 			$data	=	$this->fetchGroupMembers($group_id, $limit, $log_user, $mapp);
 		}
 		elseif ($type == 'event')
 		{
 			$data	=	$this->getEventMembers($group_id, $filter, $log_user, $mapp);
-		}
-		elseif ($type == 'page')
-		{
-			$data	=	$this->getEventMembers($page_id, $filter, $log_user, $mapp);
 		}
 
 		if (empty($data))
@@ -222,36 +217,6 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 	}
 
 	/**
-	 * Method this function is getting pages member list
-	 *
-	 * @param   string  $group_id  page id
-	 * @param   string  $limit     limit
-	 * @param   string  $log_user  logged user id
-	 * @param   string  $mapp      mapp object
-	 * 
-	 * @return string
-	 *
-	 * @since 1.0
-	 */
-	public function fetchPageMembers($group_id, $limit, $log_user, $mapp)
-	{
-		$page_model		=	FD::model('Pages');
-		$options		=	array('pageid' => $page_id);
-		$pageuserob		=	new EasySocialModelPageMembers;
-		$pageuserob->setState('limit', $limit);
-		$data			=	$pageuserob->getItems($options);
-
-		foreach ($data as $val)
-		{
-			$val->id	=	$val->uid;
-		}
-
-		$user_list		=	$mapp->mapItem($data, 'user', $log_user);
-
-		return $user_list;
-	}
-
-	/**
 	 * Method join group by user
 	 *
 	 * @return  mixed
@@ -264,7 +229,10 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 		$app		=	JFactory::getApplication();
 		$log_user	=	$this->plugin->get('user')->id;
 		$group_id	=	$app->input->get('group_id', 0, 'INT');
+		$page_id	=	$app->input->get('page_id', 0, 'INT');
+
 		$group		=	FD::group($group_id);
+		$page		=	FD::page($page_id);
 
 		// Response object
 		$res = new stdClass;
@@ -274,49 +242,91 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 		$access		=	$user->getAccess();
 		$total		=	$user->getTotalGroups();
 
-		if ($access->exceeded('groups.join', $total))
+		if ($group_id)
 		{
-			$res->result->status = 0;
-			$res->result->message = JText::_('PLG_API_EASYSOCIAL_GROUP_JOIN_LIMIT_EXCEEDS_MESSAGE');
-
-			$this->plugin->setResponse($res);
-		}
-
-		if (!$group->isMember($log_user))
-		{
-		// Create a member record for the group
-			if ($group->type == 3)
+			if ($access->exceeded('groups.join', $total))
 			{
-				$members	=	$group->createMember($log_user, true);
+				$res->result->status = 0;
+				$res->result->message = JText::_('PLG_API_EASYSOCIAL_GROUP_JOIN_LIMIT_EXCEEDS_MESSAGE');
+
+				$this->plugin->setResponse($res);
+			}
+
+			if (!$group->isMember($log_user))
+			{
+			// Create a member record for the group
+				if ($group->type == 3)
+				{
+					$members	=	$group->createMember($log_user, true);
+				}
+				else
+				{
+					$members	=	$group->createMember($log_user);
+				}
+
+				$res->result->status	=	1;
+				$res->result->state		=	$members->state;
+
+					if ($group->type == 1 && $res->result->state == 1)
+					{
+						$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_OPEN_GROUP_JOIN_SUCCESS');
+					}
+					elseif (($group->type == 3 || $group->type == 2) && $res->result->state == 1)
+					{
+						$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_JOIN_SUCCESS');
+					}
+					elseif ($res->result->state == 2)
+					{
+						$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_PENDING_APPROVAL');
+					}
 			}
 			else
 			{
-				$members	=	$group->createMember($log_user);
+				$res->result->status	=	0;
+				$res->result->state		=	0;
+				$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_ALREADY_JOINED_MESSAGE');
 			}
 
-			$res->result->status	=	1;
-			$res->result->state		=	$members->state;
-
-				if ($group->type == 1 && $res->result->state == 1)
-				{
-					$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_OPEN_GROUP_JOIN_SUCCESS');
-				}
-				elseif (($group->type == 3 || $group->type == 2) && $res->result->state == 1)
-				{
-					$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_JOIN_SUCCESS');
-				}
-				elseif ($res->result->state == 2)
-				{
-					$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_PENDING_APPROVAL');
-				}
+			$this->plugin->setResponse($res);
 		}
 		else
 		{
-			$res->result->status	=	0;
-			$res->result->state		=	0;
-			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_ALREADY_JOINED_MESSAGE');
-		}
+			if (!$page->isMember($log_user))
+			{
+			// Create a member record for the page
+				if ($page->type == 3)
+				{
+					$members	=	$page->createMember($log_user, true);
+				}
+				else
+				{
+					$members	=	$page->createMember($log_user);
+				}
 
-		$this->plugin->setResponse($res);
-	}
+				$res->result->status	=	1;
+				$res->result->state		=	$members->state;
+
+					if ($page->type == 1 && $res->result->state == 1)
+					{
+						$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_OPEN_GROUP_JOIN_SUCCESS');
+					}
+					elseif (($page->type == 3 || $page->type == 2) && $res->result->state == 1)
+					{
+						$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_JOIN_SUCCESS');
+					}
+					elseif ($res->result->state == 2)
+					{
+						$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_PENDING_APPROVAL');
+					}
+			}
+			else
+			{
+				$res->result->status	=	0;
+				$res->result->state		=	0;
+				$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_ALREADY_JOINED_MESSAGE');
+			}
+
+			$this->plugin->setResponse($res);
+		}
+}
 }

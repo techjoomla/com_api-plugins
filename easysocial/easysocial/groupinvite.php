@@ -72,6 +72,11 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 		$valid			=	1;
 		$res			=	new stdClass;
 		$group			=	FD::group($group_id);
+		
+		if (!$group->id)
+		{
+			$group			=	FD::page($group_id);
+		}
 
 		if (!$group->id || !$group_id)
 		{
@@ -105,23 +110,21 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 			switch ($operation)
 			{
 				case 'leave':
+					// Remove the user from the group.
+					$group->leave($user->id);
 
-	// Remove the user from the group.
-								$group->leave($user->id);
-
-	// Notify group members
-								$group->notifyMembers('leave', array('userId' => $my->id));
-								$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_LEAVE_GROUP_MESSAGE');
-								break;
+					// Notify group members
+					$group->notifyMembers('leave', array('userId' => $my->id));
+					$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_LEAVE_GROUP_MESSAGE');
+					break;
 				case 'remove':
+					// Remove the user from the group.
+					$group->deleteMember($user->id);
 
-	// Remove the user from the group.
-								$group->deleteMember($user->id);
-
-								// Notify group member
-								$group->notifyMembers('user.remove', array('userId' => $user->id));
-								$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_USER_REMOVE_SUCCESS_MESSAGE');
-								break;
+					// Notify group member
+					$group->notifyMembers('user.remove', array('userId' => $user->id));
+					$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_USER_REMOVE_SUCCESS_MESSAGE');
+					break;
 			}
 
 			$res->result->status	=	1;

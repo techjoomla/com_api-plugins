@@ -8,7 +8,9 @@
 defined('_JEXEC') or die( 'Restricted access' );
 require_once JPATH_SITE . '/components/com_content/models/articles.php';
 require_once JPATH_SITE . '/components/com_content/models/article.php';
-
+require_once JPATH_SITE . '/plugins/api/articles/articles/helper/articlehelper.php';
+require_once JPATH_SITE . '/components/com_content/helpers/route.php';
+//JLoader::register('ContentHelperRoute', $com_path . 'helpers/route.php');
 /**
  * Articles Resource
  *
@@ -25,6 +27,7 @@ class ArticlesApiResourceArticle extends ApiResource
 	 */
 	public function get()
 	{
+	    
 		$this->plugin->setResponse($this->getArticles());
 	}
 
@@ -49,26 +52,30 @@ class ArticlesApiResourceArticle extends ApiResource
 	 */
 	public function getArticles()
 	{
-		$app = JFactory::getApplication();
-		$items = array();
-		$article_id = $app->input->get('id', 0, 'INT');
-		$catid = $app->input->get('category_id', 0, 'INT');
+		$app		= JFactory::getApplication();
+		$items		= array();
+		
+		$articleHelper = new ArticleContentHelper();
+		
+		$article_alias	= $app->input->get('article_alias', '', 'STRING');
+		$article_id	= $app->input->get('id', 0, 'INT');
+		$catid		= $app->input->get('category_id', 0, 'INT');
 
 		// Featured - hide,only,show
 		$featured	= $app->input->get('featured', 0, 'INT');
 		$created_by	= $app->input->get('created_by', 0, 'INT');
-		$search = $app->input->get('search', '', 'STRING');
+		$search 	= $app->input->get('search', '', 'STRING');
 		$limitstart	= $app->input->get('limitstart', 0, 'INT');
-		$limit	= $app->input->get('limit', 0, 'INT');
+		$limit		= $app->input->get('limit', 0, 'INT');
 
 		$date_filtering	= $app->input->get('date_filtering', '', 'STRING');
-		$start_date = $app->input->get('start_date_range', '', 'STRING');
-		$end_date = $app->input->get('end_date_range', '', 'STRING');
-		$realtive_date = $app->input->get('relative_date', '', 'STRING');
+		$start_date		= $app->input->get('start_date_range', '', 'STRING');
+		$end_date		= $app->input->get('end_date_range', '', 'STRING');
+		$realtive_date	= $app->input->get('relative_date', '', 'STRING');
 
-		$listOrder = $app->input->get('listOrder', 'ASC', 'STRING');
+		$listOrder		= $app->input->get('listOrder', 'ASC', 'STRING');
 
-		$art_obj = new ContentModelArticles;
+		$art_obj		= new ContentModelArticles;
 
 		$art_obj->setState('list.direction', $listOrder);
 
@@ -107,6 +114,19 @@ class ArticlesApiResourceArticle extends ApiResource
 			$art_obj->setState('filter.article_id', $article_id);
 		}
 
+		if($article_alias)
+		{
+		    $params = JComponentHelper::getParams('com_content');
+		    
+		    if (!$params->get('sef_ids', 0))
+		    {
+		        $article_alias = substr($article_alias, ($pos = strpos($article_alias, '-')) !== false ? $pos + 1 : 0);
+		    }
+
+			$article_id = $articleHelper->getArticleIdByAlias($article_alias);
+			$art_obj->setState('filter.article_id', $article_id);
+		}
+
 		// Filtering
 		if ($date_filtering)
 		{
@@ -119,10 +139,12 @@ class ArticlesApiResourceArticle extends ApiResource
 			}
 		}
 
-		$rows = $art_obj->getItems();
+		$rows			= $art_obj->getItems();
 
-		$num_articles = $art_obj->getTotal();
-		$data[] = new stdClass;
+		$num_articles	= $art_obj->getTotal();
+
+		if (!empty($rows))
+		  $data[]			= new stdClass;
 
 		foreach ($rows as $subKey => $subArray)
 		{
@@ -137,7 +159,17 @@ class ArticlesApiResourceArticle extends ApiResource
 			$data[$subKey]->modified = $subArray->modified;
 			$data[$subKey]->publish_up = $subArray->publish_up;
 			$data[$subKey]->publish_down = $subArray->publish_down;
+			$data[$subKey]->nonsef = 'index.php?option=com_content&view=article&id=' . $subArray->id . '&catid=' . $subArray->catid;
+			$data[$subKey]->puresef =  $articleLink = JRoute::_('index.php?option=com_content&view=article&id=' . $subArray->id . '&catid=' . $subArray->catid);
+			$uribase     = JURI::base(true);
+			
+			if (trim($uribase, '/') && substr($articleLink, 0, strlen($uribase)) == $uribase)
+			{
+			    $articleLink = substr($articleLink, strlen($uribase));
+			}
 
+			$data[$subKey]->link = $articleLink;
+			
 			if ($subArray->images)
 			{
 				$images = json_decode($subArray->images);

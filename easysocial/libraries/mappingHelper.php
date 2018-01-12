@@ -1005,20 +1005,7 @@ class EasySocialApiMappingHelper
 					$item->description = preg_replace("~[[:alpha:]]+://[^<>[:space:]]+[[:alnum:]/]~", "<a href=\"\\0\">\\0</a>", $item->description);
 				}
 
-				// Getting all event images
-				foreach ($row->avatars As $ky => $avt)
-				{
-					$avt_key        = 'avatar_' . $ky;
-					$item->$avt_key = JURI::root() . 'media/com_easysocial/avatars/event/' . $row->id . '/' . $avt;
-
-					$fst = JFile::exists('media/com_easysocial/avatars/event/' . $row->id . '/' . $avt);
-
-					// Set default image
-					if (!$fst)
-					{
-						$item->$avt_key = JURI::root() . 'media/com_easysocial/defaults/avatars/event/' . $ky . '.png';
-					}
-				}
+				$this->avatarsMap($row, $item);
 
 				// End
 				$item->params  = json_decode($row->params);
@@ -1100,14 +1087,7 @@ class EasySocialApiMappingHelper
 				$NameLocationLabel        = $item->location;
 				$item->event_map_url_andr = "geo:" . $item->latitude . "," . $item->longitude . "?q=" . $NameLocationLabel;
 				$item->event_map_url_ios  = "http://maps.apple.com/?q=" . $NameLocationLabel . "&sll=" . $item->latitude . "," . $item->longitude;
-				$item->share_url = JURI::root() . substr(JRoute::_($eventobj->getPermalink(true, false, 'item', false), false), strlen(JUri::base(true)) + 1);
-
-				// Getting cover image of event
-				$eve                      = FD::table('Cover');
-				$eve->type                = 'event';
-				$eve->photo_id            = $row->cover->photo_id;
-				$item->cover_image        = $eve->getSource();
-				$item->cover = $item->cover_image;
+				$item->share_url          = JURI::root() . $eventobj->getPermalink(true, false, 'item', false);
 
 				// End
 				$item->isInvited          = false;
@@ -1242,18 +1222,19 @@ class EasySocialApiMappingHelper
 				$item->params       = (!empty($row->params)) ? $row->params : false;
 				$item->more_info = $fieldsArray;
 
-				foreach ($row->avatars As $ky => $avt)
-				{
-					$avt_key        = 'avatar_' . $ky;
-					$item->$avt_key = JURI::root() . 'media/com_easysocial/avatars/group/' . $row->id . '/' . $avt;
-					$fst = JFile::exists('media/com_easysocial/avatars/group/' . $row->id . '/' . $avt);
+				$this->avatarsMap($row, $item);
 
-					// Set default image
-					if (!$fst)
+				/*foreach ($row->avatars As $ky => $avt)
 					{
-						$item->$avt_key = JURI::root() . 'media/com_easysocial/defaults/avatars/group/' . $ky . '.png';
-					}
-				}
+						$avt_key        = 'avatar_' . $ky;
+						$item->$avt_key = JURI::root() . 'media/com_easysocial/avatars/group/' . $row->id . '/' . $avt;
+						$fst = JFile::exists('media/com_easysocial/avatars/group/' . $row->id . '/' . $avt);
+
+						if (!$fst)
+						{
+							$item->$avt_key = JURI::root() . 'media/com_easysocial/defaults/avatars/group/' . $ky . '.png';
+						}
+				}*/
 
 				$grp_obj   = FD::model('Groups');
 				$alb_model = FD::model('Albums');
@@ -1859,7 +1840,7 @@ class EasySocialApiMappingHelper
 			$item->size          = $row->size;
 			$item->params        = json_decode($row->params, true);
 			$item->storage       = $row->storage;
-			$item->path          = $row->path;
+			$item->path          = JURI::root() . $row->path;
 			$item->original      = $row->original;
 			$item->file_title    = $row->file_title;
 			$item->source        = $row->source;
@@ -1939,5 +1920,60 @@ class EasySocialApiMappingHelper
 
 			return $result;
 		}
+	}
+
+	/**
+	 * Function for getting avtar image
+	 *
+	 * @param   array  $row   array of data
+	 * @param   array  $item  array of data
+	 * 
+	 * @return  array
+	 *
+	 * @since   1.0
+	 */
+	public function avatarsMap($row, $item)
+	{
+			// Getting cover image of event
+				$cluster                      = FD::table('Cover');
+				$cluster->type                = $row->cluster_type;
+				$cluster->photo_id            = $row->cover->photo_id;
+				$item->cover_image        = $cluster->getSource();
+				$item->cover = $item->cover_image;
+
+				// Getting all event images
+				if (!$cluster->photo_id)
+				{
+					foreach ($row->avatars As $ky => $avt)
+					{
+						$avt_key        = 'avatar_' . $ky;
+						$item->$avt_key = JURI::root() . 'media/com_easysocial/avatars/' . $cluster->type . '/' . $row->id . '/' . $avt;
+
+						$fst = JFile::exists('media/com_easysocial/avatars/' . $cluster->type . '/' . $row->id . '/' . $avt);
+
+						// Set default image
+						if (!$fst)
+						{
+							$item->$avt_key = JURI::root() . 'media/com_easysocial/defaults/avatars/' . $cluster->type . '/' . $ky . '.png';
+						}
+					}
+				}
+				else
+				{
+						$photo = FD::table('Photo');
+						$photo->load($cluster->photo_id);
+
+						foreach ($row->avatars As $ky => $avt)
+						{
+							$avt_key        = 'avatar_' . $ky;
+							$item->$avt_key = $photo->getSource($ky);
+
+							// Set default image
+							if (!$item->$avt_key)
+							{
+								$item->$avt_key = JURI::root() . 'media/com_easysocial/defaults/avatars/' . $cluster->type . '/' . $ky . '.png';
+							}
+						}
+				}
 	}
 }

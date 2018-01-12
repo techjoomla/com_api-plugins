@@ -81,16 +81,9 @@ class EasysocialApiResourceGetalbums extends ApiResource
 		// Creating object and calling relatvie method for data fetching.
 		$obj = new EasySocialModelAlbums;
 
-		if ($type == 'user')
+		if ($type == 'all')
 		{
-			$albums = $obj->getAlbums($uid, $type, $mydata);
-		}
-		elseif ($type == 'page')
-		{
-			$albums = $obj->getAlbums($uid, $type, $mydata);
-		}
-		elseif ($type == 'all')
-		{
+			// Getting all public photos
 			$options = array(
 				'pagination' => true,
 				'direction' => 'DESC',
@@ -101,6 +94,10 @@ class EasysocialApiResourceGetalbums extends ApiResource
 			$options['excludedisabled'] = true;
 			$options['withCovers'] = true;
 			$albums = $obj->getAlbums('', '', $options);
+		}
+		else
+		{
+			$albums = $obj->getAlbums($uid, $type, $mydata);
 		}
 
 		// Use to load table of album.

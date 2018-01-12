@@ -78,8 +78,8 @@ class EasysocialApiResourceDiscussion extends ApiResource
 	{
 		// Init variable
 		$mainframe		=	JFactory::getApplication();
-		$group_id		=	$mainframe->input->get('id', 0, 'INT');
-		$page_id		=	$mainframe->input->get('page_id', 0, 'INT');
+		$clusterId		=	$mainframe->input->get('id', 0, 'INT');
+		$type			=	$mainframe->input->get('type', 'group', 'string');
 		$appId			=	$mainframe->input->get('discussion_id', 0, 'INT');
 		$limitstart		=	$mainframe->input->get('limitstart', 0, 'INT');
 		$limit			=	$mainframe->input->get('limit', 10, 'INT');
@@ -90,7 +90,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 		$res->result = array();
 		$res->empty_message = '';
 
-		if (!$group_id)
+		if (!$clusterId)
 		{
 			$res->empty_message	=	JText::_('PLG_API_EASYSOCIAL_EMPTY_GROUP_ID_MESSAGE');
 
@@ -98,7 +98,16 @@ class EasysocialApiResourceDiscussion extends ApiResource
 		}
 		else
 		{
-			$group		= FD::group($group_id);
+			if ($type == 'group')
+			{
+				$cluster		= FD::group($clusterId);
+				$cluster_type   = SOCIAL_TYPE_GROUP;
+			}
+			else
+			{
+				$cluster		= FD::page($clusterId);
+				$cluster_type   = SOCIAL_TYPE_PAGE;
+			}
 
 			// Get the current filter type
 			$filter		=	$mainframe->input->get('filter', 'all', 'STRING');
@@ -122,7 +131,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 			$mapp	=	new EasySocialApiMappingHelper;
 			$model	=	FD::model('Discussions');
 
-			$discussions_row	=	$model->getDiscussions($group->id, SOCIAL_TYPE_GROUP, $options);
+			$discussions_row	=	$model->getDiscussions($cluster->id, $cluster_type, $options);
 
 			if (count($discussions_row))
 			{
@@ -135,58 +144,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 			}
 			else
 			{
-				$res->empty_message	=	'No discussion here';
-			}
-
-			$this->plugin->setResponse($res);
-		}
-
-		if (!$page_id)
-		{
-			$res->empty_message	=	JText::_('PLG_API_EASYSOCIAL_EMPTY_GROUP_ID_MESSAGE');
-
-			$this->plugin->setResponse($res);
-		}
-		else
-		{
-			$group		= FD::page($page_id);
-
-			// Get the current filter type
-			$filter		=	$mainframe->input->get('filter', 'all', 'STRING');
-			$options	=	array();
-
-			if ($filter == 'unanswered')
-			{
-				$options['unanswered']		=	true;
-			}
-
-			if ($filter == 'locked')
-			{
-				$options['locked']			=	true;
-			}
-
-			if ($filter == 'resolved')
-			{
-				$options['resolved']		=	true;
-			}
-
-			$mapp	=	new EasySocialApiMappingHelper;
-			$model	=	FD::model('Discussions');
-
-			$discussions_row	=	$model->getDiscussions($group->id, SOCIAL_TYPE_PAGE, $options);
-
-			if (count($discussions_row))
-			{
-				if ($limitstart)
-				{
-					$discussions_row	=	array_slice($discussions_row, $limitstart, $limit);
-				}
-
-				$res->result		=	$mapp->mapItem($discussions_row, 'discussion', $this->plugin->get('user')->id);
-			}
-			else
-			{
-				$res->empty_message	=	'No discussion here';
+				$res->empty_message	=	JText::_('PLG_API_EASYSOCIAL_NO_DISCUSSION_FOUNDS');
 			}
 
 			$this->plugin->setResponse($res);

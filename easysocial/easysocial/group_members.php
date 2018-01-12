@@ -62,7 +62,7 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 		// Init variable
 		$app		=	JFactory::getApplication();
 		$log_user	=	$this->plugin->get('user')->id;
-		$group_id	=	$app->input->get('group_id', 0, 'INT');
+		$clusterId	=	$app->input->get('id', 0, 'INT');
 		$limitstart	=	$app->input->get('limitstart', 0, 'INT');
 		$limit		=	$app->input->get('limit', 10, 'INT');
 		$mapp		=	new EasySocialApiMappingHelper;
@@ -86,11 +86,11 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 
 		if ($type == 'group' || $type == 'page')
 		{
-			$data	=	$this->fetchGroupMembers($group_id, $limit, $log_user, $mapp);
+			$data	=	$this->fetchGroupMembers($clusterId, $limit, $log_user, $mapp);
 		}
 		elseif ($type == 'event')
 		{
-			$data	=	$this->getEventMembers($group_id, $filter, $log_user, $mapp);
+			$data	=	$this->getEventMembers($clusterId, $filter, $log_user, $mapp);
 		}
 
 		if (empty($data))
@@ -107,16 +107,16 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 	/**
 	 * Method this common function is for getting dates for month,year,today,tomorrow filters.
 	 *
-	 * @param   string  $group_id  group id
-	 * @param   string  $filter    filter name
-	 * @param   int     $log_user  logged user id
-	 * @param   string  $mapp      mapp object
+	 * @param   string  $clusterId  cluster id
+	 * @param   string  $filter     filter name
+	 * @param   int     $log_user   logged user id
+	 * @param   string  $mapp       mapp object
 	 * 
 	 * @return string
 	 *
 	 * @since 1.0
 	 */
-	public function getEventMembers($group_id, $filter, $log_user, $mapp)
+	public function getEventMembers($clusterId, $filter, $log_user, $mapp)
 	{
 		// Get event guest with filter.
 		$grp_model = FD::model('Events');
@@ -146,14 +146,14 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 			}
 
 			$eguest	=	FD::model('Events');
-			$data	=	$eguest->getGuests($group_id, $options);
+			$data	=	$eguest->getGuests($clusterId, $options);
 			$data	=	$mapp->mapItem($data, 'user', $log_user);
 
 			if ($filter == 'pending')
 			{
 				$options['state']	=	SOCIAL_EVENT_GUEST_PENDING;
 				$options['users']	=	false;
-				$udata				=	$eguest->getGuests($group_id, $options);
+				$udata			=	$eguest->getGuests($clusterId, $options);
 
 				foreach ($udata as $usr)
 				{
@@ -181,19 +181,19 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 	/**
 	 * Method this common function is for getting dates for month,year,today,tomorrow filters.
 	 *
-	 * @param   string  $group_id  group id
-	 * @param   string  $limit     limit
-	 * @param   string  $log_user  logged user id
-	 * @param   string  $mapp      mapp object
+	 * @param   string  $clusterId  cluster id
+	 * @param   string  $limit      limit
+	 * @param   string  $log_user   logged user id
+	 * @param   string  $mapp       mapp object
 	 * 
 	 * @return string
 	 *
 	 * @since 1.0
 	 */
-	public function fetchGroupMembers($group_id, $limit, $log_user, $mapp)
+	public function fetchGroupMembers($clusterId, $limit, $log_user, $mapp)
 	{
 		$grp_model		=	FD::model('Groups');
-		$options		=	array('groupid' => $group_id);
+		$options		=	array('groupid' => $clusterId);
 		$gruserob		=	new EasySocialModelGroupMembers;
 		$gruserob->setState('limit', $limit);
 		$data			=	$gruserob->getItems($options);
@@ -207,10 +207,10 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 
 		foreach ($user_list as $user)
 		{
-			$user->isMember			=	$grp_model->isMember($user->id, $group_id);
-			$user->isOwner			=	$grp_model->isOwner($user->id, $group_id);
-			$user->isInvited		=	$grp_model->isInvited($user->id, $group_id);
-			$user->isPendingMember	=	$grp_model->isPendingMember($user->id, $group_id);
+			$user->isMember			=	$grp_model->isMember($user->id, $clusterId);
+			$user->isOwner			=	$grp_model->isOwner($user->id, $clusterId);
+			$user->isInvited		=	$grp_model->isInvited($user->id, $clusterId);
+			$user->isPendingMember	=	$grp_model->isPendingMember($user->id, $clusterId);
 		}
 
 		return $user_list;
@@ -228,11 +228,8 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 		// Init variable
 		$app		=	JFactory::getApplication();
 		$log_user	=	$this->plugin->get('user')->id;
-		$group_id	=	$app->input->get('group_id', 0, 'INT');
-		$page_id	=	$app->input->get('page_id', 0, 'INT');
-
-		$group		=	FD::group($group_id);
-		$page		=	FD::page($page_id);
+		$clusterId	=	$app->input->get('id', 0, 'INT');
+		$type		=	$app->input->get('type', 'group', 'string');
 
 		// Response object
 		$res = new stdClass;
@@ -242,7 +239,16 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 		$access		=	$user->getAccess();
 		$total		=	$user->getTotalGroups();
 
-		if ($group_id)
+		if ($type == 'group')
+		{
+			$cluster	=	FD::group($clusterId);
+		}
+		else
+		{
+			$cluster	= FD::page($clusterId);
+		}
+
+		if ($clusterId)
 		{
 			if ($access->exceeded('groups.join', $total))
 			{
@@ -252,65 +258,26 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 				$this->plugin->setResponse($res);
 			}
 
-			if (!$group->isMember($log_user))
+			if (!$cluster->isMember($log_user))
 			{
 			// Create a member record for the group
-				if ($group->type == 3)
+				if ($cluster->type == 3)
 				{
-					$members	=	$group->createMember($log_user, true);
+					$members	=	$cluster->createMember($log_user, true);
 				}
 				else
 				{
-					$members	=	$group->createMember($log_user);
+					$members	=	$cluster->createMember($log_user);
 				}
 
 				$res->result->status	=	1;
 				$res->result->state		=	$members->state;
 
-					if ($group->type == 1 && $res->result->state == 1)
+					if ($cluster->type == 1 && $res->result->state == 1)
 					{
 						$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_OPEN_GROUP_JOIN_SUCCESS');
 					}
-					elseif (($group->type == 3 || $group->type == 2) && $res->result->state == 1)
-					{
-						$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_JOIN_SUCCESS');
-					}
-					elseif ($res->result->state == 2)
-					{
-						$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_PENDING_APPROVAL');
-					}
-			}
-			else
-			{
-				$res->result->status	=	0;
-				$res->result->state		=	0;
-				$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_ALREADY_JOINED_MESSAGE');
-			}
-
-			$this->plugin->setResponse($res);
-		}
-		else
-		{
-			if (!$page->isMember($log_user))
-			{
-			// Create a member record for the page
-				if ($page->type == 3)
-				{
-					$members	=	$page->createMember($log_user, true);
-				}
-				else
-				{
-					$members	=	$page->createMember($log_user);
-				}
-
-				$res->result->status	=	1;
-				$res->result->state		=	$members->state;
-
-					if ($page->type == 1 && $res->result->state == 1)
-					{
-						$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_OPEN_GROUP_JOIN_SUCCESS');
-					}
-					elseif (($page->type == 3 || $page->type == 2) && $res->result->state == 1)
+					elseif (($cluster->type == 3 || $cluster->type == 2) && $res->result->state == 1)
 					{
 						$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_JOIN_SUCCESS');
 					}

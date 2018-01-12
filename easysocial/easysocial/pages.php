@@ -34,7 +34,7 @@ class EasysocialApiResourcePages extends ApiResource
 	 */
 	public function get()
 	{
-		$this->post();
+		$this->plugin->setResponse(JText::_('PLG_API_EASYSOCIAL_UNSUPPORTED_METHOD_MESSAGE'));
 	}
 
 	/**
@@ -56,7 +56,6 @@ class EasysocialApiResourcePages extends ApiResource
 		$res->empty_message = '';
 
 		$limit		=	$app->input->get('limit', 10, 'INT');
-		$limitstart	=	$app->input->get('limitstart', 0, 'INT');
 		$filters['limit'] = $limit;
 
 		// Set default filters
@@ -80,19 +79,19 @@ class EasysocialApiResourcePages extends ApiResource
 		{
 			if (! empty($filters['all']))
 			{
-				$res->empty_message = JText::_('COM_EASYSOCIAL_PAGES_EMPTY_ALL');
+				$res->empty_message = JText::_('PLG_API_PAGES_EMPTY_ALL');
 			}
 			elseif (! empty($filters['featured']))
 			{
-				$res->empty_message = JText::_('COM_EASYSOCIAL_PAGES_EMPTY_FEATURED');
+				$res->empty_message = JText::_('PLG_API_PAGES_EMPTY_FEATURED');
 			}
 			elseif (! empty($filters['uid']))
 			{
-				$res->empty_message = JText::_('COM_EASYSOCIAL_PAGES_EMPTY_MINE');
+				$res->empty_message = JText::_('PLG_API_PAGES_EMPTY_CREATED');
 			}
 			elseif (! empty($filters['liked']))
 			{
-				$res->empty_message = JText::_('COM_EASYSOCIAL_PAGES_EMPTY_LIKED');
+				$res->empty_message = JText::_('PLG_API_PAGES_EMPTY_LIKE');
 			}
 			else
 			{

@@ -63,7 +63,7 @@ class EasysocialApiResourcePage extends ApiResource
 		else
 		{
 			$this->plugin->err_code = 403;
-			$this->plugin->err_message = 'Page Not Found';
+			$this->plugin->err_message = 'PLG_API_EASYSOCIAL_PAGE_NOT_FOUND';
 			$this->plugin->setResponse(null);
 		}
 	}
@@ -78,6 +78,52 @@ class EasysocialApiResourcePage extends ApiResource
 
 	public function post()
 	{
-		$this->get();
+		$this->plugin->setResponse(JText::_('PLG_API_EASYSOCIAL_UNSUPPORTED_POST_METHOD_MESSAGE'));
+	}
+
+	/**
+	 * Method description
+	 *
+	 * @return  mixed
+	 *
+	 * @since 1.0
+	 */
+	public function delete()
+	{
+		$app		=	JFactory::getApplication();
+		$page_id	=	$app->input->get('id', 0, 'INT');
+		$valid		=	1;
+		$page		=	FD::page($page_id);
+
+		// Call groups model to get pager owner
+		$pagesModel =	FD::model('groups');
+		$res		=	new stdclass;
+
+		if (!$page->id || !$page_id)
+		{
+			$res->result->status = 0;
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_INVALID_PAGE_MESSAGE');
+			$valid = 0;
+		}
+
+		// Only allow super admins to delete pages
+		$my	=	FD::user($this->plugin->get('user')->id);
+
+		if (!$my->isSiteAdmin() && !$pagesModel->isOwner($my->id, $page_id))
+		{
+			$res->result->status = 0;
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_PAGE_ACCESS_DENIED_MESSAGE');
+			$valid				=	0;
+		}
+
+		if ($valid)
+		{
+			// Try to delete the page
+			$page->delete();
+			$res->result->status = 1;
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_PAGE_DELETED_MESSAGE');
+		}
+
+		$this->plugin->setResponse($res);
 	}
 }

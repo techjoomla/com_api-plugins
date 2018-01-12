@@ -66,8 +66,7 @@ class EasysocialApiResourceRequest extends ApiResource
 		// Init variable
 		$app		= JFactory::getApplication();
 		$log_user	= JFactory::getUser($this->plugin->get('user')->id);
-		$group_id	= $app->input->get('group_id', 0, 'INT');
-		$group_id	= !$group_id ? $app->input->get('page_id', 0, 'INT') : 0;
+		$clusterId	= $app->input->get('id', 0, 'INT');
 		$req_val	= $app->input->get('request', '', 'STRING');
 		$other_user_id	= $app->input->get('target_user', 0, 'INT');
 		$type		= $app->input->get('type', 'group', 'STRING');
@@ -78,7 +77,7 @@ class EasysocialApiResourceRequest extends ApiResource
 		$user = FD::user($other_user_id);
 		$res  = new stdClass;
 
-		if (!$group_id || !$other_user_id)
+		if (!$clusterId || !$other_user_id)
 		{
 			$res->success = 0;
 			$res->message = JText::_('PLG_API_EASYSOCIAL_INSUFFICIENT_INPUTS_MESSAGE');
@@ -87,7 +86,7 @@ class EasysocialApiResourceRequest extends ApiResource
 		}
 		else
 		{
-			$group = FD::$type($group_id);
+			$group = FD::$type($clusterId);
 
 			if ($group->isAdmin() != $log_user && ($req_val != 'withdraw') && ($req_val != 'reject'))
 			{
@@ -147,7 +146,7 @@ class EasysocialApiResourceRequest extends ApiResource
 			{
 				$guest = FD::table('EventGuest');
 				$state = $guest->load($other_user_id);
-				$event = FD::event($group_id);
+				$event = FD::event($clusterId);
 				$my    = FD::user($log_user->id);
 				$myGuest = $event->getGuest();
 				$res->success = 0;

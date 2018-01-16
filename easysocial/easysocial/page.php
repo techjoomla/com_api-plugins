@@ -41,7 +41,7 @@ class EasysocialApiResourcePage extends ApiResource
 		// Init variable
 		$app			=	JFactory::getApplication();
 		$log_user		=	JFactory::getUser($this->plugin->get('user')->id);
-		$group_id		=	$app->input->get('id', 0, 'INT');
+		$page_id		=	$app->input->get('id', 0, 'INT');
 		$other_user_id	=	$app->input->get('user_id', 0, 'INT');
 		$userid			=	($other_user_id)?$other_user_id:$log_user->id;
 
@@ -54,10 +54,10 @@ class EasysocialApiResourcePage extends ApiResource
 		$res->result		=	array();
 		$res->empty_message	=	'';
 
-		if ($group_id)
+		if ($page_id)
 		{
-			$group[] = FD::page($group_id);
-			$res->result =	$mapp->mapItem($group, 'page', $log_user->id);
+			$page[] = FD::page($page_id);
+			$res->result =	$mapp->mapItem($page, 'page', $log_user->id);
 			$this->plugin->setResponse($res);
 		}
 		else
@@ -95,7 +95,7 @@ class EasysocialApiResourcePage extends ApiResource
 		$valid		=	1;
 		$page		=	FD::page($page_id);
 
-		// Call groups model to get pager owner
+		// Call groups model to get page owner
 		$pagesModel =	FD::model('groups');
 		$res		=	new stdclass;
 

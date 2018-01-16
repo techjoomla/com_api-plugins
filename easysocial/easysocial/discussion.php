@@ -92,7 +92,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 
 		if (!$clusterId)
 		{
-			$res->empty_message	=	JText::_('PLG_API_EASYSOCIAL_EMPTY_GROUP_ID_MESSAGE');
+			$res->empty_message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_ID');
 
 			$this->plugin->setResponse($res);
 		}

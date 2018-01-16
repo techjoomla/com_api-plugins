@@ -332,7 +332,7 @@ class EasysocialApiResourceSearch extends ApiResource
 	{
 		$mapp = new EasySocialApiMappingHelper;
 		$res = new stdClass;
-		$group = array();
+		$page = array();
 
 		$db = JFactory::getDbo();
 
@@ -349,12 +349,12 @@ class EasysocialApiResourceSearch extends ApiResource
 		$query->order($db->quoteName('cl.id') . 'ASC');
 		$db->setQuery($query);
 
-		$gdata = $db->loadObjectList();
-		$grp_model = FD::model('Pages');
+		$pdata = $db->loadObjectList();
+		$page_model = FD::model('Pages');
 
-		foreach ($gdata as $grp)
+		foreach ($pdata as $pageData)
 		{
-			$page_load = FD::page($grp->id);
+			$page_load = FD::page($pageData->id);
 			$is_inviteonly = $page_load->isInviteOnly();
 			$is_member = $page_load->isMember($log_user->id);
 
@@ -362,7 +362,7 @@ class EasysocialApiResourceSearch extends ApiResource
 			{
 				if ($page_load->creator_uid == $log_user->id)
 				{
-					$page[] = FD::page($grp->id);
+					$page[] = FD::page($pageData->id);
 				}
 				else
 				{
@@ -371,7 +371,7 @@ class EasysocialApiResourceSearch extends ApiResource
 			}
 			else
 			{
-				$page[] = FD::page($grp->id);
+				$page[] = FD::page($pageData->id);
 			}
 		}
 

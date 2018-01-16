@@ -221,8 +221,6 @@ class EasysocialApiResourceAlbum extends ApiResource
 
 	public function create_album()
 	{
-		//file_put_contents(JPATH_ROOT . '/test.log', print_r("herer", true), FILE_APPEND);
-
 		// Get the uid and type
 		$app	=	JFactory::getApplication();
 		$uid	=	$app->input->get('uid', 0, 'INT');

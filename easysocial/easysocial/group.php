@@ -151,9 +151,16 @@ class EasysocialApiResourceGroup extends ApiResource
 		$avtar_scr		=	'';
 		$avtar_typ		=	'';
 		$phto_obj		=	null;
+		$canCreate = ES::user();
 
 		// Response object
 		$res				=	new stdclass;
+
+		// Check if the user really has access to create groups
+		if (! $canCreate->getAccess()->allowed('groups.create') && ! $canCreate->isSiteAdmin())
+		{
+			ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_GROUPS_NO_ACCESS_CREATE_GROUP'));
+		}
 
 		if (!empty($_FILES['file']['name']))
 		{

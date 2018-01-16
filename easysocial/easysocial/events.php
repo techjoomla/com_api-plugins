@@ -177,7 +177,7 @@ class EasysocialApiResourceEvents extends ApiResource
 				$options['start-before'] = $end_date;
 				break;
 			case 'past':
-				//$options['start-before'] = $start_before;
+				// $options['start-before'] = $start_before;
 				$options['past'] = true;
 				$options['ordering'] = 'created';
 				$options['direction'] = 'desc';

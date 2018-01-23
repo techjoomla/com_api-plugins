@@ -1358,7 +1358,7 @@ class EasySocialApiMappingHelper
 				$item->params       = (!empty($row->params)) ? $row->params : false;
 				$item->more_info = $fieldsArray;
 
-								$this->avatarsMap($row, $item);
+				$this->avatarsMap($row, $item);
 
 				/*foreach ($row->avatars As $ky => $avt)
 				{
@@ -1948,7 +1948,7 @@ class EasySocialApiMappingHelper
 				$item->cover		=	$item->cover_image;
 
 				// Getting all event images
-				if ($row->id && !$cluster->photo_id )
+				if ($row->id)
 				{
 					foreach ($row->avatars As $ky => $avt)
 					{

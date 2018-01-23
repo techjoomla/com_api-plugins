@@ -105,16 +105,14 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 			$group_id		=	$event_id;
 			$clusterType	=	SOCIAL_TYPE_EVENT;
 		}
-
-		if ($group_id)
+		elseif ($group_id)
 		{
 			$options	=	array('clusterId' => $group_id, 'clusterType' => $clusterType, 'startlimit' => $startlimit, 'limit' => $limit);
 		}
-
-		if ($page_id)
+		elseif ($page_id)
 		{
 			$clusterType	=	SOCIAL_TYPE_PAGE;
-			$options	=	array('clusterId' => $page_id, 'clusterType' => $clusterType, 'startlimit' => $startlimit, 'limit' => $limit);
+			$options		=	array('clusterId' => $page_id, 'clusterType' => $clusterType, 'startlimit' => $startlimit, 'limit' => $limit);
 		}
 
 		if ($target_user == $id)

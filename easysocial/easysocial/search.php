@@ -264,7 +264,8 @@ class EasysocialApiResourceSearch extends ApiResource
 	public function getGroupList($log_user, $search, $limitstart, $limit)
 	{
 		$mapp = new EasySocialApiMappingHelper;
-		$res = new stdClass;
+
+		// $res = new stdClass;
 		$group = array();
 
 		$db = JFactory::getDbo();
@@ -283,7 +284,8 @@ class EasysocialApiResourceSearch extends ApiResource
 		$db->setQuery($query1);
 
 		$gdata = $db->loadObjectList();
-		$grp_model = FD::model('Groups');
+
+		// $grp_model = FD::model('Groups');
 
 		foreach ($gdata as $grp)
 		{
@@ -331,10 +333,12 @@ class EasysocialApiResourceSearch extends ApiResource
 	public function getPageList($log_user, $search, $limitstart, $limit)
 	{
 		$mapp = new EasySocialApiMappingHelper;
-		$res = new stdClass;
 		$page = array();
 
-		$db = JFactory::getDbo();
+		$page_model = FD::model('Pages');
+		$pdata = $page_model->search($search);
+
+		/*$db = JFactory::getDbo();
 
 		$query = $db->getQuery(true);
 		$query->select($db->quoteName(array('cl.id')));
@@ -349,8 +353,10 @@ class EasysocialApiResourceSearch extends ApiResource
 		$query->order($db->quoteName('cl.id') . 'ASC');
 		$db->setQuery($query);
 
-		$pdata = $db->loadObjectList();
+		$pdata = $db->loadObjectList();*/
+
 		$page_model = FD::model('Pages');
+		$pdata = $page_model->search($search);
 
 		foreach ($pdata as $pageData)
 		{

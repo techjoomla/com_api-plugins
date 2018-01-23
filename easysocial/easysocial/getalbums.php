@@ -84,15 +84,15 @@ class EasysocialApiResourceGetalbums extends ApiResource
 		if ($type == 'all')
 		{
 			// Getting all public photos
-			$options = array(
-				'pagination' => true,
-				'direction' => 'DESC',
-				'core' => false
-			);
+			$options = array();
 
-			$options['privacy'] = true;
-			$options['excludedisabled'] = true;
-			$options['withCovers'] = true;
+			$options['pagination']		=	true;
+			$options['direction']		=	'DESC';
+			$options['core']			=	false;
+			$options['privacy']			=	true;
+			$options['excludedisabled']	=	true;
+			$options['withCovers']		=	true;
+
 			$albums = $obj->getAlbums('', '', $options);
 		}
 		else

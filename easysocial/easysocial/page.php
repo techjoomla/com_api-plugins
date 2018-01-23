@@ -15,11 +15,6 @@ defined('_JEXEC') or die('Restricted access');
 jimport('joomla.plugin.plugin');
 jimport('joomla.html.html');
 
-require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
-require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/pages.php';
-require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/covers.php';
-require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/albums.php';
-require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/fields.php';
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/uploadHelper.php';
 /**
@@ -42,8 +37,9 @@ class EasysocialApiResourcePage extends ApiResource
 		$app			=	JFactory::getApplication();
 		$log_user		=	JFactory::getUser($this->plugin->get('user')->id);
 		$page_id		=	$app->input->get('id', 0, 'INT');
-		$other_user_id	=	$app->input->get('user_id', 0, 'INT');
-		$userid			=	($other_user_id)?$other_user_id:$log_user->id;
+
+		// $other_user_id	=	$app->input->get('user_id', 0, 'INT');
+		// $userid			=	($other_user_id)?$other_user_id:$log_user->id;
 
 		// $user			=	FD::user($userid);
 		$mapp			=	new EasySocialApiMappingHelper;
@@ -56,14 +52,14 @@ class EasysocialApiResourcePage extends ApiResource
 
 		if ($page_id)
 		{
-			$page[] = FD::page($page_id);
-			$res->result =	$mapp->mapItem($page, 'page', $log_user->id);
+			$page[]			=	FD::page($page_id);
+			$res->result	=	$mapp->mapItem($page, 'page', $log_user->id);
 			$this->plugin->setResponse($res);
 		}
 		else
 		{
-			$this->plugin->err_code = 403;
-			$this->plugin->err_message = 'PLG_API_EASYSOCIAL_PAGE_NOT_FOUND';
+			$this->plugin->err_code		=	403;
+			$this->plugin->err_message	=	'PLG_API_EASYSOCIAL_PAGE_NOT_FOUND';
 			$this->plugin->setResponse(null);
 		}
 	}

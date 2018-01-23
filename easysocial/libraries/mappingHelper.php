@@ -382,8 +382,8 @@ class EasySocialApiMappingHelper
 	/**
 	 * To build ablum object
 	 *
-	 * @param   string  $rows    array of data
-	 * @param   int     $userid  user id
+	 * @param   array  $rows    array of data
+	 * @param   int    $userid  user id
 	 * 
 	 * @return array
 	 *
@@ -1130,8 +1130,8 @@ class EasySocialApiMappingHelper
 	/**
 	 * To build ablum object
 	 *
-	 * @param   string  $rows    array of data
-	 * @param   int     $userid  user id
+	 * @param   array  $rows    array of data
+	 * @param   int    $userid  user id
 	 * 
 	 * @return array
 	 *
@@ -1145,18 +1145,20 @@ class EasySocialApiMappingHelper
 		}
 
 		$result  = array();
-		$user    = JFactory::getUser($userid);
-		$user1   = FD::user($userid);
 
-		// Easysocial default profile
-		$profile = $user1->getProfile();
+		/* $user    = JFactory::getUser($userid);
+		 $user1   = FD::user($userid);
+
+		 Easysocial default profile
+		 $profile = $user1->getProfile(); */
+
 		$fmod_obj = new EasySocialModelFields;
 
 		foreach ($rows as $ky => $row)
 		{
 			$group = ES::group($row->id);
 			$grp_model		=	FD::model('Groups');
-			$steps = $grp_model->getAbout($group, $activeStep);
+			$steps = $grp_model->getAbout($group, $activeStep = 0);
 
 			$fieldsArray = array();
 
@@ -1262,8 +1264,8 @@ class EasySocialApiMappingHelper
 	/**
 	 * To build ablum object
 	 *
-	 * @param   string  $rows    array of data
-	 * @param   int     $userid  user id
+	 * @param   array  $rows    array of data
+	 * @param   int    $userid  user id
 	 * 
 	 * @return array
 	 *
@@ -1277,17 +1279,19 @@ class EasySocialApiMappingHelper
 		}
 
 		$result  = array();
-		$user   = FD::user($userid);
+
+		/* $user   = FD::user($userid);
 
 		// Easysocial default profile
-		$profile = $user->getProfile();
-		$fmod_obj = new EasySocialModelFields;
+		$profile = $user->getProfile(); */
+
+		$fmod_obj		=	new EasySocialModelFields;
+		$page_model		=	FD::model('Pages');
 
 		foreach ($rows as $ky => $row)
 		{
 			$page = ES::page($row->id);
-			$page_model		=	FD::model('Pages');
-			$steps = $page_model->getAbout($page, $activeStep);
+			$steps = $page_model->getAbout($page, $activeStep = 0);
 
 			$fieldsArray = array();
 
@@ -1296,7 +1300,8 @@ class EasySocialApiMappingHelper
 
 			// Get custom fields library.
 			$fields      = FD::fields();
-			$field_arr   = array();
+
+			// $field_arr   = array();
 
 			if ($steps)
 			{
@@ -1353,18 +1358,19 @@ class EasySocialApiMappingHelper
 				$item->params       = (!empty($row->params)) ? $row->params : false;
 				$item->more_info = $fieldsArray;
 
-				foreach ($row->avatars As $ky => $avt)
+								$this->avatarsMap($row, $item);
+
+				/*foreach ($row->avatars As $ky => $avt)
 				{
 					$avt_key        = 'avatar_' . $ky;
 					$item->$avt_key = JURI::root() . 'media/com_easysocial/avatars/page/' . $row->id . '/' . $avt;
 					$fst = JFile::exists('media/com_easysocial/avatars/page/' . $row->id . '/' . $avt);
 
-					// Set default image
 					if (!$fst)
 					{
 						$item->$avt_key = JURI::root() . 'media/com_easysocial/defaults/avatars/page/' . $ky . '.png';
 					}
-				}
+				}*/
 
 				$page_obj   = FD::model('Pages');
 				$grp_obj   = FD::model('Groups');
@@ -1925,29 +1931,29 @@ class EasySocialApiMappingHelper
 	/**
 	 * Function for getting avtar image
 	 *
-	 * @param   array  $row   array of data
-	 * @param   array  $item  array of data
+	 * @param   array   $row   array of data
+	 * @param   string  $item  array of data
 	 * 
-	 * @return  array
+	 * @return  void
 	 *
 	 * @since   1.0
 	 */
 	public function avatarsMap($row, $item)
 	{
 			// Getting cover image of event
-				$cluster                      = FD::table('Cover');
-				$cluster->type                = $row->cluster_type;
-				$cluster->photo_id            = $row->cover->photo_id;
-				$item->cover_image        = $cluster->getSource();
-				$item->cover = $item->cover_image;
+				$cluster			=	FD::table('Cover');
+				$cluster->type		=	$row->cluster_type;
+				$cluster->photo_id	=	$row->cover->photo_id;
+				$item->cover_image	=	$cluster->getSource();
+				$item->cover		=	$item->cover_image;
 
 				// Getting all event images
-				if (!$cluster->photo_id)
+				if ($row->id && !$cluster->photo_id )
 				{
 					foreach ($row->avatars As $ky => $avt)
 					{
-						$avt_key        = 'avatar_' . $ky;
-						$item->$avt_key = JURI::root() . 'media/com_easysocial/avatars/' . $cluster->type . '/' . $row->id . '/' . $avt;
+						$avt_key		=	'avatar_' . $ky;
+						$item->$avt_key	=	JURI::root() . 'media/com_easysocial/avatars/' . $cluster->type . '/' . $row->id . '/' . $avt;
 
 						$fst = JFile::exists('media/com_easysocial/avatars/' . $cluster->type . '/' . $row->id . '/' . $avt);
 
@@ -1960,20 +1966,20 @@ class EasySocialApiMappingHelper
 				}
 				else
 				{
-						$photo = FD::table('Photo');
-						$photo->load($cluster->photo_id);
+					$photo = FD::table('Photo');
+					$photo->load($cluster->photo_id);
 
-						foreach ($row->avatars As $ky => $avt)
+					foreach ($row->avatars As $ky => $avt)
+					{
+						$avt_key		=	'avatar_' . $ky;
+						$item->$avt_key = $photo->getSource($ky);
+
+						// Set default image
+						if (!$item->$avt_key)
 						{
-							$avt_key        = 'avatar_' . $ky;
-							$item->$avt_key = $photo->getSource($ky);
-
-							// Set default image
-							if (!$item->$avt_key)
-							{
-								$item->$avt_key = JURI::root() . 'media/com_easysocial/defaults/avatars/' . $cluster->type . '/' . $ky . '.png';
-							}
+							$item->$avt_key = JURI::root() . 'media/com_easysocial/defaults/avatars/' . $cluster->type . '/' . $ky . '.png';
 						}
+					}
 				}
 	}
 }

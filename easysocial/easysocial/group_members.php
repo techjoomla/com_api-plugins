@@ -84,11 +84,11 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 		$state		=	$app->input->get('state', 1, 'INT');
 		$getAdmin	=	$app->input->get('admin', 1, 'INT');
 
-		if ($type == 'group' || $type == 'page')
+		if ($type === 'group' || $type === 'page')
 		{
 			$data	=	$this->fetchGroupMembers($clusterId, $limit, $log_user, $mapp);
 		}
-		elseif ($type == 'event')
+		elseif ($type === 'event')
 		{
 			$data	=	$this->getEventMembers($clusterId, $filter, $log_user, $mapp);
 		}
@@ -107,9 +107,9 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 	/**
 	 * Method this common function is for getting dates for month,year,today,tomorrow filters.
 	 *
-	 * @param   string  $clusterId  cluster id
-	 * @param   string  $filter     filter name
-	 * @param   int     $log_user   logged user id
+	 * @param   int     $clusterId  cluster id
+	 * @param   string  $filter     filter
+	 * @param   string  $log_user   logged user id
 	 * @param   string  $mapp       mapp object
 	 * 
 	 * @return string
@@ -181,7 +181,7 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 	/**
 	 * Method this common function is for getting dates for month,year,today,tomorrow filters.
 	 *
-	 * @param   string  $clusterId  cluster id
+	 * @param   int     $clusterId  cluster id
 	 * @param   string  $limit      limit
 	 * @param   string  $log_user   logged user id
 	 * @param   string  $mapp       mapp object
@@ -260,7 +260,7 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 
 			if (!$cluster->isMember($log_user))
 			{
-			// Create a member record for the group
+				// Create a member record for the group
 				if ($cluster->type == 3)
 				{
 					$members	=	$cluster->createMember($log_user, true);
@@ -273,18 +273,18 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 				$res->result->status	=	1;
 				$res->result->state		=	$members->state;
 
-					if ($cluster->type == 1 && $res->result->state == 1)
-					{
-						$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_OPEN_GROUP_JOIN_SUCCESS');
-					}
-					elseif (($cluster->type == 3 || $cluster->type == 2) && $res->result->state == 1)
-					{
-						$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_JOIN_SUCCESS');
-					}
-					elseif ($res->result->state == 2)
-					{
-						$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_PENDING_APPROVAL');
-					}
+				if ($cluster->type == 1 && $res->result->state == 1)
+				{
+					$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_OPEN_GROUP_JOIN_SUCCESS');
+				}
+				elseif (($cluster->type == 3 || $cluster->type == 2) && $res->result->state == 1)
+				{
+					$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_JOIN_SUCCESS');
+				}
+				elseif ($res->result->state == 2)
+				{
+					$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_PENDING_APPROVAL');
+				}
 			}
 			else
 			{

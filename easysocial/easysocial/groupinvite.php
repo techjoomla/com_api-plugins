@@ -17,9 +17,6 @@ jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/groups.php';
-require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/covers.php';
-require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/albums.php';
-require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/fields.php';
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/uploadHelper.php';
 
@@ -59,7 +56,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 	/**
 	 * Method description Method used to leave group/page or delete group/page.
 	 *
-	 * @param   string  $cluster_id  cluster id
+	 * @param   int     $cluster_id  cluster id
 	 * @param   string  $cluster     cluster name
 	 * @param   string  $type        cluster type
 	 * 
@@ -70,7 +67,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 	public function leaveGroupPage($cluster_id, $cluster, $type)
 	{
 		$app			=	JFactory::getApplication();
-		$target_user		=	$app->input->get('target_user', 0, 'INT');
+		$target_user	=	$app->input->get('target_user', 0, 'INT');
 		$operation		=	$app->input->get('operation', 0, 'STRING');
 		$valid			=	1;
 		$res			=	new stdClass;
@@ -144,7 +141,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 	/**
 	 * Method description Method used to leave group or delete group.
 	 *
-	 * @return  mixed
+	 * @return  void
 	 *
 	 * @since 1.0
 	 */
@@ -159,7 +156,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 		if (!$group_id && !$page_id)
 		{
 			$res->result->status 	=	0;
-			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_PAGE_MESSAGE');
+			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_ID');
 			$valid					=	0;
 		}
 
@@ -167,7 +164,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 		{
 			$group			=	FD::group($group_id);
 
-			if (!$group->id || !$group_id)
+			if (!$group->id)
 			{
 				$res->result->status 	=	0;
 				$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_GROUP_MESSAGE');
@@ -180,7 +177,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 		{
 			$page			=	FD::page($page_id);
 
-			if (!$page->id || !$page_id)
+			if (!$page->id)
 			{
 				$res->result->status 	=	0;
 				$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_PAGE_MESSAGE');

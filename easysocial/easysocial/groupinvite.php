@@ -56,15 +56,13 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 	/**
 	 * Method description Method used to leave group/page or delete group/page.
 	 *
-	 * @param   int     $cluster_id  cluster id
-	 * @param   array   $cluster     cluster name
-	 * @param   string  $type        cluster type
+	 * @param   array  $cluster  cluster name
 	 * 
 	 * @return  mixed
 	 *
 	 * @since 1.0
 	 */
-	public function leaveGroupPage($cluster_id, $cluster, $type)
+	public function leaveGroupPage($cluster)
 	{
 		$app			=	JFactory::getApplication();
 		$target_user	=	$app->input->get('target_user', 0, 'INT');

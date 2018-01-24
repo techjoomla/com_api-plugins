@@ -65,7 +65,6 @@ class EasysocialApiResourcePages extends ApiResource
 
 		$model = ES::model('Pages');
 		$MappingHelper = new EasySocialApiMappingHelper;
-		$pages = array();
 
 		$pages = $model->getPages($filters);
 		$pages = $MappingHelper->mapItem($pages, 'page', Jfactory::getUser()->id);

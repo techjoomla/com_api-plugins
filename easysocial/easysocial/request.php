@@ -39,7 +39,7 @@ class EasysocialApiResourceRequest extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse($this->getGroup());
+		$this->plugin->setResponse(JText::_('PLG_API_EASYSOCIAL_UNSUPPORTED_METHOD_MESSAGE'));
 	}
 
 	/**

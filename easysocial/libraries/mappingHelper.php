@@ -59,7 +59,7 @@ class EasySocialApiMappingHelper
 	 * @param   int     $text_length  text length
 	 * @param   string  $skip         skip
 	 * 
-	 * @return array
+	 * @return  string
 	 *
 	 * @since 1.0
 	 */
@@ -1285,7 +1285,7 @@ class EasySocialApiMappingHelper
 		// Easysocial default profile
 		$profile = $user->getProfile(); */
 
-		$fmod_obj		=	new EasySocialModelFields;
+		// $fmod_obj		=	new EasySocialModelFields;
 		$page_model		=	FD::model('Pages');
 
 		foreach ($rows as $ky => $row)
@@ -1305,8 +1305,6 @@ class EasySocialApiMappingHelper
 
 			if ($steps)
 			{
-				$pageInfo = new stdClass;
-
 				foreach ($steps as $step)
 				{
 					foreach ($step->fields as $pageInfo)

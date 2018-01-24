@@ -1158,7 +1158,7 @@ class EasySocialApiMappingHelper
 		{
 			$group = ES::group($row->id);
 			$grp_model		=	FD::model('Groups');
-			$steps = $grp_model->getAbout($group, $activeStep = 0);
+			$steps = $grp_model->getAbout($group);
 
 			$fieldsArray = array();
 
@@ -1291,7 +1291,7 @@ class EasySocialApiMappingHelper
 		foreach ($rows as $ky => $row)
 		{
 			$page = ES::page($row->id);
-			$steps = $page_model->getAbout($page, $activeStep = 0);
+			$steps = $page_model->getAbout($page);
 
 			$fieldsArray = array();
 
@@ -1815,6 +1815,8 @@ class EasySocialApiMappingHelper
 		$result = array();
 		$user   = JFactory::getUser();
 		$isRoot = $user->authorise('core.admin');
+		$storage = FD::storage('amazon');
+		$uri = $storage->getPermalink();
 
 		foreach ($rows as $ky => $row)
 		{
@@ -1850,13 +1852,16 @@ class EasySocialApiMappingHelper
 			$item->original      = $row->original;
 			$item->file_title    = $row->file_title;
 			$item->source        = $row->source;
-			$item->thumbnail = JURI::root() . $row->thumbnail;
-			$item->likes         = $video->getLikesCount();
-			$item->comments      = $video->getCommentsCount();
-			$video_id = explode("?v=", $item->path);
-			$video_id = explode("&", $video_id[1]);
-			$item->video_url = 'https://www.youtube.com/embed/' . $video_id[0] . '?feature=oembed';
-			$item->isSiteAdmin = $isRoot ? true : false;
+
+			// $item->thumbnail = strstr($item->created_by->image->avatar_large, 'media', true) . $row->thumbnail;
+			$fst 				= JFile::exists(JURI::root() . $row->thumbnail);
+			$item->thumbnail	= ($fst) ? JURI::root() . $row->thumbnail : $uri . $row->thumbnail;
+			$item->likes		= $video->getLikesCount();
+			$item->comments		= $video->getCommentsCount();
+			$video_id			= explode("?v=", $item->path);
+			$video_id			= explode("&", $video_id[1]);
+			$item->video_url	= 'https://www.youtube.com/embed/' . $video_id[0] . '?feature=oembed';
+			$item->isSiteAdmin	= $isRoot ? true : false;
 
 			// $item->isAdmin = false;
 			if (($userid == $row->user_id) || $isRoot)
@@ -1945,39 +1950,44 @@ class EasySocialApiMappingHelper
 				$cluster->type		=	$row->cluster_type;
 				$cluster->photo_id	=	$row->cover->photo_id;
 				$item->cover_image	=	$cluster->getSource();
-				$item->cover		=	$item->cover_image;
+				$item->cover 		=	$item->cover_image;
+
+				$storage = FD::storage('amazon');
 
 				// Getting all event images
 				if ($row->id)
 				{
 					foreach ($row->avatars As $ky => $avt)
 					{
-						$avt_key		=	'avatar_' . $ky;
-						$item->$avt_key	=	JURI::root() . 'media/com_easysocial/avatars/' . $cluster->type . '/' . $row->id . '/' . $avt;
+						$avt_key	=	'avatar_' . $ky;
 
 						$fst = JFile::exists('media/com_easysocial/avatars/' . $cluster->type . '/' . $row->id . '/' . $avt);
 
 						// Set default image
 						if (!$fst)
 						{
-							$item->$avt_key = JURI::root() . 'media/com_easysocial/defaults/avatars/' . $cluster->type . '/' . $ky . '.png';
+							$imagePath = 'media/com_easysocial/avatars/' . $cluster->type . '/' . $row->id . '/' . $avt;
+							$uri = $storage->getPermalink($imagePath);
+							$connector = ES::connector();
+							$connector->addUrl($uri);
+							$connector->useHeadersOnly();
+							$connector->connect();
+
+							$headers = $connector->getResult($uri, true);
+							$Found = stristr($headers, '200');
+
+							if ($Found)
+							{
+								$item->$avt_key = $uri;
+							}
+							else
+							{
+								$item->$avt_key = JURI::root() . 'media/com_easysocial/defaults/avatars/' . $cluster->type . '/' . $ky . '.png';
+							}
 						}
-					}
-				}
-				else
-				{
-					$photo = FD::table('Photo');
-					$photo->load($cluster->photo_id);
-
-					foreach ($row->avatars As $ky => $avt)
-					{
-						$avt_key		=	'avatar_' . $ky;
-						$item->$avt_key = $photo->getSource($ky);
-
-						// Set default image
-						if (!$item->$avt_key)
+						else
 						{
-							$item->$avt_key = JURI::root() . 'media/com_easysocial/defaults/avatars/' . $cluster->type . '/' . $ky . '.png';
+							$item->$avt_key = JURI::root() . 'media/com_easysocial/avatars/' . $cluster->type . '/' . $row->id . '/' . $avt;
 						}
 					}
 				}

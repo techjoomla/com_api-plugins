@@ -41,7 +41,7 @@ class EasysocialApiResourceGetalbums extends ApiResource
 	/**
 	 * Method Get user album as per id / login user
 	 *
-	 * @return  mixed
+	 * @return	object|boolean	in success object will return, in failure boolean
 	 *
 	 * @since 1.0
 	 */

@@ -44,7 +44,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 
 	/** DELETE
 	 * 
-	 * @return	String	Message
+	 * @return	object|boolean	in success object will return, in failure boolean
 	 */
 	public function delete()
 	{
@@ -72,7 +72,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 	/** getGroupDiscussion
 	 * Function use for get friends data
 	 * 
-	 * @return	String	Message
+	 * @return	object|boolean	in success object will return, in failure boolean
 	 */
 	public function getGroupDiscussion()
 	{
@@ -154,7 +154,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 	/** getGroupDiscussion
 	 * Function for create new group
 	 * 
-	 * @return	String	Message
+	 * @return	object|boolean	in success object will return, in failure boolean
 	 */
 
 	public function createGroupDiscussion()

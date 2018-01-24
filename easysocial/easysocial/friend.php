@@ -65,7 +65,7 @@ class EasysocialApiResourceFriend extends ApiResource
 	/**
 	 * Method used to delete friend or unfriend.
 	 * 
-	 * @return string
+	 * @return	object|boolean	in success object will return, in failure boolean
 	 *
 	 * @since 1.0
 	 */
@@ -161,7 +161,7 @@ class EasysocialApiResourceFriend extends ApiResource
 	 *
 	 * @param   string  $data  data
 	 * 
-	 * @return string
+	 * @return	object|boolean	in success object will return, in failure boolean
 	 *
 	 * @since 1.0
 	 */

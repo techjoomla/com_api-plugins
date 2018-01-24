@@ -40,7 +40,7 @@ class EasysocialApiResourcePages extends ApiResource
 	/**
 	 * Method to get pages list
 	 *
-	 * @return  JResponse object
+	 * @return	object|boolean	in success object will return, in failure boolean
 	 *
 	 * @since 2.0
 	 */

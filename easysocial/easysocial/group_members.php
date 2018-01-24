@@ -53,7 +53,7 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 	/**
 	 * Method description
 	 *
-	 * @return  mixed
+	 * @return	object|boolean	in success object will return, in failure boolean
 	 *
 	 * @since 1.0
 	 */
@@ -219,7 +219,7 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 	/**
 	 * Method join group by user
 	 *
-	 * @return  mixed
+	 * @return	object|boolean	in success object will return, in failure boolean
 	 *
 	 * @since 1.0
 	 */

@@ -59,7 +59,7 @@ class EasySocialApiMappingHelper
 	 * @param   int     $text_length  text length
 	 * @param   string  $skip         skip
 	 * 
-	 * @return  string
+	 * @return  string|array
 	 *
 	 * @since 1.0
 	 */
@@ -972,7 +972,7 @@ class EasySocialApiMappingHelper
 	/**
 	 * to build event obj.
 	 *
-	 * @param   string  $rows    array of data
+	 * @param   object  $rows    array of data
 	 * @param   int     $userid  user id
 	 * 
 	 * @return array
@@ -1935,7 +1935,7 @@ class EasySocialApiMappingHelper
 	 * Function for getting avtar image
 	 *
 	 * @param   array   $row   array of data
-	 * @param   string  $item  array of data
+	 * @param   object  $item  array of data
 	 * 
 	 * @return  void
 	 *

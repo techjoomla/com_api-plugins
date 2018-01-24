@@ -57,7 +57,7 @@ class EasysocialApiResourceSearch extends ApiResource
 	/**
 	 * Method This function use for get object for friends, Events and Groups
 	 *
-	 * @return object error message and code
+	 * @return	object|boolean	in success object will return, in failure boolean
 	 *
 	 * @since 1.0
 	 */

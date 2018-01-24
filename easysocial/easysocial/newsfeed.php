@@ -56,7 +56,7 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 	/**
 	 * Method function use for get stream data
 	 *
-	 * @return  mixed
+	 * @return	object|boolean	in success object will return, in failure boolean
 	 *
 	 * @since 1.0
 	 */
@@ -98,20 +98,14 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 		// Get the stream library
 		$stream 		=	FD::stream();
 		$options		=	array('userId' => $target_user, 'startlimit' => $startlimit, 'limit' => $limit);
-		$clusterType	=	SOCIAL_TYPE_GROUP;
 
-		if ($event_id)
+		if ($group_id)
 		{
-			$clusterType	=	SOCIAL_TYPE_EVENT;
-		}
-		elseif ($group_id)
-		{
-			$options	=	array('clusterId' => $group_id, 'clusterType' => $clusterType, 'startlimit' => $startlimit, 'limit' => $limit);
+			$options	=	array('clusterId' => $group_id, 'clusterType' => SOCIAL_TYPE_GROUP, 'startlimit' => $startlimit, 'limit' => $limit);
 		}
 		elseif ($page_id)
 		{
-			$clusterType	=	SOCIAL_TYPE_PAGE;
-			$options		=	array('clusterId' => $page_id, 'clusterType' => $clusterType, 'startlimit' => $startlimit, 'limit' => $limit);
+			$options		=	array('clusterId' => $page_id, 'clusterType' => SOCIAL_TYPE_PAGE, 'startlimit' => $startlimit, 'limit' => $limit);
 		}
 
 		if ($target_user == $id)

@@ -27,7 +27,7 @@ class EasysocialApiResourcePage extends ApiResource
 	/**
 	 * Method description
 	 *
-	 * @return  mixed
+	 * @return	object|boolean	in success object will return, in failure boolean
 	 *
 	 * @since 1.0
 	 */
@@ -80,7 +80,7 @@ class EasysocialApiResourcePage extends ApiResource
 	/**
 	 * Method description
 	 *
-	 * @return  mixed
+	 * @return	object|boolean	in success object will return, in failure boolean
 	 *
 	 * @since 1.0
 	 */

@@ -52,7 +52,7 @@ class EasysocialApiResourcePage extends ApiResource
 
 		if ($page_id)
 		{
-			$page[]			=	FD::page($page_id);
+			$page			=	FD::page($page_id);
 			$res->result	=	$mapp->mapItem($page, 'page', $log_user->id);
 			$this->plugin->setResponse($res);
 		}

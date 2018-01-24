@@ -119,7 +119,7 @@ class EasysocialApiResourceSearch extends ApiResource
 			{
 				$res->result = $this->getPageList($log_user, $search, $limitstart, $limit);
 
-				if (empty($res->result->events))
+				if (empty($res->result))
 				{
 					// Message to show when the list is empty
 					$res->empty_message = JText::_('PLG_API_EASYSOCIAL_PAGE_NOT_FOUND');
@@ -334,26 +334,6 @@ class EasysocialApiResourceSearch extends ApiResource
 	{
 		$mapp = new EasySocialApiMappingHelper;
 		$page = array();
-
-		$page_model = FD::model('Pages');
-		$pdata = $page_model->search($search);
-
-		/*$db = JFactory::getDbo();
-
-		$query = $db->getQuery(true);
-		$query->select($db->quoteName(array('cl.id')));
-		$query->from($db->quoteName('#__social_clusters', 'cl'));
-
-		if (!empty($search))
-		{
-			$query->where("(cl.title LIKE '%" . $search . "%' )");
-		}
-
-		$query->where('cl.state = 1');
-		$query->order($db->quoteName('cl.id') . 'ASC');
-		$db->setQuery($query);
-
-		$pdata = $db->loadObjectList();*/
 
 		$page_model = FD::model('Pages');
 		$pdata = $page_model->search($search);

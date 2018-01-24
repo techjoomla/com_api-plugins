@@ -102,7 +102,6 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 
 		if ($event_id)
 		{
-			$group_id		=	$event_id;
 			$clusterType	=	SOCIAL_TYPE_EVENT;
 		}
 		elseif ($group_id)

@@ -57,7 +57,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 	 * Method description Method used to leave group/page or delete group/page.
 	 *
 	 * @param   int     $cluster_id  cluster id
-	 * @param   string  $cluster     cluster name
+	 * @param   array   $cluster     cluster name
 	 * @param   string  $type        cluster type
 	 * 
 	 * @return  mixed

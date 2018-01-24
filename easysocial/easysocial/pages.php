@@ -70,11 +70,6 @@ class EasysocialApiResourcePages extends ApiResource
 		$pages = $model->getPages($filters);
 		$pages = $MappingHelper->mapItem($pages, 'page', Jfactory::getUser()->id);
 
-		if ($limit)
-		{
-			$pages		=	array_slice($pages, $limitstart, $limit);
-		}
-
 		if (empty($pages))
 		{
 			if (! empty($filters['all']))

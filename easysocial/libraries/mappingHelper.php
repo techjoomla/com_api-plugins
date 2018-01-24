@@ -59,7 +59,7 @@ class EasySocialApiMappingHelper
 	 * @param   int     $text_length  text length
 	 * @param   string  $skip         skip
 	 * 
-	 * @return string
+	 * @return array
 	 *
 	 * @since 1.0
 	 */
@@ -1152,7 +1152,7 @@ class EasySocialApiMappingHelper
 		 Easysocial default profile
 		 $profile = $user1->getProfile(); */
 
-		$fmod_obj = new EasySocialModelFields;
+		// $fmod_obj = new EasySocialModelFields;
 
 		foreach ($rows as $ky => $row)
 		{
@@ -1163,10 +1163,10 @@ class EasySocialApiMappingHelper
 			$fieldsArray = array();
 
 			// Get custom fields model.
-			$fieldsModel = FD::model('Fields');
+			// $fieldsModel = FD::model('Fields');
 
 			// Get custom fields library.
-			$fields      = FD::fields();
+			// $fields      = FD::fields();
 			$field_arr   = array();
 
 			if ($steps)
@@ -1296,7 +1296,7 @@ class EasySocialApiMappingHelper
 			$fieldsArray = array();
 
 			// Get custom fields model.
-			$fieldsModel = FD::model('Fields');
+			// $fieldsModel = FD::model('Fields');
 
 			// Get custom fields library.
 			$fields      = FD::fields();
@@ -1514,7 +1514,7 @@ class EasySocialApiMappingHelper
 				$participant_usrs = $conv_model->getParticipants($row->id);
 				$con_usrs         = array();
 
-				foreach ($participant_usrs as $ky => $usrs)
+				foreach ($participant_usrs as $key => $usrs)
 				{
 					if ($usrs->id && ($log_user != $usrs->id))
 					{

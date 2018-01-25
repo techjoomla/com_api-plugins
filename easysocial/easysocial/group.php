@@ -122,7 +122,7 @@ class EasysocialApiResourceGroup extends ApiResource
 				ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_GROUPS_EXCEEDED_LIMIT'));
 			}
 
-			$this->validateGroupPermalink($postValues['permalink'], '');
+			$this->validateGroupPermalink($postValues['permalink']);
 
 			// Load the group category
 			$category = ES::table('GroupCategory');
@@ -603,9 +603,9 @@ class EasysocialApiResourceGroup extends ApiResource
 	 *
 	 * @since 2.0
 	 */
-	private function validateGroupPermalink($permalink, $group)
+	private function validateGroupPermalink($permalink, $group = array())
 	{
-		if ($group)
+		if (!empty($group))
 		{
 			// If the permalink is the same, just return true.
 			if ($group->alias == $permalink)

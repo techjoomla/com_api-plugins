@@ -162,7 +162,7 @@ class EasysocialApiResourceGroup extends ApiResource
 				$uploadObj = new EasySocialApiUploadHelper;
 				$coverMeta = $uploadObj->ajax_cover($files->get('cover'), 'cover', $category->id, SOCIAL_TYPE_GROUP);
 
-				if (! $coverMeta)
+				if (empty($coverMeta))
 				{
 					ApiError::raiseError(400, $uploadObj->getError());
 				}
@@ -342,7 +342,7 @@ class EasysocialApiResourceGroup extends ApiResource
 				$uploadObj = new EasySocialApiUploadHelper;
 				$coverMeta = $uploadObj->ajax_cover($files->get('cover'), 'cover', $group->category_id, SOCIAL_TYPE_GROUP);
 
-				if (! $coverMeta)
+				if (empty($coverMeta))
 				{
 					ApiError::raiseError(400, $uploadObj->getError());
 				}

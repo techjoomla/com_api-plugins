@@ -278,7 +278,7 @@ class EasySocialApiMappingHelper
 
 			foreach ($rows as $row)
 			{
-				$fobj = new fildsSimpleSchema;
+				$fobj = new FildsSimpleSchema;
 				$fobj->field_id    = $row->id;
 				$fobj->unique_key  = $row->unique_key;
 				$fobj->title       = JText::_($row->title);
@@ -1177,7 +1177,7 @@ class EasySocialApiMappingHelper
 				{
 					foreach ($step->fields as $groupInfo)
 					{
-						$fobj = new fildsSimpleSchema;
+						$fobj = new FildsSimpleSchema;
 						$fobj->field_id = $groupInfo->id;
 						$fobj->unique_key = $groupInfo->unique_key;
 						$fobj->title = JText::_($groupInfo->title);
@@ -1309,7 +1309,7 @@ class EasySocialApiMappingHelper
 				{
 					foreach ($step->fields as $pageInfo)
 					{
-						$fobj = new fildsSimpleSchema;
+						$fobj = new FildsSimpleSchema;
 						$fobj->field_id = $pageInfo->id;
 						$fobj->unique_key = $pageInfo->unique_key;
 						$fobj->title = JText::_($pageInfo->title);

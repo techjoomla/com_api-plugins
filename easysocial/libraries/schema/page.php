@@ -18,6 +18,20 @@ class PageSimpleSchema
 
 	public $title;
 
+	public $alias;
+
+	public $state;
+
+	public $page_type;
+
+	public $cover_position;
+
+	public $creator_name;
+
+	public $friends;
+
+	public $isinvited;
+
 	public $description;
 
 	public $category_id;

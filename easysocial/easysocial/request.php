@@ -57,7 +57,7 @@ class EasysocialApiResourceRequest extends ApiResource
 	/**
 	 * Method function use for get friends data
 	 *
-	 * @return	stdClass  return result
+	 * @return	stdClass
 	 *
 	 * @since 1.0
 	 */

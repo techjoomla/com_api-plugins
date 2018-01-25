@@ -97,15 +97,22 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 
 		// Get the stream library
 		$stream 		=	FD::stream();
-		$options		=	array('userId' => $target_user, 'startlimit' => $startlimit, 'limit' => $limit);
 
-		if ($group_id)
+		if ($event_id)
+		{
+			$options	=	array('clusterId' => $event_id, 'clusterType' => SOCIAL_TYPE_EVENT, 'startlimit' => $startlimit, 'limit' => $limit);
+		}
+		elseif ($group_id)
 		{
 			$options	=	array('clusterId' => $group_id, 'clusterType' => SOCIAL_TYPE_GROUP, 'startlimit' => $startlimit, 'limit' => $limit);
 		}
 		elseif ($page_id)
 		{
-			$options		=	array('clusterId' => $page_id, 'clusterType' => SOCIAL_TYPE_PAGE, 'startlimit' => $startlimit, 'limit' => $limit);
+			$options	=	array('clusterId' => $page_id, 'clusterType' => SOCIAL_TYPE_PAGE, 'startlimit' => $startlimit, 'limit' => $limit);
+		}
+		else
+		{
+			$options	=	array('userId' => $target_user, 'startlimit' => $startlimit, 'limit' => $limit);
 		}
 
 		if ($target_user == $id)

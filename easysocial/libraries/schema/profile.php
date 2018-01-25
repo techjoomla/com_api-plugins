@@ -52,4 +52,6 @@ class FildsSimpleSchema
 	public $field_value;
 
 	public $step;
+
+	public $params;
 }

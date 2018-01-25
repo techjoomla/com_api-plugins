@@ -212,7 +212,7 @@ class EasysocialApiResourceGroup extends ApiResource
 			// Load json library.
 			$json = ES::json();
 
-			$post = $input->post->getArray();
+			// $post = $input->post->getArray();
 
 			$disallow = array(
 				'option', 'cid', 'controller', 'task', 'option', 'currentStep'
@@ -395,7 +395,7 @@ class EasysocialApiResourceGroup extends ApiResource
 				$registry->set($key, $value);
 			}
 
-			$data = $data = $registry->toArray();
+			$data = $registry->toArray();
 			$fieldsLib	= ES::fields();
 			$handler = $fieldsLib->getHandler();
 
@@ -597,7 +597,7 @@ class EasysocialApiResourceGroup extends ApiResource
 	 * Check the permalink value provided for the group
 	 *
 	 * @param   String  $permalink  The permalink value
-	 * @param   Object  $group      The SocialGroup class object
+	 * @param   int     $group      The SocialGroup class object
 	 *
 	 * @return  boolean
 	 *

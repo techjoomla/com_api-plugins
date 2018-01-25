@@ -263,9 +263,12 @@ class EasySocialApiUploadHelper extends JObject
 	/**
 	 * Method To create temp group avtar data
 	 *
-	 * @param   object  $file  file object
+	 * @param   object  $file       file 
+	 * @param   string  $fieldName  file name
+	 * @param   int     $accessId   access id
+	 * @param   string  $type       type 
 	 * 
-	 * @return string
+	 * @return  boolean
 	 *
 	 * @since 1.0
 	 */
@@ -276,34 +279,33 @@ class EasySocialApiUploadHelper extends JObject
 
 		$type = empty($type)? SOCIAL_TYPE_CLUSTERS : $type;
 		$accessId = empty($accessId)? ES::user()->id : $accessId;
-		
+
 		// Get user access
 		$access = ES::access($accessId, $type);
-		
+
 		// We need to perform sanity checking here
 		$options = array('name' => $fieldName, 'maxsize' => $access->get('photos.maxsize') . 'M', 'multiple' => false);
-		
-		
+
 		$uploader = ES::uploader($options);
 		$file = $uploader->getFile(null, 'image');
-		
+
 		// If there was an error getting uploaded file, stop.
 		if ($file instanceof SocialException)
 		{
 			$this->setError($file->message);
-			
+
 			return false;
 		}
-		
+
 		// Load up the image library so we can get the appropriate extension
 		$image 	= ES::image();
 		$image->load($file['tmp_name']);
-		
+
 		// Ensure that the image is valid.
 		if (!$image->isValid())
 		{
 			$this->setError(JText::_("PLG_FIELDS_COVER_VALIDATION_INVALID_IMAGE"));
-			
+
 			return false;
 		}
 
@@ -331,10 +333,12 @@ class EasySocialApiUploadHelper extends JObject
 	/**
 	 * Method to create temp group cover data
 	 *
-	 * @param   object  $file   file object
-	 * @param   string  $uname  file name
+	 * @param   object  $file      file object
+	 * @param   string  $uname     file uname
+	 * @param   int     $accessId  file name
+	 * @param   string  $type      type
 	 * 
-	 * @return string
+	 * @return boolean
 	 *
 	 * @since 1.0
 	 */
@@ -342,14 +346,13 @@ class EasySocialApiUploadHelper extends JObject
 	{
 		$type = empty($type)? SOCIAL_TYPE_CLUSTERS : $type;
 		$accessId = empty($accessId)? ES::user()->id : $accessId;
-	
+
 		// Get user access
 		$access = ES::access($accessId, $type);
 
 		// We need to perform sanity checking here
 		$options = array('name' => $uname, 'maxsize' => $access->get('photos.maxsize') . 'M', 'multiple' => false);
 
-		
 		$uploader = ES::uploader($options);
 		$file = $uploader->getFile(null, 'image');
 
@@ -374,7 +377,7 @@ class EasySocialApiUploadHelper extends JObject
 		if (!$image->isValid())
 		{
 			$this->setError(JText::_("PLG_FIELDS_COVER_VALIDATION_INVALID_IMAGE"));
-			
+
 			return false;
 		}
 
@@ -415,7 +418,7 @@ class EasySocialApiUploadHelper extends JObject
 	 * @param   integer  $log_usr  user data
 	 * @param   string   $type     type
 	 * 
-	 * @return string
+	 * @return  boolean
 	 *
 	 * @since 1.0
 	 */
@@ -584,7 +587,7 @@ class EasySocialApiUploadHelper extends JObject
 	 * @param   integer  $album_id  object type
 	 * @param   integer  $log_usr   array of data
 	 * 
-	 * @return string
+	 * @return  string|boolean  
 	 *
 	 * @since 1.0
 	 */

@@ -29,7 +29,7 @@ require_once JPATH_SITE . '/media/com_easysocial/apps/fields/user/cover/helper.p
  *
  * @since  1.0
  */
-class EasySocialApiUploadHelper
+class EasySocialApiUploadHelper extends JObject
 {
 	/**
 	 * Method uploadCover photo
@@ -269,18 +269,47 @@ class EasySocialApiUploadHelper
 	 *
 	 * @since 1.0
 	 */
-	public function ajax_avatar($file)
+	public function ajax_avatar($file, $fieldName = "avatar", $accessId = '', $type = '')
 	{
 		// Get the ajax library
-		$ajax 		= FD::ajax();
+		$ajax 		= ES::ajax();
 
+		$type = empty($type)? SOCIAL_TYPE_CLUSTERS : $type;
+		$accessId = empty($accessId)? ES::user()->id : $accessId;
+		
+		// Get user access
+		$access = ES::access($accessId, $type);
+		
+		// We need to perform sanity checking here
+		$options = array('name' => $fieldName, 'maxsize' => $access->get('photos.maxsize') . 'M', 'multiple' => false);
+		
+		
+		$uploader = ES::uploader($options);
+		$file = $uploader->getFile(null, 'image');
+		
+		// If there was an error getting uploaded file, stop.
+		if ($file instanceof SocialException)
+		{
+			$this->setError($file->message);
+			
+			return false;
+		}
+		
 		// Load up the image library so we can get the appropriate extension
-		$image 	= FD::image();
+		$image 	= ES::image();
 		$image->load($file['tmp_name']);
+		
+		// Ensure that the image is valid.
+		if (!$image->isValid())
+		{
+			$this->setError(JText::_("PLG_FIELDS_COVER_VALIDATION_INVALID_IMAGE"));
+			
+			return false;
+		}
 
 		// Copy this to temporary location first
 		$tmpPath	= SocialFieldsUserAvatarHelper::getStoragePath('file');
-		$tmpName	= md5($file[ 'name' ] . 'file' . FD::date()->toMySQL()) . $image->getExtension();
+		$tmpName	= md5($file[ 'name' ] . 'file' . ES::date()->toMySQL()) . $image->getExtension();
 
 		$source 	= $file['tmp_name'];
 		$target 	= $tmpPath . '/' . $tmpName;
@@ -309,17 +338,31 @@ class EasySocialApiUploadHelper
 	 *
 	 * @since 1.0
 	 */
-	public function ajax_cover($file, $uname = 'cover_file')
+	public function ajax_cover($file, $uname = 'cover_file', $accessId = '', $type = '')
 	{
-		/*
-		$cls_obj = new SocialFieldsUserCover();
-		$cover_obj = $cls_obj->createCover($file,$uname);
+		$type = empty($type)? SOCIAL_TYPE_CLUSTERS : $type;
+		$accessId = empty($accessId)? ES::user()->id : $accessId;
+	
+		// Get user access
+		$access = ES::access($accessId, $type);
 
-		return $cover_obj;
-		*/
+		// We need to perform sanity checking here
+		$options = array('name' => $uname, 'maxsize' => $access->get('photos.maxsize') . 'M', 'multiple' => false);
+
+		
+		$uploader = ES::uploader($options);
+		$file = $uploader->getFile(null, 'image');
+
+		// If there was an error getting uploaded file, stop.
+		if ($file instanceof SocialException)
+		{
+			$this->setError($file->message);
+
+			return false;
+		}
 
 		// Load our own image library
-		$image = FD::image();
+		$image = ES::image();
 
 		// Generates a unique name for this image.
 		$name = $file['name'];
@@ -330,16 +373,16 @@ class EasySocialApiUploadHelper
 		// Ensure that the image is valid.
 		if (!$image->isValid())
 		{
+			$this->setError(JText::_("PLG_FIELDS_COVER_VALIDATION_INVALID_IMAGE"));
+			
 			return false;
-
-			// Need error code here
 		}
 
 		// Get the storage path
 		$storage = SocialFieldsUserCoverHelper::getStoragePath($uname);
 
 		// Create a new avatar object.
-		$photos = FD::get('Photos', $image);
+		$photos = ES::get('Photos', $image);
 
 		// Create avatars
 		$sizes = $photos->create($storage);

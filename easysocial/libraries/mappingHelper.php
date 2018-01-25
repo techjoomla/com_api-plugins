@@ -1146,20 +1146,11 @@ class EasySocialApiMappingHelper
 
 		$result  = array();
 
-		/* $user    = JFactory::getUser($userid);
-		 $user1   = FD::user($userid);
-
-		 Easysocial default profile
-		 $profile = $user1->getProfile(); */
-
-		// $fmod_obj = new EasySocialModelFields;
+		$grp_model		=	ES::model('Groups');
 
 		foreach ($rows as $ky => $row)
 		{
-			$group = ES::group($row->id);
-			$grp_model		=	FD::model('Groups');
-			$steps = $grp_model->getAbout($group);
-
+			$steps = $grp_model->getAbout($row);
 			$fieldsArray = array();
 
 			// Get custom fields model.
@@ -1183,7 +1174,7 @@ class EasySocialApiMappingHelper
 						$fobj->title = JText::_($groupInfo->title);
 						$fobj->field_name = JText::_($groupInfo->title);
 						$fobj->step = $groupInfo->step_id;
-						$fobj->field_value = $groupInfo->output;
+						$fobj->field_value = isset($groupInfo->output)?$groupInfo->output:'';
 
 						if ($fobj->unique_key == 'DESCRIPTION')
 						{
@@ -1197,7 +1188,6 @@ class EasySocialApiMappingHelper
 
 			if (isset($row->id))
 			{
-				$grpobj = FD::group($row->id);
 				$item   = new GroupSimpleSchema;
 				$item->id           = $row->id;
 				$item->type = 'group';
@@ -1214,10 +1204,9 @@ class EasySocialApiMappingHelper
 				$item->category_id   = $row->category_id;
 				$item->category_name = $category->get('title');
 				$item->group_type = $row->type;
-				$item->cover         = $grpobj->getCover();
-				$grpobj               = FD::group($row->id);
-				$x                    = $grpobj->cover->x;
-				$y                    = $grpobj->cover->y;
+				$item->cover         = $row->getCover();
+				$x                    = $row->cover->x;
+				$y                    = $row->cover->y;
 				$item->cover_position = $x . '% ' . $y . '%';
 				$item->created_by   = $row->creator_uid;
 				$item->creator_name = JFactory::getUser($row->creator_uid)->username;
@@ -1238,7 +1227,6 @@ class EasySocialApiMappingHelper
 						}
 				}*/
 
-				$grp_obj   = FD::model('Groups');
 				$alb_model = FD::model('Albums');
 				$uid       = $row->id . ':' . $row->title;
 				$filters   = array(
@@ -1248,11 +1236,11 @@ class EasySocialApiMappingHelper
 
 				// Get total album count
 				$item->album_count      = $alb_model->getTotalAlbums($filters);
-				$item->member_count     = $grp_obj->getTotalMembers($row->id);
-				$item->isowner          = $grp_obj->isOwner($userid, $row->id);
-				$item->ismember         = $grp_obj->isMember($userid, $row->id);
-				$item->isinvited        = $grp_obj->isInvited($userid, $row->id);
-				$item->approval_pending = $grp_obj->isPendingMember($userid, $row->id);
+				$item->member_count     = $row->getTotalMembers($row->id);
+				$item->isowner          = $row->isOwner($userid, $row->id);
+				$item->ismember         = $row->isMember($userid, $row->id);
+				$item->isinvited        = $row->isInvited($userid, $row->id);
+				$item->approval_pending = $row->isPendingMember($userid, $row->id);
 				$result[] = $item;
 			}
 		}

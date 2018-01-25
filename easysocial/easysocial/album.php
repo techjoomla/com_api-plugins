@@ -298,7 +298,7 @@ class EasysocialApiResourceAlbum extends ApiResource
 
 		$album->params	=	$photodata;
 
-		if (!$album->cover_id)
+		if (empty($album->cover_id))
 		{
 			$album->cover_id	=	$photodata->id;
 

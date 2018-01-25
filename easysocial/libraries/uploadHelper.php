@@ -268,7 +268,7 @@ class EasySocialApiUploadHelper extends JObject
 	 * @param   int     $accessId   access id
 	 * @param   string  $type       type 
 	 * 
-	 * @return  boolean
+	 * @return  array
 	 *
 	 * @since 1.0
 	 */
@@ -338,7 +338,7 @@ class EasySocialApiUploadHelper extends JObject
 	 * @param   int     $accessId  file name
 	 * @param   string  $type      type
 	 * 
-	 * @return boolean
+	 * @return boolean|array  if result is failure return boolean and result is success return array
 	 *
 	 * @since 1.0
 	 */

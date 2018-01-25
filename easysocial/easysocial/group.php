@@ -40,10 +40,9 @@ class EasysocialApiResourceGroup extends ApiResource
 		$input = JFactory::getApplication()->input;
 
 		// Get the group object
-		$id = $input->get('id', 0, 'int');
-
-		$user = ES::user();
-		$group = ES::group($id);
+		$id		=	$input->get('id', 0, 'int');
+		$user	=	ES::user();
+		$group	=	ES::group($id);
 
 		// Ensure that the id provided is valid
 		if (! $group || ! $group->id)
@@ -76,12 +75,13 @@ class EasysocialApiResourceGroup extends ApiResource
 	 */
 	public function post()
 	{
-		$user = ES::user();
-		$input = JFactory::getApplication()->input;
-		$id = $input->get('id', 0, 'int');
-		$apiResponse = new stdClass;
-		$apiResponse->result = new stdClass;
-		$postValues = $input->post->getArray();
+		$user	=	ES::user();
+		$input	=	JFactory::getApplication()->input;
+		$id		=	$input->get('id', 0, 'int');
+
+		$apiResponse			=	new stdClass;
+		$apiResponse->result	=	new stdClass;
+		$postValues				=	$input->post->getArray();
 
 		if (empty($postValues['title']))
 		{
@@ -122,7 +122,7 @@ class EasysocialApiResourceGroup extends ApiResource
 				ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_GROUPS_EXCEEDED_LIMIT'));
 			}
 
-			$this->validateGroupPermalink($postValues['permalink'], 0);
+			$this->validateGroupPermalink($postValues['permalink'], '');
 
 			// Load the group category
 			$category = ES::table('GroupCategory');
@@ -145,9 +145,9 @@ class EasysocialApiResourceGroup extends ApiResource
 				ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_GROUPS_INSUFFICIENT_POINTS'));
 			}
 
-			$options = array();
-			$options['workflow_id'] = $category->getWorkflow()->id;
-			$options['group'] = SOCIAL_FIELDS_GROUP_GROUP;
+			$options				=	array();
+			$options['workflow_id']	=	$category->getWorkflow()->id;
+			$options['group']		=	SOCIAL_FIELDS_GROUP_GROUP;
 
 			// Get fields model
 			$fieldsModel = ES::model('Fields');
@@ -597,7 +597,7 @@ class EasysocialApiResourceGroup extends ApiResource
 	 * Check the permalink value provided for the group
 	 *
 	 * @param   String  $permalink  The permalink value
-	 * @param   int     $group      The SocialGroup class object
+	 * @param   array   $group      The SocialGroup class object
 	 *
 	 * @return  boolean
 	 *

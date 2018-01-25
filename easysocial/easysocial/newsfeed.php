@@ -56,7 +56,7 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 	/**
 	 * Method function use for get stream data
 	 *
-	 * @return  mixed
+	 * @return	object|boolean	in success object will return, in failure boolean
 	 *
 	 * @since 1.0
 	 */
@@ -71,6 +71,7 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 		$log_user		=	JFactory::getUser($this->plugin->get('user')->id);
 		$group_id		=	$app->input->get('group_id', 0, 'INT');
 		$event_id		=	$app->input->get('event_id', 0, 'INT');
+		$page_id		=	$app->input->get('page_id', 0, 'INT');
 		$view			=	$app->input->get('view', 'dashboard', 'STRING');
 		$id				=	$this->plugin->get('user')->id;
 		$target_user	=	$app->input->get('target_user', 0, 'INT');
@@ -96,18 +97,22 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 
 		// Get the stream library
 		$stream 		=	FD::stream();
-		$options		=	array('userId' => $target_user, 'startlimit' => $startlimit, 'limit' => $limit);
-		$clusterType	=	SOCIAL_TYPE_GROUP;
 
 		if ($event_id)
 		{
-			$group_id		=	$event_id;
-			$clusterType	=	SOCIAL_TYPE_EVENT;
+			$options	=	array('clusterId' => $event_id, 'clusterType' => SOCIAL_TYPE_EVENT, 'startlimit' => $startlimit, 'limit' => $limit);
 		}
-
-		if ($group_id)
+		elseif ($group_id)
 		{
-			$options	=	array('clusterId' => $group_id, 'clusterType' => $clusterType, 'startlimit' => $startlimit, 'limit' => $limit);
+			$options	=	array('clusterId' => $group_id, 'clusterType' => SOCIAL_TYPE_GROUP, 'startlimit' => $startlimit, 'limit' => $limit);
+		}
+		elseif ($page_id)
+		{
+			$options	=	array('clusterId' => $page_id, 'clusterType' => SOCIAL_TYPE_PAGE, 'startlimit' => $startlimit, 'limit' => $limit);
+		}
+		else
+		{
+			$options	=	array('userId' => $target_user, 'startlimit' => $startlimit, 'limit' => $limit);
 		}
 
 		if ($target_user == $id)
@@ -128,7 +133,7 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 					$options['guest']	=	true;
 					$options['type']	=	'bookmarks';
 				case 'me':
-					$options['view']	=	$view;
+					$options['view']	=	'profile';
 					break;
 				case 'hashtag':
 					$options['tag']	=	$tag;

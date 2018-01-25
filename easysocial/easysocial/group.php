@@ -158,9 +158,9 @@ class EasysocialApiResourceGroup extends ApiResource
 
 		// Check if the user really has access to create groups
 		if (! $canCreate->getAccess()->allowed('groups.create') && ! $canCreate->isSiteAdmin())
-			{
-				ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_GROUPS_NO_ACCESS_CREATE_GROUP'));
-			}
+		{
+			ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_GROUPS_NO_ACCESS_CREATE_GROUP'));
+		}
 
 		if (!empty($_FILES['file']['name']))
 		{

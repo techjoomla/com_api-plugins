@@ -17,9 +17,6 @@ jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/groups.php';
-require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/covers.php';
-require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/albums.php';
-require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/fields.php';
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/uploadHelper.php';
 
@@ -57,28 +54,21 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 	}
 
 	/**
-	 * Method description Method used to leave group or delete group.
+	 * Method description Method used to leave group/page or delete group/page.
 	 *
-	 * @return  mixed
+	 * @param   array  $cluster  cluster name
+	 * 
+	 * @return	object|boolean	in success object will return, in failure boolean
 	 *
 	 * @since 1.0
 	 */
-	public function delete()
+	public function leaveGroupPage($cluster)
 	{
 		$app			=	JFactory::getApplication();
-		$group_id		=	$app->input->get('group_id', 0, 'INT');
 		$target_user	=	$app->input->get('target_user', 0, 'INT');
 		$operation		=	$app->input->get('operation', 0, 'STRING');
 		$valid			=	1;
 		$res			=	new stdClass;
-		$group			=	FD::group($group_id);
-
-		if (!$group->id || !$group_id)
-		{
-			$res->result->status 	=	0;
-			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_GROUP_MESSAGE');
-			$valid					=	0;
-		}
 
 		if (!$target_user)
 		{
@@ -90,7 +80,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 		// Only allow super admins to delete groups
 		$my		=	FD::user($this->plugin->get('user')->id);
 
-		if ($target_user == $my->id && $operation == 'leave' && $group->creator_uid == $my->id)
+		if ($target_user == $my->id && $operation == 'leave' && $cluster->creator_uid == $my->id)
 		{
 			$res->result->status	=	0;
 			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_OWNER_NOT_LEAVE_MESSAGE');
@@ -105,22 +95,38 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 			switch ($operation)
 			{
 				case 'leave':
+								// Remove the user from the group/page.
+								$res->result->status = $cluster->leave($user->id);
 
-	// Remove the user from the group.
-								$group->leave($user->id);
-
-	// Notify group members
-								$group->notifyMembers('leave', array('userId' => $my->id));
-								$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_LEAVE_GROUP_MESSAGE');
+								if (!$res->result->status)
+								{
+									$res->result->status	=	0;
+									$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE');
+								}
+								else
+								{
+									// Notify group/page members
+									$cluster->notifyMembers('leave', array('userId' => $my->id));
+									$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_LEAVE_GROUP_MESSAGE');
+								}
 								break;
+
 				case 'remove':
 
-	// Remove the user from the group.
-								$group->deleteMember($user->id);
+								// Remove the user from the group/page.
+								$res->result->status = $cluster->deleteMember($user->id);
 
-								// Notify group member
-								$group->notifyMembers('user.remove', array('userId' => $user->id));
-								$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_USER_REMOVE_SUCCESS_MESSAGE');
+								if (!$res->result->status)
+								{
+									$res->result->status	=	0;
+									$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE');
+								}
+								else
+								{
+									// Notify group/page member
+									$cluster->notifyMembers('user.remove', array('userId' => $user->id));
+									$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_USER_REMOVE_SUCCESS_MESSAGE');									
+								}
 								break;
 			}
 
@@ -131,9 +137,59 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 	}
 
 	/**
+	 * Method description Method used to leave group or delete group.
+	 *
+	 * @return  void
+	 *
+	 * @since 1.0
+	 */
+	public function delete()
+	{
+		$app			=	JFactory::getApplication();
+		$group_id		=	$app->input->get('group_id', 0, 'INT');
+		$page_id		=	$app->input->get('page_id', 0, 'INT');
+		$valid			=	1;
+		$res			=	new stdClass;
+
+		if (!$group_id && !$page_id)
+		{
+			$res->result->status 	=	0;
+			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_ID');
+			$valid					=	0;
+		}
+
+		if ($group_id)
+		{
+			$group			=	FD::group($group_id);
+
+			if (!$group->id)
+			{
+				$res->result->status 	=	0;
+				$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_GROUP_MESSAGE');
+				$valid					=	0;
+			}
+
+			$this->leaveGroupPage($group_id, $group, 'group');
+		}
+		else
+		{
+			$page			=	FD::page($page_id);
+
+			if (!$page->id)
+			{
+				$res->result->status 	=	0;
+				$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_PAGE_MESSAGE');
+				$valid					=	0;
+			}
+
+			$this->leaveGroupPage($page_id, $page, 'page');
+		}
+	}
+
+	/**
 	 * Method function use for get friends data
 	 *
-	 * @return  mixed
+	 * @return	object|boolean	in success object will return, in failure boolean
 	 *
 	 * @since 1.0
 	 */

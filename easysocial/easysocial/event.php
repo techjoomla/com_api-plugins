@@ -138,9 +138,9 @@ class EasysocialApiResourceEvent extends ApiResource
 
 // Check if the user really has access to create event
 		if (! $canCreate->getAccess()->allowed('events.create') && ! $canCreate->isSiteAdmin())
-			{
-				ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_EVENTS_NO_ACCESS_CREATE_EVENT'));
-			}
+		{
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_EVENTS_NO_ACCESS_CREATE_EVENT'));
+		}
 
 		// Check the group access for event creation
 		if (!empty($post['group_id']))

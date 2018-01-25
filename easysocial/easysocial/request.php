@@ -39,7 +39,7 @@ class EasysocialApiResourceRequest extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse($this->getGroup());
+		$this->plugin->setResponse(JText::_('PLG_API_EASYSOCIAL_UNSUPPORTED_METHOD_MESSAGE'));
 	}
 
 	/**
@@ -57,19 +57,19 @@ class EasysocialApiResourceRequest extends ApiResource
 	/**
 	 * Method function use for get friends data
 	 *
-	 * @return  mixed
+	 * @return	stdClass
 	 *
 	 * @since 1.0
 	 */
 	public function request()
 	{
 		// Init variable
-		$app      = JFactory::getApplication();
-		$log_user = JFactory::getUser($this->plugin->get('user')->id);
-		$group_id      = $app->input->get('group_id', 0, 'INT');
-		$req_val       = $app->input->get('request', '', 'STRING');
-		$other_user_id = $app->input->get('target_user', 0, 'INT');
-		$type          = $app->input->get('type', 'group', 'STRING');
+		$app		= JFactory::getApplication();
+		$log_user	= JFactory::getUser($this->plugin->get('user')->id);
+		$clusterId	= $app->input->get('id', 0, 'INT');
+		$req_val	= $app->input->get('request', '', 'STRING');
+		$other_user_id	= $app->input->get('target_user', 0, 'INT');
+		$type		= $app->input->get('type', 'group', 'STRING');
 
 		$data = array();
 		$req_val = ($req_val == 'cancel')?'reject':$req_val;
@@ -77,7 +77,7 @@ class EasysocialApiResourceRequest extends ApiResource
 		$user = FD::user($other_user_id);
 		$res  = new stdClass;
 
-		if (!$group_id || !$other_user_id)
+		if (!$clusterId || !$other_user_id)
 		{
 			$res->success = 0;
 			$res->message = JText::_('PLG_API_EASYSOCIAL_INSUFFICIENT_INPUTS_MESSAGE');
@@ -86,7 +86,7 @@ class EasysocialApiResourceRequest extends ApiResource
 		}
 		else
 		{
-			$group = FD::$type($group_id);
+			$group = FD::$type($clusterId);
 
 			if ($group->isAdmin() != $log_user && ($req_val != 'withdraw') && ($req_val != 'reject'))
 			{
@@ -119,11 +119,34 @@ class EasysocialApiResourceRequest extends ApiResource
 						break;
 				}
 			}
+			elseif ($type == 'page')
+			{
+				switch ($req_val)
+				{
+					case 'Approve':
+					case 'approve':
+						$res->success = $group->approveUser($other_user_id);
+						$res->message = ($res->success) ? JText::_('PLG_API_EASYSOCIAL_PAGE_USER_REQ_GRANTED') :
+						JText::_('PLG_API_EASYSOCIAL_PAGE_USER_REQ_UNSUCCESS');
+						break;
+					case 'Reject':
+					case 'reject':
+						$res->success = $group->rejectUser($other_user_id);
+						$res->message = ($res->success) ? JText::_('PLG_API_EASYSOCIAL_PAGE_USER_APPLICATION_REJECTED') :
+						JText::_('PLG_API_EASYSOCIAL_UNABLE_REJECT_APPLICATION');
+						break;
+					case 'Withdraw':
+					case 'withdraw':
+						$res->success = $group->deleteMember($other_user_id);
+			$res->message = ($res->success) ? JText::_('PLG_API_EASYSOCIAL_PAGE_REQUEST_WITHDRAWN') : JText::_('PLG_API_EASYSOCIAL_PAGE_UNABLE_WITHDRAWN_REQ');
+						break;
+				}
+			}
 			else
 			{
 				$guest = FD::table('EventGuest');
 				$state = $guest->load($other_user_id);
-				$event = FD::event($group_id);
+				$event = FD::event($clusterId);
 				$my    = FD::user($log_user->id);
 				$myGuest = $event->getGuest();
 				$res->success = 0;

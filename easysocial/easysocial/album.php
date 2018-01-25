@@ -221,8 +221,6 @@ class EasysocialApiResourceAlbum extends ApiResource
 
 	public function create_album()
 	{
-		//file_put_contents(JPATH_ROOT . '/test.log', print_r("herer", true), FILE_APPEND);
-
 		// Get the uid and type
 		$app	=	JFactory::getApplication();
 		$uid	=	$app->input->get('uid', 0, 'INT');
@@ -233,14 +231,6 @@ class EasysocialApiResourceAlbum extends ApiResource
 		$album	=	FD::table('Album');
 		$album->load();
 		$res	=	new stdClass;
-
-		$canCreate = ES::user();
-
-		// Check if the user really has access to create event
-		if (! $canCreate->getAccess()->allowed('albums.create') && ! $canCreate->isSiteAdmin())
-			{
-				ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_ALBUMS_ACCESS_NOT_ALLOWED'));
-			}
 
 		// Determine if this item is a new item
 		$isNew	=	true;

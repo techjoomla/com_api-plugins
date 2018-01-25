@@ -78,9 +78,9 @@ class EasysocialApiResourceMessage extends ApiResource
 
 		// Check if the user really has access to create groups
 		if (! $canCreate->getAccess()->allowed('conversations.create') && ! $canCreate->isSiteAdmin())
-			{
-				ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_CONVERSATIONS_ERROR_NOT_ALLOWED'));
-			}
+		{
+			ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_CONVERSATIONS_ERROR_NOT_ALLOWED'));
+		}
 
 		if (count($recipients) < 1)
 		{

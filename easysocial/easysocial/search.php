@@ -57,7 +57,7 @@ class EasysocialApiResourceSearch extends ApiResource
 	/**
 	 * Method This function use for get object for friends, Events and Groups
 	 *
-	 * @return object error message and code
+	 * @return	object|boolean	in success object will return, in failure boolean
 	 *
 	 * @since 1.0
 	 */
@@ -113,6 +113,16 @@ class EasysocialApiResourceSearch extends ApiResource
 				{
 					// Message to show when the list is empty
 					$res->empty_message = JText::_('PLG_API_EASYSOCIAL_SEARCH_EVENT_NOT_FOUND');
+				}
+			}
+			elseif ($type == 'page')
+			{
+				$res->result = $this->getPageList($log_user, $search, $limitstart, $limit);
+
+				if (empty($res->result))
+				{
+					// Message to show when the list is empty
+					$res->empty_message = JText::_('PLG_API_EASYSOCIAL_PAGE_NOT_FOUND');
 				}
 			}
 			else
@@ -254,7 +264,8 @@ class EasysocialApiResourceSearch extends ApiResource
 	public function getGroupList($log_user, $search, $limitstart, $limit)
 	{
 		$mapp = new EasySocialApiMappingHelper;
-		$res = new stdClass;
+
+		// $res = new stdClass;
 		$group = array();
 
 		$db = JFactory::getDbo();
@@ -273,7 +284,8 @@ class EasysocialApiResourceSearch extends ApiResource
 		$db->setQuery($query1);
 
 		$gdata = $db->loadObjectList();
-		$grp_model = FD::model('Groups');
+
+		// $grp_model = FD::model('Groups');
 
 		foreach ($gdata as $grp)
 		{
@@ -302,6 +314,57 @@ class EasysocialApiResourceSearch extends ApiResource
 		$group = array_slice($group, $limitstart, $limit);
 
 		return $mapp->mapItem($group, 'group', $log_user->id);
+	}
+
+	// Fetch Pages data
+	/**
+	 * Method Format page object into required object
+	 *
+	 * @param   object   $log_user    user object
+	 * @param   string   $search      search keyword
+	 * @param   integer  $limitstart  limitstart
+	 * @param   integer  $limit       limit
+	 * 
+	 * @return  mixed
+	 *
+	 * @since 1.0
+	 */
+
+	public function getPageList($log_user, $search, $limitstart, $limit)
+	{
+		$mapp = new EasySocialApiMappingHelper;
+		$page = array();
+
+		$page_model = FD::model('Pages');
+		$pdata = $page_model->search($search);
+
+		foreach ($pdata as $pageData)
+		{
+			$page_load = FD::page($pageData->id);
+			$is_inviteonly = $page_load->isInviteOnly();
+			$is_member = $page_load->isMember($log_user->id);
+
+			if ($is_inviteonly && !$is_member)
+			{
+				if ($page_load->creator_uid == $log_user->id)
+				{
+					$page[] = FD::page($pageData->id);
+				}
+				else
+				{
+					continue;
+				}
+			}
+			else
+			{
+				$page[] = FD::page($pageData->id);
+			}
+		}
+
+		// Manual pagination
+		$page = array_slice($page, $limitstart, $limit);
+
+		return $mapp->mapItem($page, 'page', $log_user->id);
 	}
 
 	/**

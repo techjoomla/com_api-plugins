@@ -56,9 +56,9 @@ class EasysocialApiResourcePhotoadd extends ApiResource
 		$canCreate = ES::user();
 
 		if (! $canCreate->getAccess()->allowed('photos.create') && ! $canCreate->isSiteAdmin())
-			{
-				ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_PHOTO_NO_ACCESS_UPLOAD_PHOTO'));
-			}
+		{
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_PHOTO_NO_ACCESS_UPLOAD_PHOTO'));
+		}
 
 		// Load the album
 		$album			=	FD::table('Album');

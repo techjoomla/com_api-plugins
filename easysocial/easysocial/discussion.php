@@ -44,7 +44,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 
 	/** DELETE
 	 * 
-	 * @return	String	Message
+	 * @return	object|boolean	in success object will return, in failure boolean
 	 */
 	public function delete()
 	{
@@ -72,13 +72,14 @@ class EasysocialApiResourceDiscussion extends ApiResource
 	/** getGroupDiscussion
 	 * Function use for get friends data
 	 * 
-	 * @return	String	Message
+	 * @return	object|boolean	in success object will return, in failure boolean
 	 */
 	public function getGroupDiscussion()
 	{
 		// Init variable
 		$mainframe		=	JFactory::getApplication();
-		$group_id		=	$mainframe->input->get('id', 0, 'INT');
+		$clusterId		=	$mainframe->input->get('id', 0, 'INT');
+		$type			=	$mainframe->input->get('type', 'group', 'string');
 		$appId			=	$mainframe->input->get('discussion_id', 0, 'INT');
 		$limitstart		=	$mainframe->input->get('limitstart', 0, 'INT');
 		$limit			=	$mainframe->input->get('limit', 10, 'INT');
@@ -89,15 +90,24 @@ class EasysocialApiResourceDiscussion extends ApiResource
 		$res->result = array();
 		$res->empty_message = '';
 
-		if (!$group_id)
+		if (!$clusterId)
 		{
-			$res->empty_message	=	JText::_('PLG_API_EASYSOCIAL_EMPTY_GROUP_ID_MESSAGE');
+			$res->empty_message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_ID');
 
 			$this->plugin->setResponse($res);
 		}
 		else
 		{
-			$group		= FD::group($group_id);
+			if ($type == 'group')
+			{
+				$cluster		= FD::group($clusterId);
+				$cluster_type   = SOCIAL_TYPE_GROUP;
+			}
+			else
+			{
+				$cluster		= FD::page($clusterId);
+				$cluster_type   = SOCIAL_TYPE_PAGE;
+			}
 
 			// Get the current filter type
 			$filter		=	$mainframe->input->get('filter', 'all', 'STRING');
@@ -121,7 +131,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 			$mapp	=	new EasySocialApiMappingHelper;
 			$model	=	FD::model('Discussions');
 
-			$discussions_row	=	$model->getDiscussions($group->id, SOCIAL_TYPE_GROUP, $options);
+			$discussions_row	=	$model->getDiscussions($cluster->id, $cluster_type, $options);
 
 			if (count($discussions_row))
 			{
@@ -144,7 +154,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 	/** getGroupDiscussion
 	 * Function for create new group
 	 * 
-	 * @return	String	Message
+	 * @return	object|boolean	in success object will return, in failure boolean
 	 */
 
 	public function createGroupDiscussion()

@@ -1840,7 +1840,7 @@ class EasySocialApiMappingHelper
 			$item->source        = $row->source;
 
 			// $item->thumbnail = strstr($item->created_by->image->avatar_large, 'media', true) . $row->thumbnail;
-			$fst 			= JFile::exists($row->thumbnail);
+			$fst 				= JFile::exists($row->thumbnail);
 			$item->thumbnail	= ($fst) ? JURI::root() . $row->thumbnail : $uri . $row->thumbnail;
 			$item->likes		= $video->getLikesCount();
 			$item->comments		= $video->getCommentsCount();

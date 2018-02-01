@@ -49,6 +49,7 @@ class EasysocialApiResourcePage extends ApiResource
 		$res				=	new stdclass;
 		$res->result		=	array();
 		$res->empty_message	=	'';
+		$page				=	array();
 
 		if ($page_id)
 		{

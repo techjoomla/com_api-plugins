@@ -32,7 +32,7 @@ class EasysocialApiResourcePages extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	public function get()
+	public function post()
 	{
 		$this->plugin->setResponse(JText::_('PLG_API_EASYSOCIAL_UNSUPPORTED_METHOD_MESSAGE'));
 	}
@@ -44,7 +44,7 @@ class EasysocialApiResourcePages extends ApiResource
 	 *
 	 * @since 2.0
 	 */
-	public function post()
+	public function get()
 	{
 		$app = JFactory::getApplication();
 		$input = $app->input;

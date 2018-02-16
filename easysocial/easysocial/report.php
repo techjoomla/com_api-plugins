@@ -123,15 +123,26 @@ class EasysocialApiResourceReport extends ApiResource
 
 		// Determine if this user has the permissions to submit reports.
 		$access 	= FD::access();
+		$allowed	= $access->get('reports.submit');
 
 		// Determine if this user has exceeded the number of reports that they can submit
-		$total 		= $model->getCount(array('created_by' => $log_user));
+
+		if (!$allowed)
+		{
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_REPORT_NOT_ALLOW_MESSAGE');
+			$res->result->status = false;
+
+			return $this->plugin->setResponse($res);
+		}
+
+		$total		= $model->getCount(array('created_by' => $log_user));
 
 		if ($access->exceeded('reports.limit', $total))
 		{
 			$res->result->message = JText::_('PLG_API_EASYSOCIAL_LIMIT_EXCEEDS_MESSAGE');
 			$res->result->status = false;
-			$this->plugin->setResponse($res);
+
+			return $this->plugin->setResponse($res);
 		}
 
 		// Create the report
@@ -152,12 +163,9 @@ class EasysocialApiResourceReport extends ApiResource
 		{
 			$res->result->message = JText::_('PLG_API_EASYSOCIAL_CANT_SAVE_REPORT');
 			$res->result->status = false;
-			$this->plugin->setResponse($res);
-		}
 
-		// @badge: reports.create Add badge for the author when a report is created.
-		$badge 	= FD::badges();
-		$badge->log('com_easysocial', 'reports.create', $log_user, JText::_('COM_EASYSOCIAL_REPORTS_BADGE_CREATED_REPORT'));
+			return $this->plugin->setResponse($res);
+		}
 
 		// @points: reports.create Add points for the author when a report is created.
 		$points = FD::points();

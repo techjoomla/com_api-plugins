@@ -125,7 +125,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 								{
 									// Notify group/page member
 									$cluster->notifyMembers('user.remove', array('userId' => $user->id));
-									$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_USER_REMOVE_SUCCESS_MESSAGE');									
+									$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_USER_REMOVE_SUCCESS_MESSAGE');
 								}
 								break;
 			}

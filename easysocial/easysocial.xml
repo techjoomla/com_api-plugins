@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension version="3.1" type="plugin" group="api" method="upgrade">
     <name>Api - Easysocial</name>
-    <version>2.1.0</version>
-    <creationDate>1/02/2018</creationDate>
+    <version>2.2.0</version>
+    <creationDate>21/02/2018</creationDate>
     <author>Techjoomla</author> 
     <authorEmail>extensions@techjoomla.com</authorEmail> 
     <authorUrl>www.techjoomla.com</authorUrl> 

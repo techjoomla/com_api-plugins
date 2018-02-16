@@ -62,6 +62,18 @@ class EasysocialApiResourceComments extends ApiResource
 			$valid				=	0;
 		}
 
+		// Determine if this user has the permissions to add comment.
+		$access 	= FD::access();
+		$allowed	= $access->get('comments.add');
+
+		if (!$allowed)
+		{
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_COMMENT_NOT_ALLOW_MESSAGE');
+			$res->result->status = false;
+
+			return $this->plugin->setResponse($res);
+		}
+
 		// Message should not be empty.
 		if (empty($input))
 		{
@@ -158,6 +170,18 @@ class EasysocialApiResourceComments extends ApiResource
 		$row->userid		=	$log_user->id;
 		$mapp				=	new EasySocialApiMappingHelper;
 		$data				=	$mapp->createCommentsObj($row, $row->limitstart, $row->limit);
+
+		// Determine if this user has the permissions to read comment.
+		$access 	= FD::access();
+		$allowed	= $access->get('comments.read');
+
+		if (!$allowed)
+		{
+			$res->empty_message = JText::_('PLG_API_EASYSOCIAL_READ_COMMENT_NOT_ALLOW_MESSAGE');
+			$res->status = false;
+
+			return $this->plugin->setResponse($res);
+		}
 
 		if (count($data['data']) < 1)
 		{

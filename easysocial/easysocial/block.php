@@ -32,7 +32,7 @@ class EasysocialApiResourceBlock extends ApiResource
 	 */
 	public function post()
 	{
-		$this->plugin->setResponse($this->processUser());
+		$this->processUser();
 	}
 
 	/** POST
@@ -46,7 +46,9 @@ class EasysocialApiResourceBlock extends ApiResource
 		$target_id	=	$app->input->get('target_id', 0, 'INT');
 		$block_this	=	$app->input->get('block', 0, 'INT');
 
-		return $res	=	($block_this)?$this->block($target_id, $reason):$this->unblock($target_id);
+		$res	=	($block_this)?$this->block($target_id, $reason):$this->unblock($target_id);
+
+		$this->plugin->setResponse($res);
 	}
 
 	/** POST
@@ -63,8 +65,10 @@ class EasysocialApiResourceBlock extends ApiResource
 
 		if (!$target_id)
 		{
-			$res->success	=	0;
-			$res->message	=	JText::_('COM_EASYSOCIAL_INVALID_USER_ID_PROVIDED');
+			$res->result->status = false;
+			$res->result->message	=	JText::_('COM_EASYSOCIAL_INVALID_USER_ID_PROVIDED');
+
+			return $res;
 		}
 
 		// Load up the block library
@@ -73,13 +77,13 @@ class EasysocialApiResourceBlock extends ApiResource
 
 		if ($result->id)
 		{
-			$res->success	=	1;
-			$res->message	=	JText::_('PLG_API_EASYSOCIAL_BLOCK_USER');
+			$res->result->status 	= true;
+			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_BLOCK_USER');
 		}
 		else
 		{
-			$res->success = 0;
-			$res->message	=	JText::_('PLG_API_EASYSOCIAL_BLOCK_USER_ERROR');
+			$res->result->status 	= false;
+			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_BLOCK_USER_ERROR');
 		}
 
 		return $res;
@@ -99,8 +103,8 @@ class EasysocialApiResourceBlock extends ApiResource
 
 		if (!$target_id)
 		{
-			$res->success	=	0;
-			$res->message	=	JText::_('COM_EASYSOCIAL_INVALID_USER_ID_PROVIDED');
+			$res->result->status	=	0;
+			$res->result->message	=	JText::_('COM_EASYSOCIAL_INVALID_USER_ID_PROVIDED');
 
 			return $res;
 		}
@@ -111,13 +115,13 @@ class EasysocialApiResourceBlock extends ApiResource
 
 		if ($result)
 		{
-			$res->success	=	1;
-			$res->message	=	JText::_('PLG_API_EASYSOCIAL_UNBLOCK_USER');
+			$res->result->status	=	1;
+			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_UNBLOCK_USER');
 		}
 		else
 		{
-			$res->success	=	$result->code;
-			$res->message	=	$result->message;
+			$res->result->status	=	$result->code;
+			$res->result->message	=	$result->message;
 		}
 
 		return $res;

@@ -69,10 +69,22 @@ class EasysocialApiResourceVotes extends ApiResource
 	 */
 	public function processVote()
 	{
-		$app = JFactory::getApplication();
-		$pollId = $app->input->get('id', 0, 'int');
-		$itemId  = $app->input->get('itemId', 0, 'int');
-		$action  = $app->input->get('act', '', 'default');
+		$app		=	JFactory::getApplication();
+		$pollId		=	$app->input->get('id', 0, 'int');
+		$itemId		=	$app->input->get('itemId', 0, 'int');
+		$action		=	$app->input->get('act', '', 'default');
+		$log_user	=	$this->plugin->get('user')->id;
+
+		$access		=	ES::access($targetId, SOCIAL_TYPE_USER);
+		$allowed	=	$access->get('polls.vote');
+
+		if (!$allowed)
+		{
+			$res->success = 0;
+			$res->message = JText::_('PLG_API_EASYSOCIAL_VOTE_NOT_ALLOW_MESSAGE');
+
+			return $res;
+		}
 
 		return $res = $this->votescount($pollId, $itemId, $action);
 	}

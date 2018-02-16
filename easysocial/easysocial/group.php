@@ -16,7 +16,7 @@ jimport('joomla.plugin.plugin');
 use Joomla\Registry\Registry;
 
 JLoader::register("EasySocialApiUploadHelper", JPATH_SITE . '/plugins/api/easysocial/libraries/uploadHelper.php');
-JLoader::register("EasySocialApiMappingHelper", '/plugins/api/easysocial/libraries/mappingHelper.php');
+JLoader::register("EasySocialApiMappingHelper", JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php');
 
 
 ES::import('fields:/group/permalink/helper');
@@ -83,6 +83,13 @@ class EasysocialApiResourceGroup extends ApiResource
 		$apiResponse->result	=	new stdClass;
 		$postValues				=	$input->post->getArray();
 
+		// Check EasySocial extension version
+		$component = JComponentHelper::getComponent('com_easysocial');
+		$extension = JTable::getInstance('extension');
+		$extension->load($component->id);
+		$manifest = new Joomla\Registry\Registry($extension->manifest_cache);
+		$version = $manifest->get('version');
+
 		if (empty($postValues['title']))
 		{
 			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_GROUP_NAME'));
@@ -122,7 +129,10 @@ class EasysocialApiResourceGroup extends ApiResource
 				ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_GROUPS_EXCEEDED_LIMIT'));
 			}
 
-			$this->validateGroupPermalink($postValues['permalink']);
+			if ( $version >= '2.1.0')
+			{
+				$this->validateGroupPermalink($postValues['permalink']);
+			}
 
 			// Load the group category
 			$category = ES::table('GroupCategory');
@@ -146,7 +156,18 @@ class EasysocialApiResourceGroup extends ApiResource
 			}
 
 			$options				=	array();
-			$options['workflow_id']	=	$category->getWorkflow()->id;
+
+			if ( $version >= '2.1.0')
+			{
+				$options['workflow_id']	=	$category->getWorkflow()->id;
+			}
+			else
+			{
+				$stepsModel	=	FD::model('Steps');
+				$steps		=	$stepsModel->getSteps($postValues['category_id'],  SOCIAL_TYPE_CLUSTERS);
+				$options['step_id']	=	$steps[0]->id;
+			}
+
 			$options['group']		=	SOCIAL_FIELDS_GROUP_GROUP;
 
 			// Get fields model

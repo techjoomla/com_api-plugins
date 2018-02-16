@@ -71,6 +71,7 @@ class EasysocialApiResourceReport extends ApiResource
 
 		// Response Object
 		$res = new stdClass;
+		$res->result->status = true;
 
 		// Build share url use for share post through app
 
@@ -131,8 +132,6 @@ class EasysocialApiResourceReport extends ApiResource
 		{
 			$res->result->message = JText::_('PLG_API_EASYSOCIAL_REPORT_NOT_ALLOW_MESSAGE');
 			$res->result->status = false;
-
-			return $this->plugin->setResponse($res);
 		}
 
 		$total		= $model->getCount(array('created_by' => $log_user));
@@ -141,47 +140,50 @@ class EasysocialApiResourceReport extends ApiResource
 		{
 			$res->result->message = JText::_('PLG_API_EASYSOCIAL_LIMIT_EXCEEDS_MESSAGE');
 			$res->result->status = false;
-
-			return $this->plugin->setResponse($res);
 		}
 
-		// Create the report
-		$report 	= FD::table('Report');
-		$report->bind($data);
+			// Create the report
+			$report 	= FD::table('Report');
+			$report->bind($data);
 
-		// Set the creator id.
-		$report->created_by = $log_user;
+			// Set the creator id.
+			$report->created_by = $log_user;
 
-		// Set the default state of the report to new
-		$report->state = 0;
+			// Set the default state of the report to new
+			$report->state = 0;
 
-		// Try to store the report.
-		$state 	= $report->store();
+			// Try to store the report.
+			$state 	= $report->store();
 
-		// If there's an error, throw it
-		if (!$state)
-		{
-			$res->result->message = JText::_('PLG_API_EASYSOCIAL_CANT_SAVE_REPORT');
-			$res->result->status = false;
+			// If there's an error, throw it
+			if (!$state)
+			{
+				$res->result->message = JText::_('PLG_API_EASYSOCIAL_CANT_SAVE_REPORT');
+				$res->result->status = false;
+			}
 
-			return $this->plugin->setResponse($res);
-		}
+			if ($res->result->status)
+			{
+				// @badge: reports.create Add badge for the author when a report is created.
+				$badge 	= FD::badges();
+				$badge->log('com_easysocial', 'reports.create', $log_user, JText::_('COM_EASYSOCIAL_REPORTS_BADGE_CREATED_REPORT'));
 
-		// @points: reports.create Add points for the author when a report is created.
-		$points = FD::points();
-		$points->assign('reports.create', 'com_easysocial', $log_user);
+				// @points: reports.create Add points for the author when a report is created.
+				$points = FD::points();
+				$points->assign('reports.create', 'com_easysocial', $log_user);
 
-		// Determine if we should send an email
-		$config 	= FD::config();
+				// Determine if we should send an email
+				$config 	= FD::config();
 
-		if ($config->get('reports.notifications.moderators'))
-		{
-			$report->notify();
-		}
+				if ($config->get('reports.notifications.moderators'))
+				{
+					$report->notify();
+				}
 
-		$res->result->message = JText::_('COM_EASYSOCIAL_REPORTS_STORED_SUCCESSFULLY');
-		$res->result->status = true;
+				$res->result->message = JText::_('COM_EASYSOCIAL_REPORTS_STORED_SUCCESSFULLY');
+				$res->result->status = true;
+			}
 
-		$this->plugin->setResponse($res);
+			$this->plugin->setResponse($res);
 	}
 }

@@ -116,12 +116,11 @@ class EasysocialApiResourceShare extends ApiResource
 		$targetId = ($targetId != $log_usr) ? $targetId : $log_usr;
 		$result = new stdClass;
 		$story = FD::story(SOCIAL_TYPE_USER);
+		$access = ES::access($targetId, SOCIAL_TYPE_USER);
 
 		// Check whether the user can really post something on the target
 		if ($targetId)
 		{
-			$access = ES::access($targetId, SOCIAL_TYPE_USER);
-
 			$allowedToPoast = ($clusterType != 'group') ? $access->get('story.user.post') : $access->get('story.group.post');
 
 			if (!$allowedToPoast)
@@ -159,7 +158,7 @@ class EasysocialApiResourceShare extends ApiResource
 			if (!$allowed)
 			{
 				$result->id      = 0;
-				$result->status  = 0;
+				$result->status  = false;
 				$result->message = JText::_('PLG_API_EASYSOCIAL_POST_NOT_ALLOW_MESSAGE');
 
 				return $this->plugin->setResponse($result);

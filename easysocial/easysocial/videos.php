@@ -82,7 +82,6 @@ class EasysocialApiResourceVideos extends ApiResource
 		$sort = $app->input->get('sort', 'latest', 'STRING');
 
 		$ordering = $this->plugin->get('ordering', '', 'STRING');
-		$userObj = FD::user($log_user);
 
 		$mapp = new EasySocialApiMappingHelper;
 		$cats = $model->getCategories();
@@ -91,7 +90,6 @@ class EasysocialApiResourceVideos extends ApiResource
 		$options = array('limitstart' => $limitstart, 'limit' => $limit, 'sort' => $sort, 'filter' => $filter,
 		'category' => $categoryid, 'state' => SOCIAL_STATE_PUBLISHED, 'ordering' => $ordering);
 
-		/* ,'type' => $userObj->isSiteAdmin() ? 'all' : 'user' */
 		if ($video_id)
 		{
 			$data[] = $this->getVideoDetails($video_id);

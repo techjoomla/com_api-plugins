@@ -74,9 +74,9 @@ class EasysocialApiResourceVotes extends ApiResource
 		$itemId		=	$app->input->get('itemId', 0, 'int');
 		$action		=	$app->input->get('act', '', 'default');
 		$log_user	=	$this->plugin->get('user')->id;
-
-		$access		=	ES::access($targetId, SOCIAL_TYPE_USER);
+		$access		=	ES::access($log_user, SOCIAL_TYPE_USER);
 		$allowed	=	$access->get('polls.vote');
+		$res		=	new stdClass;
 
 		if (!$allowed)
 		{

@@ -70,12 +70,8 @@ class EasysocialApiResourceComments extends ApiResource
 		{
 			$res->result->message = JText::_('PLG_API_EASYSOCIAL_COMMENT_NOT_ALLOW_MESSAGE');
 			$res->result->status = false;
-
-			return $this->plugin->setResponse($res);
 		}
-
-		// Message should not be empty.
-		if (empty($input))
+		elseif (empty($input))
 		{
 			$res->result->id			=	0;
 			$res->result->status		=	0;
@@ -179,17 +175,17 @@ class EasysocialApiResourceComments extends ApiResource
 		{
 			$res->empty_message = JText::_('PLG_API_EASYSOCIAL_READ_COMMENT_NOT_ALLOW_MESSAGE');
 			$res->status = false;
-
-			return $this->plugin->setResponse($res);
-		}
-
-		if (count($data['data']) < 1)
-		{
-			$res->empty_message	=	JText::_('APP_USER_KOMENTO_NO_COMMENTS_FOUND');
 		}
 		else
 		{
-			$res->result	=	$data;
+			if (count($data['data']) < 1)
+			{
+				$res->empty_message	=	JText::_('APP_USER_KOMENTO_NO_COMMENTS_FOUND');
+			}
+			else
+			{
+				$res->result	=	$data;
+			}
 		}
 
 		$this->plugin->setResponse($res);

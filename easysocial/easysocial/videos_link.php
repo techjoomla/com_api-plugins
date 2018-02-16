@@ -60,6 +60,18 @@ class EasysocialApiResourceVideos_Link extends ApiResource
 		$video = ES::video();
 		$res = new stdClass;
 
+		// Determine if this user has the permissions to create video.
+		$access 	= FD::access();
+		$allowed	= $access->get('videos.create');
+
+		if (!$allowed)
+		{
+			$res->result->message = JText::_('PLG_API_EASYSOCIAL_VIDEO_NOT_ALLOW_MESSAGE');
+			$res->result->status = false;
+
+			return $this->plugin->setResponse($res);
+		}
+
 		if ($post['link'])
 		{
 			$rx = '~

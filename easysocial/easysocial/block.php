@@ -57,7 +57,7 @@ class EasysocialApiResourceBlock extends ApiResource
 	 * @param   int     $target_id  integer for target id
 	 * @param   String  $reason     string of reason to block the user
 	 * 
-	 * @return	obj result
+	 * @return	string	message 
 	 */
 	public function block($target_id, $reason)
 	{
@@ -94,7 +94,7 @@ class EasysocialApiResourceBlock extends ApiResource
 	 * 
 	 * @param   int  $target_id  integer for target id
 	 * 
-	 * @return	obj	result
+	 * @return	string	message 
 	 */
 
 	public function unblock($target_id)

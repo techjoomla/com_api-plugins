@@ -169,7 +169,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 				$valid					=	0;
 			}
 
-			$this->leaveGroupPage($group_id, $group, 'group');
+			$this->leaveGroupPage($group);
 		}
 		else
 		{
@@ -182,7 +182,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 				$valid					=	0;
 			}
 
-			$this->leaveGroupPage($page_id, $page, 'page');
+			$this->leaveGroupPage($page);
 		}
 	}
 

@@ -32,7 +32,7 @@ class EasysocialApiResourceBlock extends ApiResource
 	 */
 	public function post()
 	{
-		$this->processUser();
+		$this->plugin->setResponse($this->processUser());
 	}
 
 	/** POST
@@ -48,7 +48,7 @@ class EasysocialApiResourceBlock extends ApiResource
 
 		$res	=	($block_this)?$this->block($target_id, $reason):$this->unblock($target_id);
 
-		$this->plugin->setResponse($res);
+		return $res;
 	}
 
 	/** POST

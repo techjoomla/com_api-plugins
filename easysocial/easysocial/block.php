@@ -37,7 +37,7 @@ class EasysocialApiResourceBlock extends ApiResource
 
 	/** POST
 	 * 
-	 * @return	string
+	 * @return	object
 	 */
 	public function processUser()
 	{
@@ -57,7 +57,7 @@ class EasysocialApiResourceBlock extends ApiResource
 	 * @param   int     $target_id  integer for target id
 	 * @param   String  $reason     string of reason to block the user
 	 * 
-	 * @return	object|boolean	in success object will return, in failure boolean
+	 * @return	object
 	 */
 	public function block($target_id, $reason)
 	{
@@ -93,7 +93,7 @@ class EasysocialApiResourceBlock extends ApiResource
 	 * 
 	 * @param   int  $target_id  integer for target id
 	 * 
-	 * @return	object|boolean	in success object will return, in failure boolean
+	 * @return	object
 	 */
 
 	public function unblock($target_id)

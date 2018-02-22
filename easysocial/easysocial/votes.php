@@ -65,7 +65,7 @@ class EasysocialApiResourceVotes extends ApiResource
 	/**	  
 	 * Function userful for vote
 	 * 	 
-	 * @return  JSON	 
+	 * @return  object 
 	 */
 	public function processVote()
 	{
@@ -81,9 +81,8 @@ class EasysocialApiResourceVotes extends ApiResource
 		if (!$allowed)
 		{
 			$res->success = 0;
-			$res->message = JText::_('PLG_API_EASYSOCIAL_VOTE_NOT_ALLOW_MESSAGE');
 
-			return $res;
+			return $res->message = JText::_('PLG_API_EASYSOCIAL_VOTE_NOT_ALLOW_MESSAGE');
 		}
 
 		return $res = $this->votescount($pollId, $itemId, $action);

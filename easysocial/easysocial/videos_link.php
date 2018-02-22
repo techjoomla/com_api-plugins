@@ -69,91 +69,93 @@ class EasysocialApiResourceVideos_Link extends ApiResource
 			$res->result->message = JText::_('PLG_API_EASYSOCIAL_VIDEO_NOT_ALLOW_MESSAGE');
 			$res->result->status = false;
 
-			return $this->plugin->setResponse($res);
+			$this->plugin->setResponse($res);
 		}
-
-		if ($post['link'])
+		else
 		{
-			$rx = '~
-			^(?:https?://)?              # Optional protocol
-			(?:www\.)?                  # Optional subdomain
-			(?:youtube\.com|youtu\.be|vimeo\.com)  # Mandatory domain name
-			/watch\?v=([^&]+)           # URI with video id as capture group 1
-			~x';
-			$has_match = preg_match($rx, $post['link'], $matches);
+			if ($post['link'])
+			{
+				$rx = '~
+				^(?:https?://)?              # Optional protocol
+				(?:www\.)?                  # Optional subdomain
+				(?:youtube\.com|youtu\.be|vimeo\.com)  # Mandatory domain name
+				/watch\?v=([^&]+)           # URI with video id as capture group 1
+				~x';
+				$has_match = preg_match($rx, $post['link'], $matches);
+			}
+
+			$isNew = $video->isNew();
+
+			// Set the current user id only if this is a new video, otherwise whenever the video is edited,
+			// the owner get's modified as well.
+			if ($isNew)
+			{
+				$video->table->user_id = $video->my->id;
+			}
+
+			// Video links
+			if ($video->table->isLink())
+			{
+				$video->table->path = $post['link'];
+
+				// Grab the video data
+				$crawler = ES::crawler();
+				$crawler->crawl($video->table->path);
+
+				$scrape = (object) $crawler->getData();
+
+				// Set the video params with the scraped data
+				$video->table->params = json_encode($scrape);
+
+				// Set the video's duration
+				$video->table->duration = @$scrape->oembed->duration;
+				$video->processLinkVideo();
+				$video->save($post);
+				$video->table->hit();
+			}
+
+			// Save the video
+			$state = $video->table->store();
+
+			// Bind the video location
+			if (isset($post['location']) && $post['location'] && isset($post['latitude']) && $post['latitude'] && isset($post['longitude'])
+				&& $post['longitude'])
+			{
+				// Create a location for this video
+				$location = ES::table('Location');
+
+				$location->uid = $video->table->id;
+				$location->type = SOCIAL_TYPE_VIDEO;
+				$location->user_id = $video->my->id;
+				$location->address = $video['location'];
+				$location->latitude = $video['latitude'];
+				$location->longitude = $video['longitude'];
+				$location->store();
+			}
+
+			$privacyData = 'public';
+
+			if (isset($post['privacy']))
+			{
+				$privacyData = new stdClass;
+				$privacyData->rule = 'videos.view';
+				$privacyData->value = $post['privacy'];
+				$privacyData->custom = $post['privacyCustom'];
+
+				$video->insertPrivacy($privacyData);
+			}
+
+			// Check if we should create stream or not.
+			$createStream = ($isNew) ? true : false;
+
+			if ($createStream)
+			{
+				$video->createStream('create', $privacyData);
+			}
+
+			$res->result->status = 1;
+			$res->result->message = JText::_('COM_EASYSOCIAL_EMAILS_EVENT_NEW_VIDEO');
 		}
-
-		$isNew = $video->isNew();
-
-		// Set the current user id only if this is a new video, otherwise whenever the video is edited,
-		// the owner get's modified as well.
-		if ($isNew)
-		{
-			$video->table->user_id = $video->my->id;
-		}
-
-		// Video links
-		if ($video->table->isLink())
-		{
-			$video->table->path = $post['link'];
-
-			// Grab the video data
-			$crawler = ES::crawler();
-			$crawler->crawl($video->table->path);
-
-			$scrape = (object) $crawler->getData();
-
-			// Set the video params with the scraped data
-			$video->table->params = json_encode($scrape);
-
-			// Set the video's duration
-			$video->table->duration = @$scrape->oembed->duration;
-			$video->processLinkVideo();
-			$video->save($post);
-			$video->table->hit();
-		}
-
-		// Save the video
-		$state = $video->table->store();
-
-		// Bind the video location
-		if (isset($post['location']) && $post['location'] && isset($post['latitude']) && $post['latitude'] && isset($post['longitude'])
-			&& $post['longitude'])
-		{
-			// Create a location for this video
-			$location = ES::table('Location');
-
-			$location->uid = $video->table->id;
-			$location->type = SOCIAL_TYPE_VIDEO;
-			$location->user_id = $video->my->id;
-			$location->address = $video['location'];
-			$location->latitude = $video['latitude'];
-			$location->longitude = $video['longitude'];
-			$location->store();
-		}
-
-		$privacyData = 'public';
-
-		if (isset($post['privacy']))
-		{
-			$privacyData = new stdClass;
-			$privacyData->rule = 'videos.view';
-			$privacyData->value = $post['privacy'];
-			$privacyData->custom = $post['privacyCustom'];
-
-			$video->insertPrivacy($privacyData);
-		}
-
-		// Check if we should create stream or not.
-		$createStream = ($isNew) ? true : false;
-
-		if ($createStream)
-		{
-			$video->createStream('create', $privacyData);
-		}
-
-		$res->result->status = 1;
-		$res->result->message = JText::_('COM_EASYSOCIAL_EMAILS_EVENT_NEW_VIDEO');
 
 		$this->plugin->setResponse($res);
 	}

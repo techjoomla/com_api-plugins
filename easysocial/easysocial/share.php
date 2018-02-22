@@ -33,7 +33,7 @@ class EasysocialApiResourceShare extends ApiResource
 	/**
 	 * Method description
 	 *
-	 * @return  mixed
+	 * @return  ApiPlugin response object
 	 *
 	 * @since 1.0
 	 */

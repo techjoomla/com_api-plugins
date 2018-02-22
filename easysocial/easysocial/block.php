@@ -28,7 +28,7 @@ class EasysocialApiResourceBlock extends ApiResource
 
 	/** POST
 	 * 
-	 * @return	string	Message
+	 * @return  ApiPlugin response object
 	 */
 	public function post()
 	{
@@ -57,7 +57,7 @@ class EasysocialApiResourceBlock extends ApiResource
 	 * @param   int     $target_id  integer for target id
 	 * @param   String  $reason     string of reason to block the user
 	 * 
-	 * @return	string	message 
+	 * @return	object|boolean	in success object will return, in failure boolean
 	 */
 	public function block($target_id, $reason)
 	{
@@ -66,9 +66,8 @@ class EasysocialApiResourceBlock extends ApiResource
 		if (!$target_id)
 		{
 			$res->result->status	=	false;
-			$res->result->message	=	JText::_('COM_EASYSOCIAL_INVALID_USER_ID_PROVIDED');
 
-			return $res;
+			return $res->result->message	=	JText::_('COM_EASYSOCIAL_INVALID_USER_ID_PROVIDED');
 		}
 
 		// Load up the block library
@@ -94,7 +93,7 @@ class EasysocialApiResourceBlock extends ApiResource
 	 * 
 	 * @param   int  $target_id  integer for target id
 	 * 
-	 * @return	string	message 
+	 * @return	object|boolean	in success object will return, in failure boolean
 	 */
 
 	public function unblock($target_id)
@@ -104,9 +103,8 @@ class EasysocialApiResourceBlock extends ApiResource
 		if (!$target_id)
 		{
 			$res->result->status	=	0;
-			$res->result->message	=	JText::_('COM_EASYSOCIAL_INVALID_USER_ID_PROVIDED');
 
-			return $res;
+			return $res->result->message	=	JText::_('COM_EASYSOCIAL_INVALID_USER_ID_PROVIDED');
 		}
 
 		// Load up the block library

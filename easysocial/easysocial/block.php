@@ -37,7 +37,7 @@ class EasysocialApiResourceBlock extends ApiResource
 
 	/** POST
 	 * 
-	 * @return	int	id
+	 * @return	string
 	 */
 	public function processUser()
 	{
@@ -65,7 +65,7 @@ class EasysocialApiResourceBlock extends ApiResource
 
 		if (!$target_id)
 		{
-			$res->result->status = false;
+			$res->result->status	=	false;
 			$res->result->message	=	JText::_('COM_EASYSOCIAL_INVALID_USER_ID_PROVIDED');
 
 			return $res;
@@ -77,12 +77,12 @@ class EasysocialApiResourceBlock extends ApiResource
 
 		if ($result->id)
 		{
-			$res->result->status 	= true;
+			$res->result->status 	=	true;
 			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_BLOCK_USER');
 		}
 		else
 		{
-			$res->result->status 	= false;
+			$res->result->status 	=	false;
 			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_BLOCK_USER_ERROR');
 		}
 

@@ -158,8 +158,8 @@ class EasysocialApiResourceReport extends ApiResource
 			// If there's an error, throw it
 			if (!$state)
 			{
-				$res->result->message = JText::_('PLG_API_EASYSOCIAL_CANT_SAVE_REPORT');
-				$res->result->status = false;
+				$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_CANT_SAVE_REPORT');
+				$res->result->status	=	false;
 			}
 
 			if ($res->result->status)
@@ -180,8 +180,8 @@ class EasysocialApiResourceReport extends ApiResource
 					$report->notify();
 				}
 
-				$res->result->message = JText::_('COM_EASYSOCIAL_REPORTS_STORED_SUCCESSFULLY');
-				$res->result->status = true;
+				$res->result->message	=	JText::_('COM_EASYSOCIAL_REPORTS_STORED_SUCCESSFULLY');
+				$res->result->status	=	true;
 			}
 
 			$this->plugin->setResponse($res);

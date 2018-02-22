@@ -51,6 +51,18 @@ class EasysocialApiResourceShare extends ApiResource
 	 */
 	public function post()
 	{
+		$this->plugin->setResponse($this->postStory());
+	}
+
+	/**
+	 * Method description
+	 *
+	 * @return  mixed
+	 *
+	 * @since 1.0
+	 */
+	public function postStory()
+	{
 		$app      = JFactory::getApplication();
 		$type     = $app->input->get('type', 'story', 'STRING');
 		$content  = $app->input->get('content', '', 'RAW');
@@ -107,7 +119,7 @@ class EasysocialApiResourceShare extends ApiResource
 				$thumbnail = $data->opengraph->image;
 			}
 
-			return $this->plugin->setResponse($data);
+			return $data;
 		}
 
 		$log_usr  = intval($this->plugin->get('user')->id);
@@ -125,11 +137,7 @@ class EasysocialApiResourceShare extends ApiResource
 
 			if (!$allowedToPoast)
 			{
-				$result->id      = 0;
-				$result->status  = 0;
-				$result->message = JText::_('PLG_API_EASYSOCIAL_POST_NOT_ALLOW_MESSAGE');
-
-				return $this->plugin->setResponse($result);
+				ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_POST_NOT_ALLOW_MESSAGE'));
 			}
 		}
 
@@ -139,7 +147,7 @@ class EasysocialApiResourceShare extends ApiResource
 			$result->status  = 0;
 			$result->message = JText::_('PLG_API_EASYSOCIAL_EMPTY_TYPE');
 
-			return $this->plugin->setResponse($result);
+			return $result;
 		}
 		else
 		{
@@ -157,11 +165,7 @@ class EasysocialApiResourceShare extends ApiResource
 
 			if (!$allowed)
 			{
-				$result->id      = 0;
-				$result->status  = false;
-				$result->message = JText::_('PLG_API_EASYSOCIAL_POST_NOT_ALLOW_MESSAGE');
-
-				return $this->plugin->setResponse($result);
+				ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_POST_NOT_ALLOW_MESSAGE'));
 			}
 
 			// Determines if the current posting is for a cluster
@@ -181,20 +185,15 @@ class EasysocialApiResourceShare extends ApiResource
 
 					if ($group->isMember() && !in_array('member', $permissions) && !$group->isOwner() && !$group->isAdmin())
 					{
-						$result->message = JText::_('PLG_API_EASYSOCIAL_MEMBER_ACCESS_DENIED_MESSAGE');
+						ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_MEMBER_ACCESS_DENIED_MESSAGE'));
 					}
 
 					// If the user is an admin, ensure that permissions has admin
 
 					if ($group->isAdmin() && !in_array('admin', $permissions) && !$group->isOwner())
 					{
-						$result->message = JText::_('PLG_API_EASYSOCIAL_ADMIN_ACCESS_DENIED_MESSAGE');
+						ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_ADMIN_ACCESS_DENIED_MESSAGE'));
 					}
-
-					$result->id     = 0;
-					$result->status = 0;
-
-					return $this->plugin->setResponse($result);
 				}
 			}
 
@@ -350,7 +349,7 @@ class EasysocialApiResourceShare extends ApiResource
 			}
 		}
 
-		$this->plugin->setResponse($result);
+		return $result;
 	}
 
 	/**

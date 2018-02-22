@@ -157,7 +157,7 @@ class EasysocialApiResourceComments extends ApiResource
 		$res->result = array();
 		$res->empty_message = '';
 
-// Discussions.group.reply
+		// Discussions.group.reply
 		$row->stream_id		=	$app->input->get('stream_id', 0, 'INT');
 		$row->group			=	$app->input->get('group', '', 'STRING');
 		$row->verb			=	$app->input->get('verb', '', 'STRING');
@@ -173,8 +173,8 @@ class EasysocialApiResourceComments extends ApiResource
 
 		if (!$allowed)
 		{
-			$res->empty_message = JText::_('PLG_API_EASYSOCIAL_READ_COMMENT_NOT_ALLOW_MESSAGE');
-			$res->status = false;
+			$res->empty_message	=	JText::_('PLG_API_EASYSOCIAL_READ_COMMENT_NOT_ALLOW_MESSAGE');
+			$res->status		=	false;
 		}
 		else
 		{

@@ -67,7 +67,6 @@ class EasysocialApiResourceGroups extends ApiResource
 		$input		=	$app->input;
 		$filters	=	$input->post->getArray();
 		$user		=	ES::user();
-		$log_user	=	JFactory::getUser($this->plugin->get('user')->id);
 
 		$apiResponse = new stdclass;
 		$apiResponse->result = array();
@@ -160,7 +159,7 @@ class EasysocialApiResourceGroups extends ApiResource
 			$groups		=	array_slice($groups, $limitstart, $limit);
 		}
 
-		$groups = $MappingHelper->mapItem($groups, 'group', $log_user->id);
+		$groups = $MappingHelper->mapItem($groups, 'group', $user->id);
 
 		if (! empty($groups))
 		{

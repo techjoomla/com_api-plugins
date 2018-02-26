@@ -136,8 +136,6 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 		$app			=	JFactory::getApplication();
 		$group_id		=	$app->input->get('group_id', 0, 'INT');
 		$page_id		=	$app->input->get('page_id', 0, 'INT');
-		$valid			=	1;
-		$res			=	new stdClass;
 
 		if (!$group_id && !$page_id)
 		{

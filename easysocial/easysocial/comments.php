@@ -187,7 +187,6 @@ class EasysocialApiResourceComments extends ApiResource
 	{
 		$app			=	JFactory::getApplication();
 		$conversion_id	=	$app->input->get('conversation_id', 0, 'INT');
-		$valid			=	1;
 		$result			=	new stdClass;
 
 		if (!$conversion_id)

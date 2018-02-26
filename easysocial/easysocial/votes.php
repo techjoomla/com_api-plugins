@@ -40,7 +40,7 @@ class EasysocialApiResourceVotes extends ApiResource
 	 */
 	public function post()
 	{
-		$this->plugin->setResponse($this->processVote());
+		$this->processVote();
 	}
 
 	/**	  
@@ -83,7 +83,8 @@ class EasysocialApiResourceVotes extends ApiResource
 			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_VOTE_NOT_ALLOW_MESSAGE'));
 		}
 
-		return $res = $this->votescount($pollId, $itemId, $action);
+		$res->result->message = $this->votescount($pollId, $itemId, $action);
+		$this->plugin->setResponse($res);
 	}
 
 	/**	  
@@ -124,28 +125,17 @@ class EasysocialApiResourceVotes extends ApiResource
 			// Action vote to give vote poll item and unvote to remove vote
 			if ($action == 'vote')
 			{
-				$result = 1;
-				$resultVote  = $pollLib->vote($pollId, $itemId, $my->id);
+				$pollLib->vote($pollId, $itemId, $my->id);
+				$res->message = JText::_('PLG_API_EASYSOCIAL_VOTING');
 			}
 			elseif ($action == 'unvote')
 			{
-				$result = 0;
-				$resultUnvote  = $pollLib->unvote($pollId, $itemId, $my->id);
+				$pollLib->unvote($pollId, $itemId, $my->id);
+				$res->message = JText::_('PLG_API_EASYSOCIAL_VOTE_REMOVED_SUCCESS');
 			}
 			else
 			{
 				ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_VALID_DETAILS'));
-			}
-
-			if ($result)
-			{
-				$res->success = 1;
-				$res->message = JText::_('PLG_API_EASYSOCIAL_VOTING');
-			}
-			else
-			{
-				$res->success = 1;
-				$res->message = JText::_('PLG_API_EASYSOCIAL_VOTE_REMOVED_SUCCESS');
 			}
 
 		return $res;

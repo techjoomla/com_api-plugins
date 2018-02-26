@@ -60,7 +60,7 @@ class EasysocialApiResourceVideos extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	public function get_videos()
+	private function get_videos()
 	{
 		$log_user	=	$this->plugin->get('user')->id;
 		$model		=	FD::model('Videos');
@@ -82,13 +82,14 @@ class EasysocialApiResourceVideos extends ApiResource
 		$sort = $app->input->get('sort', 'latest', 'STRING');
 
 		$ordering = $this->plugin->get('ordering', '', 'STRING');
-		$userObj = FD::user($log_user);
+
+		$mapp = new EasySocialApiMappingHelper;
+		$cats = $model->getCategories();
 
 		$model->setUserState('limitstart', $limitstart);
 		$options = array('limitstart' => $limitstart, 'limit' => $limit, 'sort' => $sort, 'filter' => $filter,
 		'category' => $categoryid, 'state' => SOCIAL_STATE_PUBLISHED, 'ordering' => $ordering);
 
-		/* ,'type' => $userObj->isSiteAdmin() ? 'all' : 'user' */
 		if ($video_id)
 		{
 			$data[] = $this->getVideoDetails($video_id);
@@ -101,9 +102,7 @@ class EasysocialApiResourceVideos extends ApiResource
 			}
 		}
 
-		$mapp = new EasySocialApiMappingHelper;
 		$all_videos = $mapp->mapItem($data, 'videos', $log_user);
-		$cats = $model->getCategories();
 
 		foreach ($cats as $k => $row)
 		{
@@ -132,7 +131,7 @@ class EasysocialApiResourceVideos extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	public function getVideoDetails($vid = 0)
+	private function getVideoDetails($vid = 0)
 	{
 		if ($vid)
 		{
@@ -157,7 +156,7 @@ class EasysocialApiResourceVideos extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	public function upload_videos($type)
+	private function upload_videos($type)
 	{
 		$app = JFactory::getApplication();
 		$res = new stdClass;

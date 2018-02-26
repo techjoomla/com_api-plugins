@@ -12,9 +12,7 @@
 defined('_JEXEC') or die('Restricted access');
 
 jimport('joomla.plugin.plugin');
-
 use Joomla\Registry\Registry;
-
 JLoader::register("EasySocialApiUploadHelper", JPATH_SITE . '/plugins/api/easysocial/libraries/uploadHelper.php');
 JLoader::register("EasySocialApiMappingHelper", JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php');
 
@@ -87,7 +85,7 @@ class EasysocialApiResourceGroup extends ApiResource
 		$component = JComponentHelper::getComponent('com_easysocial');
 		$extension = JTable::getInstance('extension');
 		$extension->load($component->id);
-		$manifest = new Joomla\Registry\Registry($extension->manifest_cache);
+		$manifest = new JRegistry($extension->manifest_cache);
 		$version = $manifest->get('version');
 
 		if (empty($postValues['title']))

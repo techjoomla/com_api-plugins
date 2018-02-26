@@ -69,7 +69,7 @@ class EasysocialApiResourceComments extends ApiResource
 
 		if (empty($input))
 		{
-			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_EMPTY_COMMENT_NOT_ALLOWED_MESSAGE'));
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_EMPTY_COMMENT_NOT_ALLOWED_MESSAGE'));
 		}
 
 			// Normalize CRLF (\r\n) to just LF (\n)
@@ -162,18 +162,16 @@ class EasysocialApiResourceComments extends ApiResource
 
 		if (!$allowed)
 		{
-			$res->empty_message = JText::_('PLG_API_EASYSOCIAL_READ_COMMENT_NOT_ALLOW_MESSAGE');
+			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_READ_COMMENT_NOT_ALLOW_MESSAGE'));
+		}
+
+		if (count($data['data']) < 1)
+		{
+			$res->empty_message	=	JText::_('APP_USER_KOMENTO_NO_COMMENTS_FOUND');
 		}
 		else
 		{
-			if (count($data['data']) < 1)
-			{
-				$res->empty_message	=	JText::_('APP_USER_KOMENTO_NO_COMMENTS_FOUND');
-			}
-			else
-			{
-				$res->result	=	$data;
-			}
+			$res->result	=	$data;
 		}
 
 		$this->plugin->setResponse($res);
@@ -191,7 +189,7 @@ class EasysocialApiResourceComments extends ApiResource
 
 		if (!$conversion_id)
 		{
-			ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_GROUPS_NO_ACCESS'));
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_CONVERSATION_MESSAGE'));
 		}
 
 		// Try to delete the group

@@ -72,7 +72,7 @@ class EasysocialApiResourceVotes extends ApiResource
 		$app		=	JFactory::getApplication();
 		$pollId		=	$app->input->get('id', 0, 'int');
 		$itemId		=	$app->input->get('itemId', 0, 'int');
-		$action		=	$app->input->get('act', '', 'default');
+		$action		=	$app->input->get('act', '', 'STRING');
 		$log_user	=	$this->plugin->get('user')->id;
 		$access		=	ES::access($log_user, SOCIAL_TYPE_USER);
 		$allowed	=	$access->get('polls.vote');
@@ -96,7 +96,7 @@ class EasysocialApiResourceVotes extends ApiResource
 	 * 
 	 * @param   string  $action  The action.
 	 * 	 
-	 * @return  JSON	 
+	 * @return  object 
 	 */
 	private function votescount($pollId, $itemId, $action)
 	{
@@ -117,26 +117,26 @@ class EasysocialApiResourceVotes extends ApiResource
 		$pollLib = FD::get('Polls');
 
 		// Error. if, missing any field
-			if (!$pollId || !$itemId  || !$action )
-			{
-				ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_VALID_DETAILS'));
-			}
+		if (!$pollId || !$itemId  || !$action )
+		{
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_VALID_DETAILS'));
+		}
 
-			// Action vote to give vote poll item and unvote to remove vote
-			if ($action == 'vote')
-			{
-				$pollLib->vote($pollId, $itemId, $my->id);
-				$res->message = JText::_('PLG_API_EASYSOCIAL_VOTING');
-			}
-			elseif ($action == 'unvote')
-			{
-				$pollLib->unvote($pollId, $itemId, $my->id);
-				$res->message = JText::_('PLG_API_EASYSOCIAL_VOTE_REMOVED_SUCCESS');
-			}
-			else
-			{
-				ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_VALID_DETAILS'));
-			}
+		// Action vote to give vote poll item and unvote to remove vote
+		if ($action == 'vote')
+		{
+			$pollLib->vote($pollId, $itemId, $my->id);
+			$res->message = JText::_('PLG_API_EASYSOCIAL_VOTING');
+		}
+		elseif ($action == 'unvote')
+		{
+			$pollLib->unvote($pollId, $itemId, $my->id);
+			$res->message = JText::_('PLG_API_EASYSOCIAL_VOTE_REMOVED_SUCCESS');
+		}
+		else
+		{
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_VALID_DETAILS'));
+		}
 
 		return $res;
 	}

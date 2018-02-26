@@ -60,7 +60,7 @@ class EasysocialApiResourceReply extends ApiResource
 	 * @since 1.0
 	 */
 
-	public function getDiscussionReply()
+	private function getDiscussionReply()
 	{
 		// Init variable
 		$mainframe		=	JFactory::getApplication();
@@ -80,15 +80,11 @@ class EasysocialApiResourceReply extends ApiResource
 
 		if (!$group_id)
 		{
-			$res->empty_message	=	JText::_('PLG_API_EASYSOCIAL_EMPTY_GROUP_ID_MESSAGE');
-			$res->result = array();
-			$this->plugin->setResponse($res);
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_EMPTY_GROUP_ID_MESSAGE'));
 		}
 		elseif (!$is_member)
 		{
-			$res->empty_message = JText::_('COM_EASYSOCIAL_GROUPS_CLOSED_GROUP_INFO');
-			$res->result = array();
-			$this->plugin->setResponse($res);
+			ApiError::raiseError(403, JText::_('COM_ES_GROUPS_PRIVATE_GROUP_INFO'));
 		}
 		else
 		{
@@ -146,7 +142,7 @@ class EasysocialApiResourceReply extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	public function postDiscussionReply()
+	private function postDiscussionReply()
 	{
 		// Init variable
 		$mainframe	=	JFactory::getApplication();

@@ -54,7 +54,7 @@ class EasysocialApiResourceEvents extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	public function get_events()
+	private function get_events()
 	{
 		$app = JFactory::getApplication();
 
@@ -215,18 +215,17 @@ class EasysocialApiResourceEvents extends ApiResource
 
 		$eventResult = $event->getEvents($options);
 
-		if (empty($eventResult))
-		{
-			$res->empty_message = JText::_('PLG_API_EASYSOCIAL_EVENT_NOT_FOUND_MESSAGE');
-			$res->result = [];
-			$this->plugin->setResponse($res);
-		}
-
 		// $eventResult = array_slice($eventResult, $limitstart, $limit);
 		$event_list = $mapp->mapItem($eventResult, 'event', $log_user);
 		$cat = FD::model('eventcategories');
 		$res->result->events	=	$event_list;
 		$res->result->categories = $cat->getCategories();
+
+		if (!$res->result->events)
+		{
+			$res->empty_message = JText::_('PLG_API_EASYSOCIAL_EVENT_NOT_FOUND_MESSAGE');
+		}
+
 		$this->plugin->setResponse($res);
 	}
 
@@ -239,7 +238,7 @@ class EasysocialApiResourceEvents extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	public function dfilter($dates)
+	private function dfilter($dates)
 	{
 		// We need segments to be populated. If no input is passed, then it is today, and we use today as YMD then
 		$segments = explode('-', $dates);
@@ -286,7 +285,7 @@ class EasysocialApiResourceEvents extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	public function put_status()
+	private function put_status()
 	{
 		$app = JFactory::getApplication();
 		$log_user = $this->plugin->get('user')->id;
@@ -314,10 +313,7 @@ class EasysocialApiResourceEvents extends ApiResource
 		if (($event->isClosed() && ((! $guest->isParticipant() && $state !== 'request') || ($guest->isPending() && $state !== 'withdraw')))
 			||($event->isInviteOnly() && ! $guest->isParticipant()))
 		{
-			$res->message = JText::_('PLG_API_EASYSOCIAL_ERROR_MESSAGE');
-			$res->status = 0;
-
-			return $res;
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_ERROR_MESSAGE'));
 		}
 
 		$guest->cluster_id = $event_id;
@@ -326,10 +322,7 @@ class EasysocialApiResourceEvents extends ApiResource
 
 		if (in_array($state, array('going', 'maybe', 'request')) && $access->exceeded('events.join', $total))
 		{
-			$res->message = JText::_('PLG_API_EASYSOCIAL_LIMIT_EXCEEDS_MESSAGE');
-			$res->status = 0;
-
-			return $res;
+			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_LIMIT_EXCEEDS_MESSAGE'));
 		}
 
 		switch ($state)

@@ -63,7 +63,7 @@ class EasysocialApiResourceEvent extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	public function get_event()
+	private function get_event()
 	{
 		$app = JFactory::getApplication();
 		$log_user = $this->plugin->get('user')->id;
@@ -91,7 +91,7 @@ class EasysocialApiResourceEvent extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	public function createEvent()
+	private function createEvent()
 	{
 		$app = JFactory::getApplication();
 		$log_user = JFactory::getUser($this->plugin->get('user')->id);
@@ -136,10 +136,10 @@ class EasysocialApiResourceEvent extends ApiResource
 
 		$res = new stdclass;
 
-// Check if the user really has access to create event
+		// Check if the user really has access to create event
 		if (! $canCreate->getAccess()->allowed('events.create') && ! $canCreate->isSiteAdmin())
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_EVENTS_NO_ACCESS_CREATE_EVENT'));
+			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_EVENTS_NO_ACCESS_CREATE_EVENT'));
 		}
 
 		// Check the group access for event creation
@@ -149,10 +149,7 @@ class EasysocialApiResourceEvent extends ApiResource
 
 			if (!$group->canCreateEvent())
 			{
-				$res->result->status = 0;
-				$res->result->message = JText::_('COM_EASYSOCIAL_EVENTS_NOT_ALLOWED_TO_CREATE_EVENT');
-
-				$this->plugin->setResponse($res);
+				ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_EVENTS_NO_ACCESS_CREATE_EVENT'));
 			}
 
 			$stepSession->setValue('group_id', $post['group_id']);
@@ -181,10 +178,7 @@ class EasysocialApiResourceEvent extends ApiResource
 		// For api test purpose
 		if (empty($sequence))
 		{
-			$res->result->success = 0;
-			$res->result->message = JText::_('COM_EASYSOCIAL_EVENTS_NO_VALID_CREATION_STEP');
-
-			$this->plugin->setResponse($res);
+			ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_EVENTS_NO_VALID_CREATION_STEP'));
 		}
 
 		// Load the steps and fields
@@ -302,7 +296,7 @@ class EasysocialApiResourceEvent extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	public function createData($field_ids, $post)
+	private function createData($field_ids, $post)
 	{
 		$ev_data = array();
 		$avtar_pth = '';
@@ -311,26 +305,26 @@ class EasysocialApiResourceEvent extends ApiResource
 		$phto_obj = null;
 		$avatar_file_name  = null;
 
-		if (!empty($_FILES['file']['name']))
+		if (!empty($_FILES['avatar']['name']))
 		{
 			$upload_obj = new EasySocialApiUploadHelper;
 
 			// Checking upload cover
-			$phto_obj = $upload_obj->ajax_avatar($_FILES['file']);
+			$phto_obj = $upload_obj->ajax_avatar($_FILES['avatar']);
 			$avtar_pth = $phto_obj['temp_path'];
 			$avtar_scr = $phto_obj['temp_uri'];
 			$avtar_typ = 'upload';
-			$avatar_file_name = $_FILES['file']['name'];
+			$avatar_file_name = $_FILES['avatar']['name'];
 		}
 
 		$cover_data = null;
 
-		if (!empty($_FILES['cover_file']['name']))
+		if (!empty($_FILES['cover']['name']))
 		{
 			$upload_obj = new EasySocialApiUploadHelper;
 
 			// Checking upload cover
-			$cover_data = $upload_obj->ajax_cover($_FILES['cover_file'], 'cover_file');
+			$cover_data = $upload_obj->ajax_cover($_FILES['cover'], 'cover');
 		}
 
 		foreach ($field_ids as $field)

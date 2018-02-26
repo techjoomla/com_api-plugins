@@ -60,7 +60,7 @@ class EasysocialApiResourceVideos extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	public function get_videos()
+	private function get_videos()
 	{
 		$log_user	=	$this->plugin->get('user')->id;
 		$model		=	FD::model('Videos');

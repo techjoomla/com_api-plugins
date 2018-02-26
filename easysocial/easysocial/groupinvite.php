@@ -36,9 +36,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->err_code = 405;
-		$this->plugin->err_message = JText::_('PLG_API_EASYSOCIAL_USE_POST_OR_DELETE_MESSAGE');
-		$this->plugin->setResponse(null);
+		ApiError::raiseError(405, JText::_('PLG_API_EASYSOCIAL_USE_POST_OR_DELETE_MESSAGE'));
 	}
 
 	/**
@@ -62,19 +60,16 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	public function leaveGroupPage($cluster)
+	private function leaveGroupPage($cluster)
 	{
 		$app			=	JFactory::getApplication();
 		$target_user	=	$app->input->get('target_user', 0, 'INT');
 		$operation		=	$app->input->get('operation', 0, 'STRING');
-		$valid			=	1;
 		$res			=	new stdClass;
 
 		if (!$target_user)
 		{
-			$res->result->status		=	0;
-			$res->result->message		=	JText::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE');
-			$valid						=	0;
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE'));
 		}
 
 		// Only allow super admins to delete groups
@@ -82,56 +77,49 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 
 		if ($target_user == $my->id && $operation == 'leave' && $cluster->creator_uid == $my->id)
 		{
-			$res->result->status	=	0;
-			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_OWNER_NOT_LEAVE_MESSAGE');
-			$valid					=	0;
+			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_GROUP_OWNER_NOT_LEAVE_MESSAGE'));
 		}
 
 		// Target user obj
-		$user 					=	FD::user($target_user);
+		$user	=	FD::user($target_user);
 
-		if ($valid)
+		switch ($operation)
 		{
-			switch ($operation)
-			{
-				case 'leave':
-								// Remove the user from the group/page.
-								$res->result->status = $cluster->leave($user->id);
+			case 'leave':
+							// Remove the user from the group/page.
+							$res->result->status = $cluster->leave($user->id);
 
-								if (!$res->result->status)
-								{
-									$res->result->status	=	0;
-									$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE');
-								}
-								else
-								{
-									// Notify group/page members
-									$cluster->notifyMembers('leave', array('userId' => $my->id));
-									$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_LEAVE_GROUP_MESSAGE');
-								}
-								break;
+							if (!$res->result->status)
+							{
+								ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE'));
+							}
+							else
+							{
+								// Notify group/page members
+								$cluster->notifyMembers('leave', array('userId' => $my->id));
+								$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_LEAVE_GROUP_MESSAGE');
+							}
+							break;
 
-				case 'remove':
+			case 'remove':
 
-								// Remove the user from the group/page.
-								$res->result->status = $cluster->deleteMember($user->id);
+							// Remove the user from the group/page.
+							$res->result->status = $cluster->deleteMember($user->id);
 
-								if (!$res->result->status)
-								{
-									$res->result->status	=	0;
-									$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE');
-								}
-								else
-								{
-									// Notify group/page member
-									$cluster->notifyMembers('user.remove', array('userId' => $user->id));
-									$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_USER_REMOVE_SUCCESS_MESSAGE');
-								}
-								break;
-			}
-
-			$res->result->status	=	1;
+							if (!$res->result->status)
+							{
+								ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE'));
+							}
+							else
+							{
+								// Notify group/page member
+								$cluster->notifyMembers('user.remove', array('userId' => $user->id));
+								$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_USER_REMOVE_SUCCESS_MESSAGE');
+							}
+							break;
 		}
+
+		$res->result->status	=	1;
 
 		$this->plugin->setResponse($res);
 	}
@@ -153,9 +141,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 
 		if (!$group_id && !$page_id)
 		{
-			$res->result->status 	=	0;
-			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_ID');
-			$valid					=	0;
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_ID'));
 		}
 
 		if ($group_id)
@@ -164,9 +150,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 
 			if (!$group->id)
 			{
-				$res->result->status 	=	0;
-				$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_GROUP_MESSAGE');
-				$valid					=	0;
+				ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_GROUP_MESSAGE'));
 			}
 
 			$this->leaveGroupPage($group);
@@ -177,9 +161,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 
 			if (!$page->id)
 			{
-				$res->result->status 	=	0;
-				$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_PAGE_MESSAGE');
-				$valid					=	0;
+				ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_PAGE_MESSAGE'));
 			}
 
 			$this->leaveGroupPage($page);
@@ -193,7 +175,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	public function inviteGroup()
+	private function inviteGroup()
 	{
 		// Init variable
 		$app			=	JFactory::getApplication();

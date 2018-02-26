@@ -48,7 +48,7 @@ class EasysocialApiResourceVotes extends ApiResource
 	 * 	 
 	 * @return  JSON	 
 	 */
-	public function getPollData()
+	private function getPollData()
 	{
 		$mapp = new EasySocialApiMappingHelper;
 		$app = JFactory::getApplication();
@@ -67,7 +67,7 @@ class EasysocialApiResourceVotes extends ApiResource
 	 * 	 
 	 * @return  object 
 	 */
-	public function processVote()
+	private function processVote()
 	{
 		$app		=	JFactory::getApplication();
 		$pollId		=	$app->input->get('id', 0, 'int');
@@ -80,9 +80,7 @@ class EasysocialApiResourceVotes extends ApiResource
 
 		if (!$allowed)
 		{
-			$res->success = 0;
-
-			return $res->message = JText::_('PLG_API_EASYSOCIAL_VOTE_NOT_ALLOW_MESSAGE');
+			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_VOTE_NOT_ALLOW_MESSAGE'));
 		}
 
 		return $res = $this->votescount($pollId, $itemId, $action);
@@ -99,7 +97,7 @@ class EasysocialApiResourceVotes extends ApiResource
 	 * 	 
 	 * @return  JSON	 
 	 */
-	public function votescount($pollId, $itemId, $action)
+	private function votescount($pollId, $itemId, $action)
 	{
 		$my = FD::user();
 		$res = new stdClass;
@@ -112,10 +110,7 @@ class EasysocialApiResourceVotes extends ApiResource
 		if (! $state_poll_id || !$state_item_id)
 		{
 			// Error. invalid poll id and poll item id.
-			$res->success = 0;
-			$res->message = JText::_('PLG_API_EASYSOCIAL_INVALID_VOTE_ID');
-
-			return $res;
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_VOTE_ID'));
 		}
 
 		$pollLib = FD::get('Polls');
@@ -123,10 +118,7 @@ class EasysocialApiResourceVotes extends ApiResource
 		// Error. if, missing any field
 			if (!$pollId || !$itemId  || !$action )
 			{
-				$res->success = 0;
-				$res->message = JText::_('PLG_API_EASYSOCIAL_VALID_DETAILS');
-
-				return $res;
+				ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_VALID_DETAILS'));
 			}
 
 			// Action vote to give vote poll item and unvote to remove vote
@@ -142,10 +134,7 @@ class EasysocialApiResourceVotes extends ApiResource
 			}
 			else
 			{
-				$res->success = 0;
-				$res->message = JText::_('PLG_API_EASYSOCIAL_VALID_DETAILS');
-
-				return $res;
+				ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_VALID_DETAILS'));
 			}
 
 			if ($result)

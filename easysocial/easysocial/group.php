@@ -82,11 +82,7 @@ class EasysocialApiResourceGroup extends ApiResource
 		$postValues				=	$input->post->getArray();
 
 		// Check EasySocial extension version
-		$component = JComponentHelper::getComponent('com_easysocial');
-		$extension = JTable::getInstance('extension');
-		$extension->load($component->id);
-		$manifest = new JRegistry($extension->manifest_cache);
-		$version = $manifest->get('version');
+		$version = ES::getLocalVersion();
 
 		if (empty($postValues['title']))
 		{
@@ -161,7 +157,7 @@ class EasysocialApiResourceGroup extends ApiResource
 			}
 			else
 			{
-				$stepsModel	=	FD::model('Steps');
+				$stepsModel	=	ES::model('Steps');
 				$steps		=	$stepsModel->getSteps($postValues['category_id'],  SOCIAL_TYPE_CLUSTERS);
 				$options['step_id']	=	$steps[0]->id;
 			}

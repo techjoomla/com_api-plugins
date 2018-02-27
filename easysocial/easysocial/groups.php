@@ -72,8 +72,7 @@ class EasysocialApiResourceGroups extends ApiResource
 		$apiResponse->result = array();
 		$apiResponse->empty_message = JText::_('PLG_API_GROUPS_EMPTY_ALL');
 
-		$limit = $app->input->get('limit', 10, 'INT');
-		$limitstart				=	$app->input->get('limitstart', 0, 'INT');
+		$options['limit'] = $app->input->get('limit', 10, 'INT');
 
 		// Set default filters
 		$options['state'] = isset($filters['state']) ? $filters['state'] : SOCIAL_CLUSTER_PUBLISHED;
@@ -153,11 +152,6 @@ class EasysocialApiResourceGroups extends ApiResource
 		}
 
 		$groups	=	$model->getGroups($options);
-
-		if ($limit)
-		{
-			$groups		=	array_slice($groups, $limitstart, $limit);
-		}
 
 		$groups = $MappingHelper->mapItem($groups, 'group', $user->id);
 

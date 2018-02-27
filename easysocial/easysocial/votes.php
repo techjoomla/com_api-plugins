@@ -83,7 +83,7 @@ class EasysocialApiResourceVotes extends ApiResource
 			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_VOTE_NOT_ALLOW_MESSAGE'));
 		}
 
-		$res->result->message = $this->votescount($pollId, $itemId, $action);
+		$res->result->message = $this->votesCount($pollId, $itemId, $action);
 		$this->plugin->setResponse($res);
 	}
 
@@ -98,7 +98,7 @@ class EasysocialApiResourceVotes extends ApiResource
 	 * 	 
 	 * @return  object 
 	 */
-	private function votescount($pollId, $itemId, $action)
+	private function votesCount($pollId, $itemId, $action)
 	{
 		$my = FD::user();
 		$res = new stdClass;

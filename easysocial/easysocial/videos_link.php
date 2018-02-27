@@ -33,7 +33,7 @@ class EasysocialApiResourceVideos_Link extends ApiResource
 		 */
 		public function post()
 		{
-			$this->save_video();
+			$this->saveVideo();
 		}
 
 	/**	  
@@ -41,7 +41,7 @@ class EasysocialApiResourceVideos_Link extends ApiResource
 	 * 	 
 	 * @return  JSON	 
 	 */
-	private function save_video()
+	private function saveVideo()
 	{
 		$app = JFactory::getApplication();
 		$res = new stdClass;

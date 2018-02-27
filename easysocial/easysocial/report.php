@@ -43,7 +43,7 @@ class EasysocialApiResourceReport extends ApiResource
 	 */
 	public function post()
 	{
-		$this->create_report();
+		$this->createReport();
 	}
 
 	/**
@@ -53,7 +53,7 @@ class EasysocialApiResourceReport extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	private function create_report()
+	private function createReport()
 	{
 		$app				=	JFactory::getApplication();
 		$msg				=	$app->input->get('message', '', 'STRING');

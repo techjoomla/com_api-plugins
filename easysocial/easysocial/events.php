@@ -32,7 +32,7 @@ class EasysocialApiResourceEvents extends ApiResource
 	 */
 	public function get()
 	{
-		$this->get_events();
+		$this->getEvents();
 	}
 
 	/**
@@ -44,7 +44,7 @@ class EasysocialApiResourceEvents extends ApiResource
 	 */
 	public function post()
 	{
-		$this->plugin->setResponse($this->put_status());
+		$this->plugin->setResponse($this->putStatus());
 	}
 
 	/**
@@ -54,7 +54,7 @@ class EasysocialApiResourceEvents extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	private function get_events()
+	private function getEvents()
 	{
 		$app = JFactory::getApplication();
 
@@ -183,17 +183,17 @@ class EasysocialApiResourceEvents extends ApiResource
 				$options['direction'] = 'desc';
 				break;
 			case 'allDate':
-				$data = $this->dfilter($dates);
+				$data = $this->dFilter($dates);
 				$options['start-after'] = $data['start-after'];
 				$options['start-before'] = $data['start-before'];
 				break;
 			case 'year':
-				$data = $this->dfilter($dates);
+				$data = $this->dFilter($dates);
 				$options['start-after'] = $data['start-after'];
 				$options['start-before'] = $data['start-before'];
 				break;
 			case 'month':
-				$data = $this->dfilter($dates);
+				$data = $this->dFilter($dates);
 				$options['start-after'] = $data['start-after'];
 				$options['start-before'] = $data['start-before'];
 				break;
@@ -238,7 +238,7 @@ class EasysocialApiResourceEvents extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	private function dfilter($dates)
+	private function dFilter($dates)
 	{
 		// We need segments to be populated. If no input is passed, then it is today, and we use today as YMD then
 		$segments = explode('-', $dates);
@@ -285,7 +285,7 @@ class EasysocialApiResourceEvents extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	private function put_status()
+	private function putStatus()
 	{
 		$app = JFactory::getApplication();
 		$log_user = $this->plugin->get('user')->id;

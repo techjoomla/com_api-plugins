@@ -40,7 +40,7 @@ class EasysocialApiResourceEvent extends ApiResource
 
 	public function get()
 	{
-		$this->get_event();
+		$this->getEvent();
 	}
 
 	/**
@@ -63,7 +63,7 @@ class EasysocialApiResourceEvent extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	private function get_event()
+	private function getEvent()
 	{
 		$app = JFactory::getApplication();
 		$log_user = $this->plugin->get('user')->id;

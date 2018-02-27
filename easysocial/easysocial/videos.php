@@ -35,7 +35,7 @@ class EasysocialApiResourceVideos extends ApiResource
 	 */
 	public function get()
 	{
-		$this->get_videos();
+		$this->getVideos();
 	}
 
 	/**
@@ -49,18 +49,18 @@ class EasysocialApiResourceVideos extends ApiResource
 	{
 		$app = JFactory::getApplication();
 		$type = $app->input->get('source', 'upload', 'STRING');
-		$result = $this->upload_videos($type);
+		$result = $this->uploadVideos($type);
 		$this->plugin->setResponse($result);
 	}
 
 	/**
-	 * Method get_videos
+	 * Method getVideos
 	 *
 	 * @return object videos and Categories
 	 *
 	 * @since 1.0
 	 */
-	private function get_videos()
+	private function getVideos()
 	{
 		$log_user	=	$this->plugin->get('user')->id;
 		$model		=	FD::model('Videos');
@@ -156,7 +156,7 @@ class EasysocialApiResourceVideos extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	private function upload_videos($type)
+	private function uploadVideos($type)
 	{
 		$app = JFactory::getApplication();
 		$res = new stdClass;

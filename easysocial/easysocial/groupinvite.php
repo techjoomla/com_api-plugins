@@ -73,7 +73,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 		}
 
 		// Only allow super admins to delete groups
-		$my		=	FD::user($this->plugin->get('user')->id);
+		$my		=	ES::user($this->plugin->get('user')->id);
 
 		if ($target_user == $my->id && $operation == 'leave' && $cluster->creator_uid == $my->id)
 		{
@@ -144,7 +144,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 
 		if ($group_id)
 		{
-			$group			=	FD::group($group_id);
+			$group			=	ES::group($group_id);
 
 			if (!$group->id)
 			{
@@ -155,7 +155,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 		}
 		else
 		{
-			$page			=	FD::page($page_id);
+			$page			=	ES::page($page_id);
 
 			if (!$page->id)
 			{
@@ -181,15 +181,15 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 		$res			=	new stdClass;
 		$group_id		=	$app->input->get('group_id', 0, 'INT');
 		$target_users	=	$app->input->get('target_users', null, 'ARRAY');
-		$user			=	FD::user($log_user->id);
-		$grp_model		=	FD::model('Groups');
-		$group			=	FD::group($group_id);
+		$user			=	ES::user($log_user->id);
+		$grp_model		=	ES::model('Groups');
+		$group			=	ES::group($group_id);
 
 		if ($group_id)
 		{
 			$not_invi	=	array();
 			$invited	=	array();
-			$es_params	=	FD::config();
+			$es_params	=	ES::config();
 
 			foreach ($target_users as $id)
 			{

@@ -181,7 +181,7 @@ class EasysocialApiResourceShare extends ApiResource
 
 			if ($isCluster)
 			{
-				$group       = FD::group($cluster);
+				$group       = ES::group($cluster);
 				$permissions = $group->getParams()->get('stream_permissions', null);
 
 				if ($permissions != null)
@@ -208,7 +208,7 @@ class EasysocialApiResourceShare extends ApiResource
 			if (!empty($friends_tags))
 			{
 				// Get the friends model
-				$model = FD::model('Friends');
+				$model = ES::model('Friends');
 
 				// Check if the user is really a friend of him / her.
 				foreach ($friends_tags as $id)
@@ -291,7 +291,7 @@ class EasysocialApiResourceShare extends ApiResource
 			}
 
 			// Process moods here
-			$mood = FD::table('Mood');
+			$mood = ES::table('Mood');
 
 			// Options that should be sent to the stream lib
 			$args = array(
@@ -320,11 +320,11 @@ class EasysocialApiResourceShare extends ApiResource
 			// Privacy is only applicable to normal postings
 			if (!$isCluster)
 			{
-				$privacyLib = FD::privacy();
+				$privacyLib = ES::privacy();
 
 				if ($type == 'photos')
 				{
-					$photoIds = FD::makeArray($contextIds);
+					$photoIds = ES::makeArray($contextIds);
 
 					foreach ($photoIds as $photoId)
 					{
@@ -338,12 +338,12 @@ class EasysocialApiResourceShare extends ApiResource
 			}
 
 			// Add badge for the author when a report is created.
-			$badge = FD::badges();
+			$badge = ES::badges();
 			$badge->log('com_easysocial', 'story.create', $log_usr, JText::_('Posted a new update'));
 
 			// @points: story.create
 			// Add points for the author when a report is created.
-			$points = FD::points();
+			$points = ES::points();
 			$points->assign('story.create', 'com_easysocial', $log_usr);
 
 			if ($stream->id)
@@ -371,13 +371,13 @@ class EasysocialApiResourceShare extends ApiResource
 	public function uploadPhoto($log_usr = 0, $type = null)
 	{
 		// Get current logged in user.
-		$my = FD::user($log_usr);
+		$my = ES::user($log_usr);
 
 		// Get user access
-		$access = FD::access($my->id, SOCIAL_TYPE_USER);
+		$access = ES::access($my->id, SOCIAL_TYPE_USER);
 
 		// Load up the photo library
-		$lib = FD::photo($log_usr, $type);
+		$lib = ES::photo($log_usr, $type);
 
 		// Define uploader options
 		$options = array(
@@ -386,10 +386,10 @@ class EasysocialApiResourceShare extends ApiResource
 		);
 
 		// Get uploaded file
-		$file = FD::uploader($options)->getFile();
+		$file = ES::uploader($options)->getFile();
 
 		// Load the iamge object
-		$image = FD::image();
+		$image = ES::image();
 		$image->load($file['tmp_name'], $file['name']);
 
 		// Detect if this is a really valid image file.
@@ -399,13 +399,13 @@ class EasysocialApiResourceShare extends ApiResource
 		}
 
 		// Load up the album's model.
-		$albumsModel = FD::model('Albums');
+		$albumsModel = ES::model('Albums');
 
 		// Create the default album if necessary
 		$album = $albumsModel->getDefaultAlbum($log_usr, $type, SOCIAL_ALBUM_STORY_ALBUM);
 
 		// Bind photo data
-		$photo           = FD::table('Photo');
+		$photo           = ES::table('Photo');
 		$photo->uid      = $log_usr;
 		$photo->type     = $type;
 		$photo->user_id  = $my->id;
@@ -416,7 +416,7 @@ class EasysocialApiResourceShare extends ApiResource
 		$photo->ordering = 0;
 
 		// Set the creation date alias
-		$photo->assigned_date = FD::date()->toMySQL();
+		$photo->assigned_date = ES::date()->toMySQL();
 
 		// Trigger rules that should occur before a photo is stored
 		$photo->beforeStore($file, $image);
@@ -425,13 +425,13 @@ class EasysocialApiResourceShare extends ApiResource
 		$state = $photo->store();
 
 		// Load the photos model
-		$photosModel = FD::model('Photos');
+		$photosModel = ES::model('Photos');
 
 		// Get the storage path for this photo
-		$storage = FD::call('Photos', 'getStoragePath', array($album->id, $photo->id));
+		$storage = ES::call('Photos', 'getStoragePath', array($album->id, $photo->id));
 
 		// Get the photos library
-		$photoLib = FD::get('Photos', $image);
+		$photoLib = ES::get('Photos', $image);
 		$paths    = $photoLib->create($storage);
 
 		// Create metadata about the photos
@@ -439,7 +439,7 @@ class EasysocialApiResourceShare extends ApiResource
 		{
 			foreach ($paths as $type => $fileName)
 			{
-				$meta           = FD::table('PhotoMeta');
+				$meta           = ES::table('PhotoMeta');
 				$meta->photo_id = $photo->id;
 				$meta->group    = SOCIAL_PHOTOS_META_PATH;
 				$meta->property = $type;
@@ -450,13 +450,13 @@ class EasysocialApiResourceShare extends ApiResource
 				list($width, $height, $imageType, $attr) = getimagesize(JPATH_ROOT . $storage . '/' . $fileName);
 
 				// Set the photo dimensions
-				$meta           = FD::table('PhotoMeta');
+				$meta           = ES::table('PhotoMeta');
 				$meta->photo_id = $photo->id;
 				$meta->group    = SOCIAL_PHOTOS_META_WIDTH;
 				$meta->property = $type;
 				$meta->value    = $width;
 				$meta->store();
-				$meta           = FD::table('PhotoMeta');
+				$meta           = ES::table('PhotoMeta');
 				$meta->photo_id = $photo->id;
 				$meta->group    = SOCIAL_PHOTOS_META_HEIGHT;
 				$meta->property = $type;
@@ -477,7 +477,7 @@ class EasysocialApiResourceShare extends ApiResource
 	 */
 	public function uploadFile()
 	{
-		$config = FD::config();
+		$config = ES::config();
 		$limit  = $config->get($type . '.attachments.maxsize');
 
 		// Set uploader options
@@ -487,7 +487,7 @@ class EasysocialApiResourceShare extends ApiResource
 		);
 
 		// Let's get the temporary uploader table.
-		$uploader          = FD::table('Uploader');
+		$uploader          = ES::table('Uploader');
 		$uploader->user_id = $this->plugin->get('user')->id;
 
 		// Pass uploaded data to the uploader.

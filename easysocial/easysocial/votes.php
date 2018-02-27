@@ -53,7 +53,7 @@ class EasysocialApiResourceVotes extends ApiResource
 		$mapp = new EasySocialApiMappingHelper;
 		$app = JFactory::getApplication();
 		$poll_id = $app->input->get('poll_id', 0, 'INT');
-		$poll = FD::table('Polls');
+		$poll = ES::table('Polls');
 		$poll->load(array('uid' => $poll_id));
 		$content = $mapp->createPollData($poll->id);
 		$result = get_object_vars($content);
@@ -100,11 +100,11 @@ class EasysocialApiResourceVotes extends ApiResource
 	 */
 	private function votesCount($pollId, $itemId, $action)
 	{
-		$my = FD::user();
+		$my = ES::user();
 		$res = new stdClass;
 
-		$poll = FD::table('Polls');
-		$pollItem = FD::table('PollsItems');
+		$poll = ES::table('Polls');
+		$pollItem = ES::table('PollsItems');
 		$state_poll_id = $poll->load($pollId);
 		$state_item_id =	$pollItem->load($itemId);
 
@@ -114,7 +114,7 @@ class EasysocialApiResourceVotes extends ApiResource
 			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_VOTE_ID'));
 		}
 
-		$pollLib = FD::get('Polls');
+		$pollLib = ES::get('Polls');
 
 		// Error. if, missing any field
 		if (!$pollId || !$itemId  || !$action )

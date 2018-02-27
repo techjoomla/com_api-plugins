@@ -77,7 +77,7 @@ class EasysocialApiResourceReport extends ApiResource
 		switch ($data['type'])
 		{
 			case 'stream':
-					$sharing = FD::get('Sharing', array('url' => FRoute::stream(
+					$sharing = ES::get('Sharing', array('url' => FRoute::stream(
 																				array(
 																					'layout' => 'item',
 																					'id' => $item_id,
@@ -94,35 +94,35 @@ class EasysocialApiResourceReport extends ApiResource
 					$data['url'] = $url;
 			break;
 			case 'groups':
-					$group	= FD::group($item_id);
+					$group	= ES::group($item_id);
 					$data['url'] = $group->getPermalink(false, true);
 			break;
 			case 'event':
 
-			$event = FD::event($item_id);
+			$event = ES::event($item_id);
 			$data['url'] = $event->getPermalink(false, true);
 			break;
 			case 'profile':
-			$user	= FD::user($item_id);
+			$user	= ES::user($item_id);
 			$data['url'] = $user->getPermalink(false, true);
 			break;
 			case 'photos':
-			$ptable	= FD::table('Photo');
+			$ptable	= ES::table('Photo');
 			$ptable->load($item_id);
 			$data['url'] = $ptable->getPermalink();
 			break;
 			case 'albums':
-				$atable	= FD::table('Album');
+				$atable	= ES::table('Album');
 				$atable->load($item_id);
 				$data['url'] = $atable->getPermalink();
 			break;
 		}
 
 		// Get the reports model
-		$model = FD::model('Reports');
+		$model = ES::model('Reports');
 
 		// Determine if this user has the permissions to submit reports.
-		$access 	= FD::access();
+		$access 	= ES::access();
 
 		// Determine if this user has exceeded the number of reports that they can submit
 		$total 		= $model->getCount(array('created_by' => $log_user));
@@ -135,7 +135,7 @@ class EasysocialApiResourceReport extends ApiResource
 		}
 
 		// Create the report
-		$report 	= FD::table('Report');
+		$report 	= ES::table('Report');
 		$report->bind($data);
 
 		// Set the creator id.
@@ -156,15 +156,15 @@ class EasysocialApiResourceReport extends ApiResource
 		}
 
 		// @badge: reports.create Add badge for the author when a report is created.
-		$badge 	= FD::badges();
+		$badge 	= ES::badges();
 		$badge->log('com_easysocial', 'reports.create', $log_user, JText::_('COM_EASYSOCIAL_REPORTS_BADGE_CREATED_REPORT'));
 
 		// @points: reports.create Add points for the author when a report is created.
-		$points = FD::points();
+		$points = ES::points();
 		$points->assign('reports.create', 'com_easysocial', $log_user);
 
 		// Determine if we should send an email
-		$config 	= FD::config();
+		$config 	= ES::config();
 
 		if ($config->get('reports.notifications.moderators'))
 		{

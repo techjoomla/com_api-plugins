@@ -40,7 +40,7 @@ class EasysocialApiResourceEvent extends ApiResource
 
 	public function get()
 	{
-		$this->get_event();
+		$this->getEvent();
 	}
 
 	/**
@@ -63,7 +63,7 @@ class EasysocialApiResourceEvent extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	public function get_event()
+	private function getEvent()
 	{
 		$app = JFactory::getApplication();
 		$log_user = $this->plugin->get('user')->id;
@@ -77,7 +77,7 @@ class EasysocialApiResourceEvent extends ApiResource
 
 		if ($event_id)
 		{
-			$event[] = FD::event($event_id);
+			$event[] = ES::event($event_id);
 			$res->result = $mapp->mapItem($event, 'event', $log_user);
 		}
 
@@ -91,12 +91,12 @@ class EasysocialApiResourceEvent extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	public function createEvent()
+	private function createEvent()
 	{
 		$app = JFactory::getApplication();
 		$log_user = JFactory::getUser($this->plugin->get('user')->id);
-		$user = FD::user($log_user->id);
-		$config	= FD::config();
+		$user = ES::user($log_user->id);
+		$config	= ES::config();
 
 		// Create group post structure
 		$ev_data = array();
@@ -121,11 +121,11 @@ class EasysocialApiResourceEvent extends ApiResource
 		$post['location']  = $app->input->post->get('location', null, 'STRING');
 		$post['categoryId'] = $categoryId  = $app->input->post->get('category_id', 0, 'INT');
 		$post['group_id'] = $app->input->post->get('group_id', null, 'INT');
-		$category = FD::table('EventCategory');
+		$category = ES::table('EventCategory');
 		$category->load($categoryId);
 		$session = JFactory::getSession();
 		$session->set('category_id', $category->id, SOCIAL_SESSION_NAMESPACE);
-		$stepSession = FD::table('StepSession');
+		$stepSession = ES::table('StepSession');
 		$stepSession->load(array('session_id' => $session->getId(), 'type' => SOCIAL_TYPE_EVENT));
 		$stepSession->session_id = $session->getId();
 		$stepSession->uid = $category->id;
@@ -136,23 +136,20 @@ class EasysocialApiResourceEvent extends ApiResource
 
 		$res = new stdclass;
 
-// Check if the user really has access to create event
+		// Check if the user really has access to create event
 		if (! $canCreate->getAccess()->allowed('events.create') && ! $canCreate->isSiteAdmin())
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_EVENTS_NO_ACCESS_CREATE_EVENT'));
+			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_EVENTS_NO_ACCESS_CREATE_EVENT'));
 		}
 
 		// Check the group access for event creation
 		if (!empty($post['group_id']))
 		{
-			$group = FD::group($post['group_id']);
+			$group = ES::group($post['group_id']);
 
 			if (!$group->canCreateEvent())
 			{
-				$res->result->status = 0;
-				$res->result->message = JText::_('COM_EASYSOCIAL_EVENTS_NOT_ALLOWED_TO_CREATE_EVENT');
-
-				$this->plugin->setResponse($res);
+				ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_EVENTS_NO_ACCESS_CREATE_EVENT'));
 			}
 
 			$stepSession->setValue('group_id', $post['group_id']);
@@ -162,9 +159,9 @@ class EasysocialApiResourceEvent extends ApiResource
 		// Check if there is a group id set in the session, if yes then remove it
 			if (!empty($stepSession->values))
 			{
-				$value = FD::makeObject($stepSession->values);
+				$value = ES::makeObject($stepSession->values);
 				unset($value->group_id);
-				$stepSession->values = FD::json()->encode($value);
+				$stepSession->values = ES::json()->encode($value);
 			}
 		}
 
@@ -172,35 +169,32 @@ class EasysocialApiResourceEvent extends ApiResource
 
 		// Step 2 - create event
 		$session = JFactory::getSession();
-		$stepSession = FD::table('StepSession');
+		$stepSession = ES::table('StepSession');
 		$stepSession->load(array('session_id' => $session->getId(), 'type' => SOCIAL_TYPE_EVENT));
-		$category = FD::table('EventCategory');
+		$category = ES::table('EventCategory');
 		$category->load($stepSession->uid);
 		$sequence = $category->getSequenceFromIndex($stepSession->step, SOCIAL_EVENT_VIEW_REGISTRATION);
 
 		// For api test purpose
 		if (empty($sequence))
 		{
-			$res->result->success = 0;
-			$res->result->message = JText::_('COM_EASYSOCIAL_EVENTS_NO_VALID_CREATION_STEP');
-
-			$this->plugin->setResponse($res);
+			ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_EVENTS_NO_VALID_CREATION_STEP'));
 		}
 
 		// Load the steps and fields
-		$step = FD::table('FieldStep');
+		$step = ES::table('FieldStep');
 		$step->load(array('uid' => $category->id, 'type' => SOCIAL_TYPE_CLUSTERS, 'sequence' => $sequence));
 
-		$registry = FD::registry();
+		$registry = ES::registry();
 		$registry->load($stepSession->values);
 
 		// Get the fields
-		$fieldsModel  = FD::model('Fields');
+		$fieldsModel  = ES::model('Fields');
 		$customFields = $fieldsModel->getCustomFields(array('step_id' => $step->id, 'visible' => SOCIAL_EVENT_VIEW_REGISTRATION));
 
 		// Get from request
-		$token = FD::token();
-		$json  = FD::json();
+		$token = ES::token();
+		$json  = ES::json();
 		$data = $this->createData($customFields, $post);
 
 		// Add post data in registry
@@ -223,18 +217,18 @@ class EasysocialApiResourceEvent extends ApiResource
 		$args = array(&$data, &$stepSession);
 
 		// Load up the fields library so we can trigger the field apps
-		$fieldsLib = FD::fields();
+		$fieldsLib = ES::fields();
 		$callback  = array($fieldsLib->getHandler(), 'validate');
 		$stepSession->values = $json->encode($data);
 
 		$stepSession->store();
 		$completed = $step->isFinalStep(SOCIAL_EVENT_VIEW_REGISTRATION);
 
-		$stepSession->created = FD::date()->toSql();
+		$stepSession->created = ES::date()->toSql();
 		$stepSession->store();
 
 		// Here we assume that the user completed all the steps
-		$eventsModel = FD::model('Events');
+		$eventsModel = ES::model('Events');
 
 		// Create the new event
 		$event = $eventsModel->createEvent($stepSession);
@@ -249,28 +243,28 @@ class EasysocialApiResourceEvent extends ApiResource
 		}
 
 		// Assign points to the user for creating event
-		FD::points()->assign('events.create', 'com_easysocial', $log_user->id);
+		ES::points()->assign('events.create', 'com_easysocial', $log_user->id);
 
 		// If there is recurring data, then we back up the session->values and the recurring data in the the event params first before deleting step session
 		if (!empty($event->recurringData))
 		{
-			$clusterTable = FD::table('Cluster');
+			$clusterTable = ES::table('Cluster');
 			$clusterTable->load($event->id);
-			$eventParams = FD::makeObject($clusterTable->params);
-			$eventParams->postdata = FD::makeObject($stepSession->values);
+			$eventParams = ES::makeObject($clusterTable->params);
+			$eventParams->postdata = ES::makeObject($stepSession->values);
 			$eventParams->recurringData = $event->recurringData;
-			$clusterTable->params = FD::json()->encode($eventParams);
+			$clusterTable->params = ES::json()->encode($eventParams);
 			$clusterTable->store();
 		}
 
 		$stepSession->delete();
 
-		if ($event->isPublished() && FD::config()->get('events.stream.create'))
+		if ($event->isPublished() && ES::config()->get('events.stream.create'))
 		{
 			$event->createStream('create', $event->creator_uid, $event->creator_type);
 		}
 
-		$my = FD::user();
+		$my = ES::user();
 		$event->state = $my->getAccess()->get('events.moderate');
 
 		if ($event->state)
@@ -302,7 +296,7 @@ class EasysocialApiResourceEvent extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	public function createData($field_ids, $post)
+	private function createData($field_ids, $post)
 	{
 		$ev_data = array();
 		$avtar_pth = '';
@@ -311,26 +305,26 @@ class EasysocialApiResourceEvent extends ApiResource
 		$phto_obj = null;
 		$avatar_file_name  = null;
 
-		if (!empty($_FILES['file']['name']))
+		if (!empty($_FILES['avatar']['name']))
 		{
 			$upload_obj = new EasySocialApiUploadHelper;
 
 			// Checking upload cover
-			$phto_obj = $upload_obj->ajax_avatar($_FILES['file']);
+			$phto_obj = $upload_obj->ajax_avatar($_FILES['avatar']);
 			$avtar_pth = $phto_obj['temp_path'];
 			$avtar_scr = $phto_obj['temp_uri'];
 			$avtar_typ = 'upload';
-			$avatar_file_name = $_FILES['file']['name'];
+			$avatar_file_name = $_FILES['avatar']['name'];
 		}
 
 		$cover_data = null;
 
-		if (!empty($_FILES['cover_file']['name']))
+		if (!empty($_FILES['cover']['name']))
 		{
 			$upload_obj = new EasySocialApiUploadHelper;
 
 			// Checking upload cover
-			$cover_data = $upload_obj->ajax_cover($_FILES['cover_file'], 'cover_file');
+			$cover_data = $upload_obj->ajax_cover($_FILES['cover'], 'cover');
 		}
 
 		foreach ($field_ids as $field)

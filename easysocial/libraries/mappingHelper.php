@@ -434,9 +434,35 @@ class EasySocialApiMappingHelper
 				$item->element_id = $row->contextId;
 
 				$item->content    = urldecode(str_replace('href="/index', 'href="' . JURI::root() . 'index', $row->content));
-				$search        = "data-readmore";
-				$insert        = "style='display:none'";
+
+				$search        = "data-text";
+				$insert        = "id='data-text'";
+				$row->preview = str_replace($search, $insert, $row->preview);
 				$item->content = str_replace($search, $insert, $item->content);
+
+				$search        = "data-original";
+				$insert        = "id='data-original' style='display:none;'";
+				$row->preview = str_replace($search, $insert, $row->preview);
+				$item->content = str_replace($search, $insert, $item->content);
+
+				$search        = "data-readmore";
+				$insert        = "onclick='dataReadmore(event)' id='data-readmore'";
+				$row->preview = str_replace($search, $insert, $row->preview);
+				$item->content = str_replace($search, $insert, $item->content);
+
+				$search        = 'href="javascript:void(0);"';
+				$insert        = "";
+				$row->preview = str_replace($search, $insert, $row->preview);
+				$item->content = str_replace($search, $insert, $item->content);
+
+				$dom = new DOMDocument;
+				$dom->loadHTML($item->content);
+				$node = $dom->getElementById('readmore');
+
+				if ($node->textContent)
+				{
+					$item->content = $node->textContent;
+				}
 
 				// Check code optimisation
 				$frame_match = preg_match('/;iframe.*?>/', $row->preview);
@@ -608,7 +634,10 @@ class EasySocialApiMappingHelper
 					$item->content = $this->createPollData($pdata->id);
 				}
 
-				$result[] = $item;
+				if ($item->actor[0]->id)
+				{
+					$result[] = $item;
+				}
 			}
 		}
 
@@ -1150,7 +1179,9 @@ class EasySocialApiMappingHelper
 
 		foreach ($rows as $ky => $row)
 		{
-			$steps = $grp_model->getAbout($row);
+			$group = ES::group($row->id);
+			$steps = $grp_model->getAbout($group);
+
 			$fieldsArray = array();
 
 			// Get custom fields model.
@@ -1174,7 +1205,7 @@ class EasySocialApiMappingHelper
 						$fobj->title = JText::_($groupInfo->title);
 						$fobj->field_name = JText::_($groupInfo->title);
 						$fobj->step = $groupInfo->step_id;
-						$fobj->field_value = isset($groupInfo->output)?$groupInfo->output:'';
+						$fobj->field_value = $groupInfo->output;
 
 						if ($fobj->unique_key == 'DESCRIPTION')
 						{
@@ -1188,6 +1219,7 @@ class EasySocialApiMappingHelper
 
 			if (isset($row->id))
 			{
+				$grpobj = FD::group($row->id);
 				$item   = new GroupSimpleSchema;
 				$item->id           = $row->id;
 				$item->type = 'group';
@@ -1204,9 +1236,9 @@ class EasySocialApiMappingHelper
 				$item->category_id   = $row->category_id;
 				$item->category_name = $category->get('title');
 				$item->group_type = $row->type;
-				$item->cover         = $row->getCover();
-				$x                    = $row->cover->x;
-				$y                    = $row->cover->y;
+				$item->cover         = $grpobj->getCover();
+				$x                    = $grpobj->cover->x;
+				$y                    = $grpobj->cover->y;
 				$item->cover_position = $x . '% ' . $y . '%';
 				$item->created_by   = $row->creator_uid;
 				$item->creator_name = JFactory::getUser($row->creator_uid)->username;
@@ -1227,6 +1259,7 @@ class EasySocialApiMappingHelper
 						}
 				}*/
 
+				$grp_obj   = FD::model('Groups');
 				$alb_model = FD::model('Albums');
 				$uid       = $row->id . ':' . $row->title;
 				$filters   = array(
@@ -1236,11 +1269,11 @@ class EasySocialApiMappingHelper
 
 				// Get total album count
 				$item->album_count      = $alb_model->getTotalAlbums($filters);
-				$item->member_count     = $row->getTotalMembers($row->id);
-				$item->isowner          = $row->isOwner($userid, $row->id);
-				$item->ismember         = $row->isMember($userid, $row->id);
-				$item->isinvited        = $row->isInvited($userid, $row->id);
-				$item->approval_pending = $row->isPendingMember($userid, $row->id);
+				$item->member_count     = $grp_obj->getTotalMembers($row->id);
+				$item->isowner          = $grp_obj->isOwner($userid, $row->id);
+				$item->ismember         = $grp_obj->isMember($userid, $row->id);
+				$item->isinvited        = $grp_obj->isInvited($userid, $row->id);
+				$item->approval_pending = $grp_obj->isPendingMember($userid, $row->id);
 				$result[] = $item;
 			}
 		}

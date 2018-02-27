@@ -63,7 +63,7 @@ class EasysocialApiResourceVideos extends ApiResource
 	private function getVideos()
 	{
 		$log_user	=	$this->plugin->get('user')->id;
-		$model		=	FD::model('Videos');
+		$model		=	ES::model('Videos');
 
 		$options = array();
 		$data = array();
@@ -202,14 +202,14 @@ class EasysocialApiResourceVideos extends ApiResource
 		}
 		elseif ($action == "edit")
 		{
-			$video = FD::table('Video');
+			$video = ES::table('Video');
 			$video->load($id);
 
 			return $video;
 		}
 		elseif ($action == "update")
 		{
-			$video = FD::table('Video');
+			$video = ES::table('Video');
 			$video->load($id);
 			$video->description = ($video->description == 'undefined') ? ($video->description = '') : $video->description;
 			$videoEdit = ES::video($video);

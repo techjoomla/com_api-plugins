@@ -33,13 +33,13 @@ class EasysocialApiResourceShare extends ApiResource
 	/**
 	 * Method description
 	 *
-	 * @return  mixed
+	 * @return  ApiPlugin response object
 	 *
 	 * @since 1.0
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse(JText::_('PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE'));
+		ApiError::raiseError(405, JText::_('PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE'));
 	}
 
 	/**
@@ -50,6 +50,18 @@ class EasysocialApiResourceShare extends ApiResource
 	 * @since 1.0
 	 */
 	public function post()
+	{
+		$this->plugin->setResponse($this->postStory());
+	}
+
+	/**
+	 * Method description
+	 *
+	 * @return  mixed
+	 *
+	 * @since 1.0
+	 */
+	private function postStory()
 	{
 		$app      = JFactory::getApplication();
 		$type     = $app->input->get('type', 'story', 'STRING');
@@ -65,6 +77,11 @@ class EasysocialApiResourceShare extends ApiResource
 
 		// Specific user id for sharing
 		$customPrivacy = $app->input->get('privacyCustom', '', 'string');
+
+		if (!$targetId)
+		{
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE'));
+		}
 
 		$link = $app->input->get('link', '', 'STRING');
 
@@ -107,29 +124,25 @@ class EasysocialApiResourceShare extends ApiResource
 				$thumbnail = $data->opengraph->image;
 			}
 
-			return $this->plugin->setResponse($data);
+			return $data;
 		}
 
 		$log_usr  = intval($this->plugin->get('user')->id);
 
 		// Now take login user stream for target
 		$targetId = ($targetId != $log_usr) ? $targetId : $log_usr;
-		$valid  = 1;
 		$result = new stdClass;
 		$story = ES::story(SOCIAL_TYPE_USER);
+		$access = ES::access($targetId, SOCIAL_TYPE_USER);
 
 		// Check whether the user can really post something on the target
 		if ($targetId)
 		{
-			$tuser   = ES::user($targetId);
-			$allowed = $tuser->getPrivacy()->validate('profiles.post.status', $targetId, SOCIAL_TYPE_USER);
+			$allowedToPoast = ($clusterType != 'group') ? $access->get('story.user.post') : $access->get('story.group.post');
 
-			if (!$allowed)
+			if (!$allowedToPoast)
 			{
-				$result->id      = 0;
-				$result->status  = 0;
-				$result->message = JText::_('PLG_API_EASYSOCIAL_POST_NOT_ALLOW_MESSAGE');
-				$valid           = 0;
+				ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_POST_NOT_ALLOW_MESSAGE'));
 			}
 		}
 
@@ -138,10 +151,28 @@ class EasysocialApiResourceShare extends ApiResource
 			$result->id      = 0;
 			$result->status  = 0;
 			$result->message = JText::_('PLG_API_EASYSOCIAL_EMPTY_TYPE');
-			$valid           = 0;
+
+			return $result;
 		}
-		elseif ($valid)
+		else
 		{
+			$allowed = 1;
+
+			switch ($type)
+			{
+				case 'polls' : $allowed = $access->get('polls.create');
+							break;
+				case 'videos' : $allowed = $access->get('videos.upload');
+							break;
+				case 'photos' : $allowed = $access->get('photos.create');
+							break;
+			}
+
+			if (!$allowed)
+			{
+				ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_POST_NOT_ALLOW_MESSAGE'));
+			}
+
 			// Determines if the current posting is for a cluster
 			$cluster   = isset($cluster) ? $cluster : 0;
 
@@ -159,20 +190,15 @@ class EasysocialApiResourceShare extends ApiResource
 
 					if ($group->isMember() && !in_array('member', $permissions) && !$group->isOwner() && !$group->isAdmin())
 					{
-						$result->message = JText::_('PLG_API_EASYSOCIAL_MEMBER_ACCESS_DENIED_MESSAGE');
+						ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_MEMBER_ACCESS_DENIED_MESSAGE'));
 					}
 
 					// If the user is an admin, ensure that permissions has admin
 
 					if ($group->isAdmin() && !in_array('admin', $permissions) && !$group->isOwner())
 					{
-						$result->message = JText::_('PLG_API_EASYSOCIAL_ADMIN_ACCESS_DENIED_MESSAGE');
+						ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_ADMIN_ACCESS_DENIED_MESSAGE'));
 					}
-
-					$result->id     = 0;
-					$result->status = 0;
-
-					return $this->plugin->setResponse($result);
 				}
 			}
 
@@ -328,7 +354,7 @@ class EasysocialApiResourceShare extends ApiResource
 			}
 		}
 
-		$this->plugin->setResponse($result);
+		return $result;
 	}
 
 	/**

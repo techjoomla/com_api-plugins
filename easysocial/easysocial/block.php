@@ -28,7 +28,7 @@ class EasysocialApiResourceBlock extends ApiResource
 
 	/** POST
 	 * 
-	 * @return	string	Message
+	 * @return  ApiPlugin response object
 	 */
 	public function post()
 	{
@@ -37,16 +37,18 @@ class EasysocialApiResourceBlock extends ApiResource
 
 	/** POST
 	 * 
-	 * @return	int	id
+	 * @return	object
 	 */
-	public function processUser()
+	private function processUser()
 	{
 		$app		=	JFactory::getApplication();
 		$reason		=	$app->input->get('reason', '', 'STRING');
 		$target_id	=	$app->input->get('target_id', 0, 'INT');
 		$block_this	=	$app->input->get('block', 0, 'INT');
 
-		return $res	=	($block_this)?$this->block($target_id, $reason):$this->unblock($target_id);
+		$res	=	($block_this)?$this->block($target_id, $reason):$this->unblock($target_id);
+
+		return $res;
 	}
 
 	/** POST
@@ -55,31 +57,28 @@ class EasysocialApiResourceBlock extends ApiResource
 	 * @param   int     $target_id  integer for target id
 	 * @param   String  $reason     string of reason to block the user
 	 * 
-	 * @return	obj result
+	 * @return	object
 	 */
-	public function block($target_id, $reason)
+	private function block($target_id, $reason)
 	{
 		$res	=	new stdClass;
 
 		if (!$target_id)
 		{
-			$res->success	=	0;
-			$res->message	=	JText::_('COM_EASYSOCIAL_INVALID_USER_ID_PROVIDED');
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE'));
 		}
 
 		// Load up the block library
-		$lib	=	FD::blocks();
+		$lib	=	ES::blocks();
 		$result	=	$lib->block($target_id, $reason);
 
 		if ($result->id)
 		{
-			$res->success	=	1;
-			$res->message	=	JText::_('PLG_API_EASYSOCIAL_BLOCK_USER');
+			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_BLOCK_USER');
 		}
 		else
 		{
-			$res->success = 0;
-			$res->message	=	JText::_('PLG_API_EASYSOCIAL_BLOCK_USER_ERROR');
+			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_BLOCK_USER_ERROR');
 		}
 
 		return $res;
@@ -90,7 +89,7 @@ class EasysocialApiResourceBlock extends ApiResource
 	 * 
 	 * @param   int  $target_id  integer for target id
 	 * 
-	 * @return	obj	result
+	 * @return	object
 	 */
 
 	public function unblock($target_id)
@@ -99,25 +98,20 @@ class EasysocialApiResourceBlock extends ApiResource
 
 		if (!$target_id)
 		{
-			$res->success	=	0;
-			$res->message	=	JText::_('COM_EASYSOCIAL_INVALID_USER_ID_PROVIDED');
-
-			return $res;
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE'));
 		}
 
 		// Load up the block library
-		$lib 	=	FD::blocks();
+		$lib 	=	ES::blocks();
 		$result	=	$lib->unblock($target_id);
 
 		if ($result)
 		{
-			$res->success	=	1;
-			$res->message	=	JText::_('PLG_API_EASYSOCIAL_UNBLOCK_USER');
+			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_UNBLOCK_USER');
 		}
 		else
 		{
-			$res->success	=	$result->code;
-			$res->message	=	$result->message;
+			$res->result->message	=	$result->message;
 		}
 
 		return $res;

@@ -33,7 +33,7 @@ class EasysocialApiResourceVideos_Link extends ApiResource
 		 */
 		public function post()
 		{
-			$this->save_video();
+			$this->saveVideo();
 		}
 
 	/**	  
@@ -41,7 +41,7 @@ class EasysocialApiResourceVideos_Link extends ApiResource
 	 * 	 
 	 * @return  JSON	 
 	 */
-	public function save_video()
+	private function saveVideo()
 	{
 		$app = JFactory::getApplication();
 		$res = new stdClass;
@@ -59,6 +59,15 @@ class EasysocialApiResourceVideos_Link extends ApiResource
 
 		$video = ES::video();
 		$res = new stdClass;
+
+		// Determine if this user has the permissions to create video.
+		$access 	= ES::access();
+		$allowed	= $access->get('videos.create');
+
+		if (!$allowed)
+		{
+			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_VIDEO_NOT_ALLOW_MESSAGE'));
+		}
 
 		if ($post['link'])
 		{
@@ -140,7 +149,6 @@ class EasysocialApiResourceVideos_Link extends ApiResource
 			$video->createStream('create', $privacyData);
 		}
 
-		$res->result->status = 1;
 		$res->result->message = JText::_('COM_EASYSOCIAL_EMAILS_EVENT_NEW_VIDEO');
 
 		$this->plugin->setResponse($res);

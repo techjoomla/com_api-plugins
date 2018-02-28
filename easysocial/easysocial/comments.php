@@ -52,82 +52,79 @@ class EasysocialApiResourceComments extends ApiResource
 		// Parent comment id
 		$parent		=	$app->input->get('parent', 0, 'INT');
 		$res 		=	new stdClass;
-		$valid = 1;
 
 		if (!$uid)
 		{
-			$res->result->id			=	0;
-			$res->result->status		=	0;
-			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_EMPTY_ELEMENT_NOT_ALLOWED_MESSAGE');
-			$valid				=	0;
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_EMPTY_ELEMENT_NOT_ALLOWED_MESSAGE'));
 		}
 
-		// Message should not be empty.
+		// Determine if this user has the permissions to add comment.
+		$access 	= ES::access();
+		$allowed	= $access->get('comments.add');
+
+		if (!$allowed)
+		{
+			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_COMMENT_NOT_ALLOW_MESSAGE'));
+		}
+
 		if (empty($input))
 		{
-			$res->result->id			=	0;
-			$res->result->status		=	0;
-			$res->result->message		=	JText::_('PLG_API_EASYSOCIAL_EMPTY_COMMENT_NOT_ALLOWED_MESSAGE');
-			$valid						=	0;
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_EMPTY_COMMENT_NOT_ALLOWED_MESSAGE'));
 		}
-		elseif ($valid)
-		{
-				// Normalize CRLF (\r\n) to just LF (\n)
-				$input				=	str_ireplace("\r\n", "\n", $input);
-				$compositeElement	=	$element . '.' . $group . '.' . $verb;
-				$table				=	ES::table('comments');
-				$table->element		=	$compositeElement;
-				$table->uid			=	$uid;
-				$table->comment		=	$input;
-				$table->created_by	=	ES::user()->id;
-				$table->created		=	ES::date()->toSQL();
-				$table->parent		=	$parent;
-				$table->params		=	$params;
-				$table->stream_id	=	$streamid;
-				$state				=	$table->store();
 
-				if ($streamid)
+			// Normalize CRLF (\r\n) to just LF (\n)
+			$input				=	str_ireplace("\r\n", "\n", $input);
+			$compositeElement	=	$element . '.' . $group . '.' . $verb;
+			$table				=	ES::table('comments');
+			$table->element		=	$compositeElement;
+			$table->uid			=	$uid;
+			$table->comment		=	$input;
+			$table->created_by	=	ES::user()->id;
+			$table->created		=	ES::date()->toSQL();
+			$table->parent		=	$parent;
+			$table->params		=	$params;
+			$table->stream_id	=	$streamid;
+			$state				=	$table->store();
+
+			if ($streamid)
+			{
+				$doUpdate = true;
+
+				if ($element == 'photos')
 				{
-					$doUpdate = true;
+					$sModel		=	ES::model('Stream');
+					$totalItem	=	$sModel->getStreamItemsCount($streamid);
 
-					if ($element == 'photos')
+					if ($totalItem > 1)
 					{
-						$sModel		=	ES::model('Stream');
-						$totalItem	=	$sModel->getStreamItemsCount($streamid);
-
-						if ($totalItem > 1)
-						{
-								$doUpdate = false;
-						}
+							$doUpdate = false;
 					}
-
-						if ($doUpdate)
-						{
-							$stream = ES::stream();
-							$stream->updateModified($streamid, ES::user()->id, SOCIAL_STREAM_LAST_ACTION_COMMENT);
-						}
 				}
 
-				if ($state)
-				{
-					$dispatcher	=	ES::dispatcher();
-					$comments	=	array(&$table);
-					$args		=	array(&$comments);
+					if ($doUpdate)
+					{
+						$stream = ES::stream();
+						$stream->updateModified($streamid, ES::user()->id, SOCIAL_STREAM_LAST_ACTION_COMMENT);
+					}
+			}
 
-					// @trigger: onPrepareComments
-					$dispatcher->trigger($group, 'onPrepareComments', $args);
+			if ($state)
+			{
+				$dispatcher	=	ES::dispatcher();
+				$comments	=	array(&$table);
+				$args		=	array(&$comments);
 
-					// Create result obj
-					$res->result->status		=	1;
-					$res->result->message		=	JText::_('PLG_API_EASYSOCIAL_COMMENT_SAVE_SUCCESS_MESSAGE');
-				}
-				else
-				{
-					// Create result obj
-					$res->result->status		=	0;
-					$res->result->message		=	JText::_('PLG_API_EASYSOCIAL_COMMENT_SAVE_UNSUCCESS_MESSAGE');
-				}
-		}
+				// @trigger: onPrepareComments
+				$dispatcher->trigger($group, 'onPrepareComments', $args);
+
+				// Create result obj
+				$res->result->message		=	JText::_('PLG_API_EASYSOCIAL_COMMENT_SAVE_SUCCESS_MESSAGE');
+			}
+			else
+			{
+				// Create result obj
+				ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_COMMENT_SAVE_UNSUCCESS_MESSAGE'));
+			}
 
 		$this->plugin->setResponse($res);
 	}
@@ -136,7 +133,7 @@ class EasysocialApiResourceComments extends ApiResource
 	 * 
 	 * @return	array	comments
 	 */
-	public function getComments()
+	private function getComments()
 	{
 		$app				=	JFactory::getApplication();
 		$log_user			=	JFactory::getUser($this->plugin->get('user')->id);
@@ -149,7 +146,7 @@ class EasysocialApiResourceComments extends ApiResource
 		$res->result = array();
 		$res->empty_message = '';
 
-// Discussions.group.reply
+		// Discussions.group.reply
 		$row->stream_id		=	$app->input->get('stream_id', 0, 'INT');
 		$row->group			=	$app->input->get('group', '', 'STRING');
 		$row->verb			=	$app->input->get('verb', '', 'STRING');
@@ -158,6 +155,15 @@ class EasysocialApiResourceComments extends ApiResource
 		$row->userid		=	$log_user->id;
 		$mapp				=	new EasySocialApiMappingHelper;
 		$data				=	$mapp->createCommentsObj($row, $row->limitstart, $row->limit);
+
+		// Determine if this user has the permissions to read comment.
+		$access 	= ES::access();
+		$allowed	= $access->get('comments.read');
+
+		if (!$allowed)
+		{
+			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_READ_COMMENT_NOT_ALLOW_MESSAGE'));
+		}
 
 		if (count($data['data']) < 1)
 		{
@@ -179,23 +185,17 @@ class EasysocialApiResourceComments extends ApiResource
 	{
 		$app			=	JFactory::getApplication();
 		$conversion_id	=	$app->input->get('conversation_id', 0, 'INT');
-		$valid			=	1;
 		$result			=	new stdClass;
 
 		if (!$conversion_id)
 		{
-			$result->status		=	0;
-			$result->message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_CONVERSATION_MESSAGE');
-			$valid				=	0;
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_CONVERSATION_MESSAGE'));
 		}
 
-		if ($valid)
-		{
-			// Try to delete the group
-			$conv_model			=	ES::model('Conversations');
-			$result->status		=	$conv_model->delete($conversion_id, $this->plugin->get('user')->id);
-			$result->message	=	JText::_('PLG_API_EASYSOCIAL_CONVERSATION_DELETED_MESSAGE');
-		}
+		// Try to delete the group
+		$conv_model			=	ES::model('Conversations');
+		$conv_model->delete($conversion_id, $this->plugin->get('user')->id);
+		$result->message	=	JText::_('PLG_API_EASYSOCIAL_CONVERSATION_DELETED_MESSAGE');
 
 		$this->plugin->setResponse($result);
 	}

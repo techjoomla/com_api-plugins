@@ -12,11 +12,9 @@
 defined('_JEXEC') or die('Restricted access');
 
 jimport('joomla.plugin.plugin');
-
 use Joomla\Registry\Registry;
-
 JLoader::register("EasySocialApiUploadHelper", JPATH_SITE . '/plugins/api/easysocial/libraries/uploadHelper.php');
-JLoader::register("EasySocialApiMappingHelper", '/plugins/api/easysocial/libraries/mappingHelper.php');
+JLoader::register("EasySocialApiMappingHelper", JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php');
 
 
 ES::import('fields:/group/permalink/helper');
@@ -53,7 +51,7 @@ class EasysocialApiResourceGroup extends ApiResource
 		// Ensure that the user has access to view group's item
 		if (! $group->canViewItem() || !$group->isPublished() || ($user->id != $group->creator_uid && $user->isBlockedBy($group->creator_uid)))
 		{
-			ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_GROUPS_NO_ACCESS'));
+			ApiError::raiseError(403, JText::_('COM_EASYSOCIAL_GROUPS_NO_ACCESS'));
 		}
 
 		$EasySocialApiMappingHelper = new EasySocialApiMappingHelper;
@@ -82,6 +80,9 @@ class EasysocialApiResourceGroup extends ApiResource
 		$apiResponse			=	new stdClass;
 		$apiResponse->result	=	new stdClass;
 		$postValues				=	$input->post->getArray();
+
+		// Check EasySocial extension version
+		$version = ES::getLocalVersion();
 
 		if (empty($postValues['title']))
 		{
@@ -113,16 +114,19 @@ class EasysocialApiResourceGroup extends ApiResource
 		{
 			if (! $user->getAccess()->allowed('groups.create') && ! $user->isSiteAdmin())
 			{
-				ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_GROUPS_NO_ACCESS_CREATE_GROUP'));
+				ApiError::raiseError(403, JText::_('COM_EASYSOCIAL_GROUPS_NO_ACCESS_CREATE_GROUP'));
 			}
 
 			// Ensure that the user did not exceed their group creation limit
 			if ($user->getAccess()->intervalExceeded('groups.limit', $user->id) && ! $user->isSiteAdmin())
 			{
-				ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_GROUPS_EXCEEDED_LIMIT'));
+				ApiError::raiseError(403, JText::_('COM_EASYSOCIAL_GROUPS_EXCEEDED_LIMIT'));
 			}
 
-			$this->validateGroupPermalink($postValues['permalink']);
+			if ( $version >= '2.1.0')
+			{
+				$this->validateGroupPermalink($postValues['permalink']);
+			}
 
 			// Load the group category
 			$category = ES::table('GroupCategory');
@@ -136,7 +140,7 @@ class EasysocialApiResourceGroup extends ApiResource
 			// Check if the user really has access to create groups
 			if (! $user->getAccess()->allowed('groups.create') && ! $user->isSiteAdmin())
 			{
-				ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_GROUPS_NO_ACCESS_CREATE_GROUP'));
+				ApiError::raiseError(403, JText::_('COM_EASYSOCIAL_GROUPS_NO_ACCESS_CREATE_GROUP'));
 			}
 
 			// Need to check if this clsuter category has creation limit based on user points or not.
@@ -146,7 +150,18 @@ class EasysocialApiResourceGroup extends ApiResource
 			}
 
 			$options				=	array();
-			$options['workflow_id']	=	$category->getWorkflow()->id;
+
+			if ( $version >= '2.1.0')
+			{
+				$options['workflow_id']	=	$category->getWorkflow()->id;
+			}
+			else
+			{
+				$stepsModel	=	ES::model('Steps');
+				$steps		=	$stepsModel->getSteps($postValues['category_id'],  SOCIAL_TYPE_CLUSTERS);
+				$options['step_id']	=	$steps[0]->id;
+			}
+
 			$options['group']		=	SOCIAL_FIELDS_GROUP_GROUP;
 
 			// Get fields model
@@ -475,7 +490,7 @@ class EasysocialApiResourceGroup extends ApiResource
 		// Only group owner and site admins are allowed to delete the group
 		if (! $user->isSiteAdmin() && ! $group->isOwner())
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_ACCESS_DENIED_MESSAGE'));
+			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_ACCESS_DENIED_MESSAGE'));
 		}
 
 		// Try to delete the group

@@ -59,7 +59,7 @@ class EasysocialApiResourceComments extends ApiResource
 		}
 
 		// Determine if this user has the permissions to add comment.
-		$access 	= FD::access();
+		$access 	= ES::access();
 		$allowed	= $access->get('comments.add');
 
 		if (!$allowed)
@@ -75,12 +75,12 @@ class EasysocialApiResourceComments extends ApiResource
 			// Normalize CRLF (\r\n) to just LF (\n)
 			$input				=	str_ireplace("\r\n", "\n", $input);
 			$compositeElement	=	$element . '.' . $group . '.' . $verb;
-			$table				=	FD::table('comments');
+			$table				=	ES::table('comments');
 			$table->element		=	$compositeElement;
 			$table->uid			=	$uid;
 			$table->comment		=	$input;
-			$table->created_by	=	FD::user()->id;
-			$table->created		=	FD::date()->toSQL();
+			$table->created_by	=	ES::user()->id;
+			$table->created		=	ES::date()->toSQL();
 			$table->parent		=	$parent;
 			$table->params		=	$params;
 			$table->stream_id	=	$streamid;
@@ -92,7 +92,7 @@ class EasysocialApiResourceComments extends ApiResource
 
 				if ($element == 'photos')
 				{
-					$sModel		=	FD::model('Stream');
+					$sModel		=	ES::model('Stream');
 					$totalItem	=	$sModel->getStreamItemsCount($streamid);
 
 					if ($totalItem > 1)
@@ -103,14 +103,14 @@ class EasysocialApiResourceComments extends ApiResource
 
 					if ($doUpdate)
 					{
-						$stream = FD::stream();
-						$stream->updateModified($streamid, FD::user()->id, SOCIAL_STREAM_LAST_ACTION_COMMENT);
+						$stream = ES::stream();
+						$stream->updateModified($streamid, ES::user()->id, SOCIAL_STREAM_LAST_ACTION_COMMENT);
 					}
 			}
 
 			if ($state)
 			{
-				$dispatcher	=	FD::dispatcher();
+				$dispatcher	=	ES::dispatcher();
 				$comments	=	array(&$table);
 				$args		=	array(&$comments);
 
@@ -157,7 +157,7 @@ class EasysocialApiResourceComments extends ApiResource
 		$data				=	$mapp->createCommentsObj($row, $row->limitstart, $row->limit);
 
 		// Determine if this user has the permissions to read comment.
-		$access 	= FD::access();
+		$access 	= ES::access();
 		$allowed	= $access->get('comments.read');
 
 		if (!$allowed)
@@ -193,7 +193,7 @@ class EasysocialApiResourceComments extends ApiResource
 		}
 
 		// Try to delete the group
-		$conv_model			=	FD::model('Conversations');
+		$conv_model			=	ES::model('Conversations');
 		$conv_model->delete($conversion_id, $this->plugin->get('user')->id);
 		$result->message	=	JText::_('PLG_API_EASYSOCIAL_CONVERSATION_DELETED_MESSAGE');
 

@@ -132,7 +132,7 @@ class EasysocialApiResourceShare extends ApiResource
 		// Now take login user stream for target
 		$targetId = ($targetId != $log_usr) ? $targetId : $log_usr;
 		$result = new stdClass;
-		$story = FD::story(SOCIAL_TYPE_USER);
+		$story = ES::story(SOCIAL_TYPE_USER);
 		$access = ES::access($targetId, SOCIAL_TYPE_USER);
 
 		// Check whether the user can really post something on the target

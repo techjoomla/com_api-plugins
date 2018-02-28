@@ -120,7 +120,7 @@ class EasysocialApiResourceReport extends ApiResource
 		$model = ES::model('Reports');
 
 		// Determine if this user has the permissions to submit reports.
-		$access 	= FD::access();
+		$access 	= ES::access();
 		$allowed	= $access->get('reports.submit');
 
 		// Determine if this user has exceeded the number of reports that they can submit

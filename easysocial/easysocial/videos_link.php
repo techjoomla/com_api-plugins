@@ -61,7 +61,7 @@ class EasysocialApiResourceVideos_Link extends ApiResource
 		$res = new stdClass;
 
 		// Determine if this user has the permissions to create video.
-		$access 	= FD::access();
+		$access 	= ES::access();
 		$allowed	= $access->get('videos.create');
 
 		if (!$allowed)

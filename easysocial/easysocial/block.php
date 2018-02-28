@@ -69,7 +69,7 @@ class EasysocialApiResourceBlock extends ApiResource
 		}
 
 		// Load up the block library
-		$lib	=	FD::blocks();
+		$lib	=	ES::blocks();
 		$result	=	$lib->block($target_id, $reason);
 
 		if ($result->id)
@@ -102,7 +102,7 @@ class EasysocialApiResourceBlock extends ApiResource
 		}
 
 		// Load up the block library
-		$lib 	=	FD::blocks();
+		$lib 	=	ES::blocks();
 		$result	=	$lib->unblock($target_id);
 
 		if ($result)

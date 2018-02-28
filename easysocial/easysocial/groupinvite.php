@@ -81,7 +81,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 		}
 
 		// Target user obj
-		$user	=	FD::user($target_user);
+		$user	=	ES::user($target_user);
 
 		switch ($operation)
 		{

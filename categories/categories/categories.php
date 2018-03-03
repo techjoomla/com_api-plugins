@@ -11,49 +11,69 @@ jimport('joomla.plugin.plugin');
 jimport('joomla.html.html');
 JLoader::register('JCategoryNode', JPATH_BASE . '/libraries/legacy/categories/categories.php');
 
-
-
+/**
+ * Categories Api
+ *
+ * @since  1.0
+ */
 class CategoriesApiResourceCategories extends ApiResource
 {
+	/**
+	 * Get categories
+	 *
+	 * @return  void
+	 *
+	 * @since   1.0
+	 */
 	public function get()
 	{
-		$this->plugin->setResponse($this->getCategoryList());
+		$app = JFactory::getApplication();
+		$extension = $app->input->get('extension', 'content');
+		$this->plugin->setResponse($this->getCategoryList($extension));
 	}
 
+	/**
+	 * Delete category
+	 *
+	 * @return  void
+	 *
+	 * @since   1.0
+	 */
 	public function delete()
 	{
 		$this->plugin->setResponse('in delete');
 	}
+
+	/**
+	 * Create category
+	 *
+	 * @return  void
+	 *
+	 * @since   1.0
+	 */
 	public function post()
 	{
 		$this->plugin->setResponse($this->CreateUpdateCategory());
 	}
 
-	public function getCategory()
-	{
-		self::getListQuery();
-	}
-
-		/**
-	 * Get the master query for retrieving a list of categories subject to the model state.
+	/**
+	 * Get the master query for retrieving a list of categories subject to the mzodel state.
 	 *
+	 * @param   string  $extension  extension name
+	 * 
 	 * @return  JDatabaseQuery
 	 *
 	 * @since   1.6
 	 */
-	public function getCategoryList()
+	private function getCategoryList($extension)
 	{
-		/*$model_categories = JCategories::getInstance('Content');
-		$root = $model_categories->get('root');
-		$categories = $root->getChildren();*/
-		
-		$model_categories = JCategories::getInstance('Content');
+		$model_categories = JCategories::getInstance($extension);
 		$root = $model_categories->get('root');
 		$categories = $root->getChildren(true);
-	
+
 		return $categories;
-		
 	}
+
 	/**
 	 * CreateUpdateCategory is to create / upadte Category
 	 *
@@ -61,7 +81,7 @@ class CategoriesApiResourceCategories extends ApiResource
 	 *
 	 * @since  3.5
 	 */
-	public function CreateUpdateCategory()
+	private function CreateUpdateCategory()
 	{
 		if (version_compare(JVERSION, '3.0', 'lt'))
 		{
@@ -80,6 +100,7 @@ class CategoriesApiResourceCategories extends ApiResource
 
 			return $obj;
 		}
+
 		if (empty($app->input->get('extension', '', 'STRING')))
 		{
 			$obj->code = 'ER002';
@@ -88,7 +109,6 @@ class CategoriesApiResourceCategories extends ApiResource
 			return $obj;
 		}
 
-		
 		if ($cat_id)
 		{
 			$category = JTable::getInstance('Content', 'JTable', array());
@@ -101,6 +121,7 @@ class CategoriesApiResourceCategories extends ApiResource
 			if (!$cat_id->bind($data))
 			{
 				$this->setError($article->getError());
+
 				return false;
 			}
 		}
@@ -131,8 +152,5 @@ class CategoriesApiResourceCategories extends ApiResource
 
 			return false;
 		}
-
-		//return true;
 	}
-	
 }

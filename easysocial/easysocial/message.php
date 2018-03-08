@@ -60,7 +60,7 @@ class EasysocialApiResourceMessage extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	public function newMessage()
+	private function newMessage()
 	{
 		$app			=	JFactory::getApplication();
 		$recipients		=	$app->input->get('recipients', null, 'ARRAY');
@@ -79,22 +79,18 @@ class EasysocialApiResourceMessage extends ApiResource
 		// Check if the user really has access to create groups
 		if (! $canCreate->getAccess()->allowed('conversations.create') && ! $canCreate->isSiteAdmin())
 		{
-			ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_CONVERSATIONS_ERROR_NOT_ALLOWED'));
+			ApiError::raiseError(403, JText::_('COM_EASYSOCIAL_CONVERSATIONS_ERROR_NOT_ALLOWED'));
 		}
 
 		if (count($recipients) < 1)
 		{
-			$res->result->status = 0;
-			$res->result->message = JText::_('PLG_API_EASYSOCIAL_EMPTY_MESSAGE_MESSAGE');
-			$this->plugin->setResponse($res);
+			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_EMPTY_MESSAGE_MESSAGE'));
 		}
 
 		// Message should not be empty.
 		if (empty($msg))
 		{
-			$res->result->status = 0;
-			$res->result->message = JText::_('PLG_API_EASYSOCIAL_EMPTY_MESSAGE_MESSAGE');
-			$this->plugin->setResponse($res);
+			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_EMPTY_MESSAGE_MESSAGE'));
 		}
 
 		if ($conversion_id == 0)
@@ -119,8 +115,7 @@ class EasysocialApiResourceMessage extends ApiResource
 		else
 		{
 			// Create result obj
-			$res->result->status = 0;
-			$res->result->message = JText::_('PLG_API_EASYSOCIAL_UNABLE_SEND_MESSAGE');
+			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_UNABLE_SEND_MESSAGE'));
 		}
 
 		$this->plugin->setResponse($res);
@@ -137,7 +132,7 @@ class EasysocialApiResourceMessage extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	public function createConversion($recipients, $log_usr, $msg)
+	private function createConversion($recipients, $log_usr, $msg)
 	{
 		$conversation	=	ES::conversation();
 		$allowed		=	$conversation->canCreate();
@@ -171,16 +166,13 @@ class EasysocialApiResourceMessage extends ApiResource
 
 		if (!$conversion_id)
 		{
-			$res->result->status = 0;
-			$res->result->message = JText::_('PLG_API_EASYSOCIAL_INVALID_CONVERSATION_MESSAGE');
+			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_INVALID_CONVERSATION_MESSAGE'));
 		}
-		else
-		{
-			// Try to delete the group
-			$conv_model = FD::model('Conversations');
-			$res->result->status = $conv_model->delete($conversion_id, $this->plugin->get('user')->id);
-			$res->result->message = JText::_('PLG_API_EASYSOCIAL_CONVERSATION_DELETED_MESSAGE');
-		}
+
+		// Try to delete the group
+		$conv_model = ES::model('Conversations');
+		$res->result->status = $conv_model->delete($conversion_id, $this->plugin->get('user')->id);
+		$res->result->message = JText::_('PLG_API_EASYSOCIAL_CONVERSATION_DELETED_MESSAGE');
 
 		$this->plugin->setResponse($res);
 	}
@@ -193,7 +185,7 @@ class EasysocialApiResourceMessage extends ApiResource
 	 * @since 1.0
 	 */
 
-	public function getConversations()
+	private function getConversations()
 	{
 		// Init variable
 		$app				=	JFactory::getApplication();
@@ -205,13 +197,13 @@ class EasysocialApiResourceMessage extends ApiResource
 		$filter				=	$app->input->get('filter', null, 'STRING');
 
 		$mapp				=	new EasySocialApiMappingHelper;
-		$user				=	FD::user($log_user->id);
+		$user				=	ES::user($log_user->id);
 
 		$res				=	new stdclass;
 		$res->result		=	array();
 		$res->empty_message	=	'';
 
-		$conv_model			=	FD::model('Conversations');
+		$conv_model			=	ES::model('Conversations');
 
 		// Set the startlimit
 		$conv_model->setState('limitstart', $limitstart);
@@ -262,9 +254,9 @@ class EasysocialApiResourceMessage extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	public function getParticipantUsers($con_id)
+	private function getParticipantUsers($con_id)
 	{
-		$conv_model			=	FD::model('Conversations');
+		$conv_model			=	ES::model('Conversations');
 		$mapp				=	new EasySocialApiMappingHelper;
 		$participant_usrs	=	$conv_model->getParticipants($con_id);
 		$con_usrs			=	array();
@@ -287,9 +279,9 @@ class EasysocialApiResourceMessage extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	public function uploadFile()
+	private function uploadFile()
 	{
-		$config		=	FD::config();
+		$config		=	ES::config();
 		$limit		=	$config->get($type . '.attachments.maxsize');
 
 		// Set uploader options
@@ -299,7 +291,7 @@ class EasysocialApiResourceMessage extends ApiResource
 						);
 
 		// Let's get the temporary uploader table.
-		$uploader 			= FD::table('Uploader');
+		$uploader 			= ES::table('Uploader');
 		$uploader->user_id	= $this->plugin->get('user')->id;
 
 		// Pass uploaded data to the uploader.

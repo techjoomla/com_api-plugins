@@ -278,7 +278,7 @@ class EasysocialApiResourceMessage extends ApiResource
 	 * @return  mixed
 	 *
 	 * @since 1.0
-	 */
+	 *
 	private function uploadFile()
 	{
 		$config		=	ES::config();
@@ -298,4 +298,5 @@ class EasysocialApiResourceMessage extends ApiResource
 		$uploader->bindFile($data);
 		$state 	= $uploader->store();
 	}
+	*/
 }

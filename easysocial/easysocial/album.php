@@ -56,7 +56,7 @@ class EasysocialApiResourceAlbum extends ApiResource
 
 	/** switch case for photo delete or album delete. 
 	 * 
-	 * @return	object
+	 * @return	array
 	 */
 	private function deleteCheck()
 	{
@@ -87,7 +87,6 @@ class EasysocialApiResourceAlbum extends ApiResource
 		$user	=	JFactory::getUser($this->plugin->get('user')->id);
 		$app	=	JFactory::getApplication();
 		$id		=	$app->input->get('id', 0, 'INT');
-		$res	=	new stdClass;
 
 		// Load the photo table
 		$photo	=	ES::table('Photo');
@@ -221,7 +220,6 @@ class EasysocialApiResourceAlbum extends ApiResource
 		// Load the album
 		$album	=	ES::table('Album');
 		$album->load();
-		$res	=	new stdClass;
 
 		$canCreate = ES::user();
 

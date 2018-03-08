@@ -207,7 +207,7 @@ class EasysocialApiResourceAlbum extends ApiResource
 	/** 
 	 * this function is used to create album 
 	 * 
-	 * @return	string		message
+	 * @return	object
 	 */
 
 	private function createAlbum()

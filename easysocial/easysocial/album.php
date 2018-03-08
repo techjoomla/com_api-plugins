@@ -62,17 +62,18 @@ class EasysocialApiResourceAlbum extends ApiResource
 	{
 		$app	=	JFactory::getApplication();
 		$flag	=	$app->input->get('flag', null, 'STRING');
+		$res	=	new stdClass;
 
 		switch ($flag)
 		{
-			case 'deletephoto':	$result = $this->deletePhoto();
+			case 'deletephoto':	$res->result->message = $this->deletePhoto();
 
-							return $result;
-							break;
-			case 'deletealbum':	$result = $this->deleteAlbum();
+								return $res;
+								break;
+			case 'deletealbum':	$res->result->message = $this->deleteAlbum();
 
-							return $result;
-							break;
+								return $res;
+								break;
 		}
 	}
 

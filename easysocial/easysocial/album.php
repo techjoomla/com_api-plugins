@@ -65,9 +65,9 @@ class EasysocialApiResourceAlbum extends ApiResource
 
 		switch ($flag)
 		{
-			case 'deletephoto':	$result1 = $this->deletePhoto();
+			case 'deletephoto':	$result = $this->deletePhoto();
 
-							return $result1;
+							return $result;
 							break;
 			case 'deletealbum':	$result = $this->deleteAlbum();
 

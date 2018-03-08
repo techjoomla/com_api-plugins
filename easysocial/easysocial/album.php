@@ -56,24 +56,23 @@ class EasysocialApiResourceAlbum extends ApiResource
 
 	/** switch case for photo delete or album delete. 
 	 * 
-	 * @return	string		message
+	 * @return	object
 	 */
 	private function deleteCheck()
 	{
 		$app	=	JFactory::getApplication();
 		$flag	=	$app->input->get('flag', null, 'STRING');
-		$res	=	new stdClass;
 
 		switch ($flag)
 		{
-			case 'deletephoto':	$res->result->message = $this->deletePhoto();
+			case 'deletephoto':	$result = $this->deletePhoto();
 
-								return $res;
-								break;
-			case 'deletealbum':	$res->result->message = $this->deleteAlbum();
+							return $result;
+							break;
+			case 'deletealbum':	$result = $this->deleteAlbum();
 
-								return $res;
-								break;
+							return $result;
+							break;
 		}
 	}
 
@@ -207,7 +206,7 @@ class EasysocialApiResourceAlbum extends ApiResource
 	/** 
 	 * this function is used to create album 
 	 * 
-	 * @return	object
+	 * @return	string		message
 	 */
 
 	private function createAlbum()

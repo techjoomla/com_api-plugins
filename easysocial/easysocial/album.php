@@ -56,7 +56,7 @@ class EasysocialApiResourceAlbum extends ApiResource
 
 	/** switch case for photo delete or album delete. 
 	 * 
-	 * @return	array
+	 * @return	string		message
 	 */
 	private function deleteCheck()
 	{

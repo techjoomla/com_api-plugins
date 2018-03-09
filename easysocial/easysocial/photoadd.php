@@ -38,7 +38,7 @@ class EasysocialApiResourcePhotoadd extends ApiResource
 	 */
 	public function post()
 	{
-		$this->plugin->setResponse($this->add_photo());
+		$this->plugin->setResponse($this->addPhoto());
 	}
 
 	/**
@@ -48,7 +48,7 @@ class EasysocialApiResourcePhotoadd extends ApiResource
 	 *
 	 * @since 1.0
 	 */
-	public function add_photo()
+	private function addPhoto()
 	{
 		$app			=	JFactory::getApplication();
 		$userid			=	$app->input->get('userid', 0, 'INT');
@@ -57,11 +57,11 @@ class EasysocialApiResourcePhotoadd extends ApiResource
 
 		if (! $canCreate->getAccess()->allowed('photos.create') && ! $canCreate->isSiteAdmin())
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_PHOTO_NO_ACCESS_UPLOAD_PHOTO'));
+			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_PHOTO_NO_ACCESS_UPLOAD_PHOTO'));
 		}
 
 		// Load the album
-		$album			=	FD::table('Album');
+		$album			=	ES::table('Album');
 		$album->load($album_id);
 		$photo_obj		=	new EasySocialApiUploadHelper;
 		$addphoto		=	$photo_obj->addPhotoAlbum($album_id, $userid);

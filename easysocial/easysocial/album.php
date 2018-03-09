@@ -47,16 +47,16 @@ class EasysocialApiResourceAlbum extends ApiResource
 
 	/** DELETE Call
 	 * 
-	 * @return	array	message
+	 * @return  mixed
 	 */
 	public function delete()
 	{
-		return $this->plugin->setResponse($this->deleteCheck());
+		return $this->deleteCheck();
 	}
 
 	/** switch case for photo delete or album delete. 
 	 * 
-	 * @return	object
+	 * @return  ApiPlugin response object
 	 */
 	private function deleteCheck()
 	{
@@ -67,14 +67,12 @@ class EasysocialApiResourceAlbum extends ApiResource
 		switch ($flag)
 		{
 			case 'deletephoto':	$res->result->message = $this->deletePhoto();
-
-								return $res;
 								break;
 			case 'deletealbum':	$res->result->message = $this->deleteAlbum();
-
-								return $res;
 								break;
 		}
+
+		$this->plugin->setResponse($res);
 	}
 
 	/** 

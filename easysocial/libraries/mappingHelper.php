@@ -22,7 +22,7 @@ require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/albums.php
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/fields.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/videos.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/video/video.php';
-
+require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/fields/dependencies.php';
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/schema/group.php';
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/schema/message.php';
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/schema/discussion.php';
@@ -271,6 +271,9 @@ class EasySocialApiMappingHelper
 		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, '', true);
 		$user = FD::user($userid);
 
+		$logUser	=	JFactory::getUser()->get('id');
+		$lib		=	ES::privacy($logUser);
+
 		if (count($rows) > 0)
 		{
 			$data     = array();
@@ -285,6 +288,14 @@ class EasySocialApiMappingHelper
 				$fobj->field_name  = JText::_($row->title);
 				$fobj->step        = $row->step_id;
 				$fobj->field_value = $fmod_obj->getCustomFieldsValue($row->id, $userid, $type);
+
+				$element = 'field.' . strtolower($fobj->unique_key);
+				$fobj->privacy = $lib->validate($element, $fobj->field_id, SOCIAL_TYPE_FIELD, $userid);
+
+				if (!$fobj->privacy)
+				{
+					continue;
+				}
 
 				if ($fobj->field_name == 'Name')
 				{

@@ -47,16 +47,16 @@ class EasysocialApiResourceAlbum extends ApiResource
 
 	/** DELETE Call
 	 * 
-	 * @return	array	message
+	 * @return  mixed
 	 */
 	public function delete()
 	{
-		return $this->plugin->setResponse($this->deleteCheck());
+		return $this->deleteCheck();
 	}
 
 	/** switch case for photo delete or album delete. 
 	 * 
-	 * @return	object
+	 * @return  ApiPlugin response object
 	 */
 	private function deleteCheck()
 	{
@@ -67,14 +67,12 @@ class EasysocialApiResourceAlbum extends ApiResource
 		switch ($flag)
 		{
 			case 'deletephoto':	$res->result->message = $this->deletePhoto();
-
-								return $res;
 								break;
 			case 'deletealbum':	$res->result->message = $this->deleteAlbum();
-
-								return $res;
 								break;
 		}
+
+		$this->plugin->setResponse($res);
 	}
 
 	/** 
@@ -131,7 +129,6 @@ class EasysocialApiResourceAlbum extends ApiResource
 		$album_id			=	$app->input->get('album_id', 0, 'INT');
 		$uid				=	$app->input->get('uid', 0, 'INT');
 		$state				=	$app->input->get('state', 0, 'INT');
-		$mapp				=	new EasySocialApiMappingHelper;
 		$log_user			=	$this->plugin->get('user')->id;
 		$limitstart			=	$app->input->get('limitstart', 0, 'INT');
 		$limit				=	$app->input->get('limit', 10, 'INT');
@@ -215,8 +212,8 @@ class EasysocialApiResourceAlbum extends ApiResource
 		// Get the uid and type
 		$app	=	JFactory::getApplication();
 		$uid	=	$app->input->get('uid', 0, 'INT');
-		$type	=	$app->input->get('type', 0, 'USER');
-		$title	=	$app->input->get('title', 0, 'USER');
+		$type	=	$app->input->get('type', 0, 'STRING');
+		$title	=	$app->input->get('title', 0, 'STRING');
 
 		// Load the album
 		$album	=	ES::table('Album');

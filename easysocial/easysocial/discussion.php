@@ -49,6 +49,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 	public function delete()
 	{
 		$result		=	new stdClass;
+		$app	=	JFactory::getApplication();
 		$group_id	=	$app->input->get('id', 0, 'INT');
 		$appId		=	$app->input->get('discussion_id', 0, 'INT');
 		$discussion	=	ES::table('Discussion');
@@ -58,9 +59,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 
 		if (!$group->isAdmin() && $discussion->created_by != $this->plugin->get('user')->id)
 		{
-		// Error message;
-
-			return false;
+			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_NOT_ALLOW_DELETE_DISCUSSION'));
 		}
 
 		// Delete the discussion

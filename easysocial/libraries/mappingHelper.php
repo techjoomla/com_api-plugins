@@ -290,9 +290,9 @@ class EasySocialApiMappingHelper
 				$fobj->field_value = $fmod_obj->getCustomFieldsValue($row->id, $userid, $type);
 
 				$element = 'field.' . strtolower($fobj->unique_key);
-				$fobj->privacy = $lib->validate($element, $fobj->field_id, SOCIAL_TYPE_FIELD, $userid);
+				$privacy = $lib->validate($element, $fobj->field_id, SOCIAL_TYPE_FIELD, $userid);
 
-				if (!$fobj->privacy)
+				if (!$privacy)
 				{
 					continue;
 				}

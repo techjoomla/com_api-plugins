@@ -153,7 +153,7 @@ class EasysocialApiResourceMessage extends ApiResource
 	/**
 	 * Method description
 	 *
-	 * @return  mixed
+	 * @return  ApiPlugin response object
 	 *
 	 * @since 1.0
 	 */
@@ -180,7 +180,7 @@ class EasysocialApiResourceMessage extends ApiResource
 	/**
 	 * Method function use for get friends data
 	 *
-	 * @return  mixed
+	 * @return  ApiPlugin response object
 	 *
 	 * @since 1.0
 	 */

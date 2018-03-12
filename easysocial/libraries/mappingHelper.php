@@ -22,7 +22,7 @@ require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/albums.php
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/fields.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/videos.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/video/video.php';
-require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/fields/dependencies.php';
+
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/schema/group.php';
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/schema/message.php';
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/schema/discussion.php';

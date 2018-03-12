@@ -61,7 +61,7 @@ class EasysocialApiResourceAlbum extends ApiResource
 	private function deleteCheck()
 	{
 		$app	=	JFactory::getApplication();
-		$flag	=	$app->input->get('flag', null, 'STRING');
+		$flag	=	$app->input->get('flag', '', 'CMD');
 		$res	=	new stdClass;
 
 		switch ($flag)

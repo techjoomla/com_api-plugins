@@ -61,7 +61,7 @@ class EasysocialApiResourceAlbum extends ApiResource
 	private function deleteCheck()
 	{
 		$app	=	JFactory::getApplication();
-		$flag	=	$app->input->get('flag', null, 'STRING');
+		$flag	=	$app->input->get('flag', '', 'CMD');
 		$res	=	new stdClass;
 
 		switch ($flag)
@@ -129,7 +129,6 @@ class EasysocialApiResourceAlbum extends ApiResource
 		$album_id			=	$app->input->get('album_id', 0, 'INT');
 		$uid				=	$app->input->get('uid', 0, 'INT');
 		$state				=	$app->input->get('state', 0, 'INT');
-		$mapp				=	new EasySocialApiMappingHelper;
 		$log_user			=	$this->plugin->get('user')->id;
 		$limitstart			=	$app->input->get('limitstart', 0, 'INT');
 		$limit				=	$app->input->get('limit', 10, 'INT');
@@ -213,8 +212,8 @@ class EasysocialApiResourceAlbum extends ApiResource
 		// Get the uid and type
 		$app	=	JFactory::getApplication();
 		$uid	=	$app->input->get('uid', 0, 'INT');
-		$type	=	$app->input->get('type', 0, 'USER');
-		$title	=	$app->input->get('title', 0, 'USER');
+		$type	=	$app->input->get('type', 0, 'STRING');
+		$title	=	$app->input->get('title', 0, 'STRING');
 
 		// Load the album
 		$album	=	ES::table('Album');

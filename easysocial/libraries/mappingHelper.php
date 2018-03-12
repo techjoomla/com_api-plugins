@@ -271,6 +271,9 @@ class EasySocialApiMappingHelper
 		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, '', true);
 		$user = FD::user($userid);
 
+		$logUser	=	JFactory::getUser()->get('id');
+		$lib		=	ES::privacy($logUser);
+
 		if (count($rows) > 0)
 		{
 			$data     = array();
@@ -285,6 +288,14 @@ class EasySocialApiMappingHelper
 				$fobj->field_name  = JText::_($row->title);
 				$fobj->step        = $row->step_id;
 				$fobj->field_value = $fmod_obj->getCustomFieldsValue($row->id, $userid, $type);
+
+				$element = 'field.' . strtolower($fobj->unique_key);
+				$privacy = $lib->validate($element, $fobj->field_id, SOCIAL_TYPE_FIELD, $userid);
+
+				if (!$privacy)
+				{
+					continue;
+				}
 
 				if ($fobj->field_name == 'Name')
 				{

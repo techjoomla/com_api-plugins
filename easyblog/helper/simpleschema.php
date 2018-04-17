@@ -88,7 +88,7 @@ class EasyBlogSimpleSchema_plg
 		$item->category->categoryid = $category->id;
 		$item->category->title = $category->title;
 		
-		$item->url = JURI::root() . trim(EasyBlogRouter::_('index.php?option=com_easyblog&view=entry&id=' . $blog->id ), '/');
+		$item->url = JURI::root() . trim(EBR::_('index.php?option=com_easyblog&view=entry&id=' . $blog->id ), '/');
 		
 		// Tags
 		$modelPT	= EasyBlogHelper::getModel( 'PostTag' );
@@ -207,7 +207,7 @@ class EasyBlogSimpleSchema_4
 		$item->category->categoryid = $category->id;
 		$item->category->title = $category->title;
 		
-		$item->url = JURI::root() . trim(EasyBlogRouter::_('index.php?option=com_easyblog&view=entry&id=' . $blog->id ), '/');
+		$item->url = JURI::root() . trim(EBR::_('index.php?option=com_easyblog&view=entry&id=' . $blog->id ), '/');
 		
 		// Tags
 		$modelPT	= EasyBlogHelper::getModel( 'PostTag' );

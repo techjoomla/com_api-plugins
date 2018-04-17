@@ -1,124 +1,122 @@
 <?php
 /**
- * @package API plugins
- * @copyright Copyright (C) 2009 2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
- * @license GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
- * @link http://www.techjoomla.com
-*/
-defined('_JEXEC') or die( 'Restricted access' );
-jimport('joomla.user.user');
-jimport( 'simpleschema.easyblog.category' );
-jimport( 'simpleschema.easyblog.person' );
-jimport( 'simpleschema.easyblog.blog.post' );
-/*
-require_once( EBLOG_HELPERS . '/date.php' );
-require_once( EBLOG_HELPERS . '/string.php' );
-require_once( EBLOG_CLASSES . '/adsense.php' );
-*/
-require_once( JPATH_ADMINISTRATOR.'/components/com_easyblog/includes'. '/date/date.php' );
-require_once( JPATH_ADMINISTRATOR.'/components/com_easyblog/includes'. '/string/string.php' );
-require_once( JPATH_ADMINISTRATOR.'/components/com_easyblog/includes'. '/adsense/adsense.php' );
-require_once( JPATH_ADMINISTRATOR.'/components/com_easyblog/includes'. '/formatter/formatter.php' );
+ * @package     Joomla.Site
+ * @subpackage  Com_api-plugins
+ *
+ * @copyright   Copyright (C) 2009-2014 Techjoomla, Tekdi Technologies Pvt. Ltd. All rights reserved.
+ * @license     GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
+ * @link        http://techjoomla.com
+ * Work derived from the original RESTful API by Techjoomla (https://github.com/techjoomla/Joomla-REST-API)
+ * and the com_api extension by Brian Edgerton (http://www.edgewebworks.com)
+ */
 
+defined('_JEXEC') or die('Restricted access');
 
+/**
+ * API class EasyblogApiResourceLatest
+ *
+ * @since  1.0
+ */
 class EasyblogApiResourceLatest extends ApiResource
 {
-
-	public function __construct( &$ubject, $config = array()) {
-		parent::__construct( $ubject, $config = array() );
-
-	}
-	
-	public function get() {
-		
+	/**
+	 * Method to get the list of available logs on site
+	 *
+	 * @return  ApiPlugin response object
+	 *
+	 * @since 1.0
+	 */
+	public function get()
+	{
 		$input = JFactory::getApplication()->input;
-		$model = EasyBlogHelper::getModel( 'Blog' );
-	
-		//$id = $input->get('id', null, 'INT');
-		$id = 0;
 		$search = $input->get('search', '', 'STRING');
-		$featured = $input->get('featured',0,'INT');
-		$tags = $input->get('tags',0,'INT');
-		$user_id = $input->get('user_id',0,'INT');
-		$limitstart = $input->get('limitstart',0,'INT');
-		$limit = $input->get('limit',10,'INT');
+		$featuredRequested = $input->get('featured', 0, 'INT');
+		$tags = $input->get('tags', 0, 'INT');
+		$userId = $input->get('user_id', 0, 'INT');
+		$limitstart = $input->get('limitstart', 0, 'INT');
+		$limit = $input->get('limit', 10, 'INT');
+
+		/*
+		 * @FIXME add proper paginagioon support once the stackideas support it
+		 * for now it won't support limit if the limitstart is 0 and will take the limit from easyblog config
+		 */
+		$pagination = $limitstart . ' , ' . $limit;
 		$posts = array();
-		// If we have an id try to fetch the user
-		$blog 		= EasyBlogHelper::table( 'Blog' );
-		$blog->load( $id );
-		$modelPT	= EasyBlogHelper::getModel( 'PostTag' );
-		
-		if($tags)
-		{		
-			$rows = $model->getTaggedBlogs( $tags );
-		}//for get featured blog
-		else if($featured)
+		$model = EB::model('Blog');
+		$blogs = array();
+		$latestData = array();
+
+		$featured = $model->getFeaturedBlog('', EBLOG_MAX_FEATURED_POST);
+		$excludeIds = array();
+
+		if ($featuredRequested)
 		{
-			$rows = $this->getfeature_Blog();
-			$sorting	= $this->plugin->params->get( 'sorting' , 'featured' );
-		}//for get users blog
-		else if($user_id)
-		{	$blogs = EasyBlogHelper::getModel( 'Blog' );
-			$rows = $blogs->getBlogsBy('blogger', $user_id, 'latest');
+			$blogs = $featured;
+		}
+		elseif ($tags)
+		{
+			// @TODO add limit support
+			$blogs = $model->getTaggedBlogs($tags);
+		}
+		elseif ($userId)
+		{
+			// @TODO Add ACL support
+			$blogs = $model->getBlogsBy('blogger', $userId, 'latest', $pagination, EBLOG_FILTER_PUBLISHED, $search, true, null, false, false, true, '', '',
+					null, 'listlength', false, '', '', false, '', '');
 		}
 		else
-		{	//to get latest blog
-			//$sorting	= $this->plugin->params->get( 'sorting' , 'latest' );
-			//$rows 	= $model->getBlogsBy( $sorting , '' , $sorting , 0, EBLOG_FILTER_PUBLISHED, $search );
-			$rows = $model->getBlogsBy('', '', 'latest', 0, EBLOG_FILTER_PUBLISHED, $search, true, array(), false, false, true, '', '', null, 'listlength', false);
-			//$rows = EB::formatter('list', $rows, false);
-		}
-		$rows = EB::formatter('list', $rows, false);
-		//data mapping
-		foreach ($rows as $k => $v) 
 		{
-			//$item = EB::helper( 'simpleschema' )->mapPost($v,'', 100, array('text'));							
-			$scm_obj = new EasyBlogSimpleSchema_plg();
-			$item = $scm_obj->mapPost($v,'', 100, array('text'));
-		
-			$item->tags = $modelPT->getBlogTags($item->postid);
-			$item->isowner = ( $v->created_by == $this->plugin->get('user')->id )?true:false;
-			
-			if($v->blogpassword != '')
+			foreach ($featured as $item)
 			{
-                $item->ispassword = true;
-            }
-            else
-            {
-                $item->ispassword = false;
-            }
-                
-            $item->blogpassword = $v->blogpassword;
-            $model			= EasyBlogHelper::getModel( 'Ratings' );
-			$ratingValue	= $model->getRatingValues( $item->postid, 'entry');
-		 	$item->rate 	= $ratingValue;
-		 	$item->isVoted 	= $model->hasVoted($item->postid,'entry',$this->plugin->get('user')->id);
-		 	if($item->rate->ratings==0)
-			{					
-				$item->rate->ratings=-2;
+				$excludeIds[] = $item->id;
 			}
-				
+
+			$blogs = $model->getBlogsBy('', '', 'latest', $pagination, EBLOG_FILTER_PUBLISHED, $search, true, $excludeIds, false, false, true, '', '',
+					null, 'listlength', false, '', '', false, '', '');
+		}
+
+		$blogs = EB::formatter('list', $blogs, false);
+		$schemaObject = new EasyBlogSimpleSchema_Plg;
+		$model = EB::model('Ratings');
+
+		foreach ($blogs as $blog)
+		{
+			$item = $schemaObject->mapPost($blog, '', 100);
+			$ratingValue = $model->getRatingValues($item->postid, 'entry');
+			$item->rate = $ratingValue;
+
+			if ($item->rate->ratings == 0)
+			{
+				$item->rate->ratings = - 2;
+			}
+
 			$posts[] = $item;
 		}
-		$posts = array_slice($posts, $limitstart,$limit);	
-		$this->plugin->setResponse( $posts );
+
+		$apiResponse = new stdClass;
+		$apiResponse->result = $posts;
+		$this->plugin->setResponse($apiResponse);
 	}
-	// get feature blog function.
-	public function getfeature_Blog()
+
+	/**
+	 * Method 
+	 *
+	 * @return  void
+	 *
+	 * @since 1.0
+	 */
+	public static function getName()
 	{
-		$app = JFactory::getApplication();
-		$limit = $app->input->get('limit',10,'INT');	
-		$categories = $app->input->get('categories','','STRING');	
-		$blogss = new	EasyBlogModelBlog();
-		$blogss->setState('limit',$limit);
-		$res = $blogss->getFeaturedBlog(array(),$limit);
-		return $res;	
-	}	
-	public static function getName() {
-		
 	}
-	
-	public static function describe() {
-		
-	}	
+
+	/**
+	 * Method 
+	 *
+	 * @return  void
+	 *
+	 * @since 1.0
+	 */
+	public static function describe()
+	{
+	}
 }

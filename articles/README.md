@@ -102,7 +102,7 @@ The actual contents of the article object will vary based on which fields are re
   "access" : "",
   "featured" : "",
   "language" : "",
-  "hits: "",
+  "hits": "",
   "created_by": {
     "id" : "",
     "name" : "",

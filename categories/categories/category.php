@@ -24,7 +24,7 @@ class CategoriesApiResourceCategory extends ApiResource
 	/**
 	 * Get categories
 	 *
-	 * @return  obj  Category details wrapped inside standard api response wrapper
+	 * @return  object  Category details wrapped inside standard api response wrapper
 	 */
 	public function get()
 	{
@@ -34,7 +34,7 @@ class CategoriesApiResourceCategory extends ApiResource
 	/**
 	 * Save category - create / update
 	 *
-	 * @return  obj  Category details wrapped inside standard api response wrapper
+	 * @return  object  Category details wrapped inside standard api response wrapper
 	 */
 	public function post()
 	{

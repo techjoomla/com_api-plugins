@@ -25,7 +25,7 @@ class CategoriesApiResourceCategories extends ApiResource
 	/**
 	 * Get categories
 	 *
-	 * @return  obj  Categories list wrapped inside standard api response wrapper
+	 * @return  object  Categories list wrapped inside standard api response wrapper
 	 */
 	public function get()
 	{

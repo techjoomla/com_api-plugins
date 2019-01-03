@@ -9,18 +9,17 @@
 	<copyright>Techjoomla. All rights reserved.</copyright>
 	<license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
 	<description>This plugin is for content Request</description>
-<files>
-	<filename plugin="categories">categories.php</filename>
+	<files>
+		<filename plugin="categories">categories.php</filename>
 		<folder>categories</folder>
-</files>
-<languages>
-	<language tag="en-GB">en-GB.plg_api_categories.ini</language>
-	<language tag="en-GB">en-GB.plg_api_categories.sys.ini</language>
-</languages>
+	</files>
+	<languages>
+		<language tag="en-GB">en-GB.plg_api_categories.ini</language>
+		<language tag="en-GB">en-GB.plg_api_categories.sys.ini</language>
+	</languages>
 	<config>
 		<fields name="params">
-			<fieldset name="basic">
-			</fieldset>
+			<fieldset name="basic" />
 		</fields>
 	</config>
 </extension>

@@ -1,3 +1,91 @@
+# IMPORTANT NOTE:
+
+## Soon, the plugins from this repo will be moved to either a seperate repo for each plugin 
+## or 
+## to a repsective plugin-parent's project repo as listed below
+
+### API plugins for Techjoomla Extensions
+
+_JTicketing (com_jticketing)_
+
+- https://github.com/techjoomla/com_api-plugins
+
+_SocialAds (com_socialads)_
+
+- https://github.com/techjoomla/com_api-plugins
+
+### API plugins for Techjoomla Infra Extensions
+
+_TJ Activity Stream_
+
+- https://github.com/techjoomla/com_activitystream/tree/master/plugins/api/tjactivity
+
+_TJ Dashboard_
+
+- https://github.com/techjoomla/tj-dashboard/tree/master/src/plugins/api/tjdashboard
+
+_com_ewallet [unreleased]_
+
+- https://github.com/techjoomla/com_ewallet/tree/master/src/plugins/api
+
+_com_importer [unreleased]_
+
+https://github.com/techjoomla/tj-importer/tree/master/plugins/api
+
+_TJReports_
+
+- https://github.com/techjoomla/com_tjreports/tree/release-1.1.5/tjreports/plugins/api/reports [use this]
+
+- https://github.com/techjoomla/plg_api_tjreports [deprecated]
+
+_TJUCM_
+
+- https://github.com/techjoomla/com_tjucm/tree/master/src/components/com_tjucm/plugins/api
+
+### API plugins for Joomla Core Extensions
+
+_com_content_
+
+- https://github.com/techjoomla/com_api-plugins
+
+_com_categories_
+
+- https://github.com/techjoomla/com_api-plugins
+
+_com_users_
+
+- https://github.com/techjoomla/plg_api_users [use this]
+
+- https://github.com/techjoomla/com_api-plugins [deprecated]
+
+### API plugins for 3rd Party Extensions
+
+_com_easysocial_
+
+- https://github.com/techjoomla/plg_api_easysocial [use this]
+
+- https://github.com/techjoomla/com_api-plugins [deprecated]
+
+_com_easyblog_
+
+- https://github.com/techjoomla/plg_api_easyblog [use this]
+
+- https://github.com/techjoomla/com_api-plugins [deprecated]
+
+_com_aec_
+
+- https://github.com/techjoomla/com_api-plugins
+
+_com_akeebasubs_
+
+- https://github.com/techjoomla/com_api-plugins
+
+_com_redshop_
+
+- https://github.com/techjoomla/com_api-plugins
+
+# Impotant NOTE Ends
+
 # RESTful API plugins
 
 Plugins to be used with com_api component. To add additional resources to the API, plugins need to be created. Each plugin can provide multiple API resources. Plugins are a convenient way to group several resources. Eg: A single plugin could be created for Quick2Cart with separate resources for products, cart, checkout, orders etc.

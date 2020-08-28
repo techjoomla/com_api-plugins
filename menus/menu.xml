@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="1.0" type="plugin" group="api" method="upgrade">
+	<name>Api - Joomla Menu</name>
+	<author>Techjoomla</author>
+	<creationDate>November 2017</creationDate>
+	<copyright>Copyright (C) 2017 - 2019 Open Source Matters. All rights reserved.</copyright>
+	<license>GNU General Public License version 2 or later; see LICENSE.txt</license>
+	<authorEmail>connnect@techjoomla.com</authorEmail>
+	<authorUrl>connnect@techjoomla.com</authorUrl>
+	<version>1.0.0</version>
+	<description>Joomla Menu API</description>
+	<files>
+		<filename plugin="menu">menu.php</filename>
+        <folder>menu</folder>
+	</files>
+</extension>

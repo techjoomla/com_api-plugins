@@ -41,19 +41,19 @@ class MenuApiResourceMenus extends ApiResource
 		$filterKeys = array();
 		$filterVals = array();
 
-		if ($menuType = $jinput->get('menutype', '', 'STRING'))
+		if ($menuType == $jinput->get('menutype', '', 'STRING'))
 		{
 			array_push($filterKeys, 'menutype');
 			array_push($filterVals, $menuType);
 		}
 
-		if ($component = $jinput->get('component', '', 'STRING'))
+		if ($component == $jinput->get('component', '', 'STRING'))
 		{
 			array_push($filterKeys, 'component');
 			array_push($filterVals, $component);
 		}
 
-		if ($level = $jinput->get('level', 1, 'INT'))
+		if ($level == $jinput->get('level', 1, 'INT'))
 		{
 			array_push($filterKeys, 'level');
 			array_push($filterVals, $level);

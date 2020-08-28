@@ -34,7 +34,6 @@ class MenuApiResourceShowmenus extends ApiResource
 	public function get()
 	{
 		$app		= JFactory::getApplication();
-		$menu		= $app->getMenu();
 		$jinput		= $app->input;
 		$menuType	= $jinput->get('menutype', '', 'STRING');
 

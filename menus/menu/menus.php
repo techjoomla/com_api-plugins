@@ -42,20 +42,23 @@ class MenuApiResourceMenus extends ApiResource
 		$filterKeys = array();
 		$filterVals = array();
 
-		if ($menuType == $jinput->get('menutype', '', 'STRING'))
+		if ($jinput->get('menutype', '', 'STRING'))
 		{
+			$menuType = $jinput->get('menutype', '', 'STRING');
 			array_push($filterKeys, 'menutype');
 			array_push($filterVals, $menuType);
 		}
 
-		if ($component == $jinput->get('component', '', 'STRING'))
+		if ($jinput->get('component', '', 'STRING'))
 		{
+			$component =  $jinput->get('component', '', 'STRING');
 			array_push($filterKeys, 'component');
 			array_push($filterVals, $component);
 		}
 
-		if ($level == $jinput->get('level', 1, 'INT'))
+		if ($jinput->get('level', '' , 'INT'))
 		{
+			$level = $jinput->get('level', 1, 'INT');
 			array_push($filterKeys, 'level');
 			array_push($filterVals, $level);
 		}
@@ -123,12 +126,12 @@ class MenuApiResourceMenus extends ApiResource
 	private function setMenuConfigs(&$items)
 	{
 		$start          = 1;
-		$end            = 0;
-		$showAll        = 0;
+		// $end            = 0;
+		// $showAll        = 0;
 		$hidden_parents = array();
 		$lastitem       = 0;
 
-		if ($items)
+		if (!empty($items))
 		{
 			// This loop has been taken from mod_menu helper file to do some Joomla Checks
 			foreach ($items as $i => $item)

@@ -12,6 +12,8 @@ jimport('joomla.plugin.plugin');
 jimport('joomla.registry.registry');
 JLoader::register('ModMenuHelper', JPATH_SITE . '/modules/mod_menu/helper.php');
 
+use Joomla\CMS\Factory;
+
 /**
  * Showmenus Resource for Joomla Menu Plugin.
  *

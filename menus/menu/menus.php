@@ -9,6 +9,7 @@
 
 defined('_JEXEC') or die;
 jimport('joomla.plugin.plugin');
+use Joomla\CMS\Factory;
 
 /**
  * Menus Resource for Joomla Menu Plugin.
@@ -30,10 +31,10 @@ class MenuApiResourceMenus extends ApiResource
 	 **/
 	public function get()
 	{
-		$app			= JFactory::getApplication();
+		$app			= Factory::getApplication();
 		$this->menus	= $menu	= $app->getMenu();
 		$jinput			= $app->input;
-		$user			= JFactory::getUser();
+		$user			= Factory::getUser();
 		$aliasMenuItems = array();
 
 		$this->uriBase		= (String) JUri::root(true);
@@ -102,7 +103,7 @@ class MenuApiResourceMenus extends ApiResource
 	 **/
 	private function getSubMenus(&$items)
 	{
-		$menu = JFactory::getApplication()->getMenu();
+		$menu = Factory::getApplication()->getMenu();
 
 		foreach ($items as $i => &$mn)
 		{

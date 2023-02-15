@@ -6,8 +6,9 @@
  * @link http://www.techjoomla.com
 */
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.user.user');
 jimport( 'simpleschema.easyblog.person' );
 jimport( 'simpleschema.easyblog.blog.post' );
 jimport( 'simpleschema.easyblog.blog.comment' );
@@ -24,7 +25,7 @@ class EasyblogApiResourceComments extends ApiResource
 
 	public function get() {
 
-		$input = JFactory::getApplication()->input;
+		$input = Factory::getApplication()->input;
 		$model = EasyBlogHelper::getModel( 'Blog' );
 		$id = $input->get('id', null, 'INT');
 		$comments = array();
@@ -34,7 +35,7 @@ class EasyblogApiResourceComments extends ApiResource
 		$blog->load( $id );
 		
 		if (!$blog->id) {
-			$this->plugin->setResponse( $this->getErrorResponse(404, JText::_( 'PLG_API_EASYBLOG_BLOG_NOT_FOUND_MESSAGE' )) );
+			$this->plugin->setResponse( $this->getErrorResponse(404, Text::_( 'PLG_API_EASYBLOG_BLOG_NOT_FOUND_MESSAGE' )) );
 			return;
 		}
 
@@ -56,7 +57,7 @@ class EasyblogApiResourceComments extends ApiResource
 			//$item->author->name = isset($row->poster->nickname) ? $row->poster->nickname : $row->name;
 			$item->author->name = $row->author->nickname;
 			$item->author->photo = isset($row->poster->avatar) ? $row->poster->avatar : 'default_blogger.png';
-			$item->author->photo = JURI::root() . 'components/com_easyblog/assets/images/' . $item->author->photo;
+			$item->author->photo = Uri::root() . 'components/com_easyblog/assets/images/' . $item->author->photo;
 			$item->author->email = $row->email;
 			$item->author->website = isset($row->poster->url) ? $row->poster->url : $row->url;
 			
@@ -68,7 +69,7 @@ class EasyblogApiResourceComments extends ApiResource
 	}
 	
 	public function post() {
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$my = $this->plugin->getUser();
 		$config = EasyBlogHelper::getConfig();
 		//$acl = EasyBlogACLHelper::getRuleSet();
@@ -77,7 +78,7 @@ class EasyblogApiResourceComments extends ApiResource
 
 		if( empty($acl->rules->allow_comment) && (empty($my->id) && !$config->get('main_allowguestcomment')) )
 		{
-			$this->plugin->setResponse( $this->getErrorResponse(500, JText::_('COM_EASYBLOG_NO_PERMISSION_TO_POST_COMMENT')) );
+			$this->plugin->setResponse( $this->getErrorResponse(500, Text::_('COM_EASYBLOG_NO_PERMISSION_TO_POST_COMMENT')) );
 		}
 
 		$isModerated = false;
@@ -87,7 +88,7 @@ class EasyblogApiResourceComments extends ApiResource
 		$subscribeBlog = isset($post['subscribe-to-blog']) ? true : false;
 
 		if (!$blogId) {
-			$this->plugin->setResponse( $this->getErrorResponse(404, JText::_( 'PLG_API_EASYBLOG_INVALID_BLOG' )) );
+			$this->plugin->setResponse( $this->getErrorResponse(404, Text::_( 'PLG_API_EASYBLOG_INVALID_BLOG' )) );
 		}
 		
 		// @task: Cleanup posted values.
@@ -111,14 +112,14 @@ class EasyblogApiResourceComments extends ApiResource
 			$data = array(
 					'author'    => $post['esname'],
 					'email'     => $post['esname'],
-					'website'   => JURI::root() ,
+					'website'   => Uri::root() ,
 					'body'      => $post['comment'] ,
 					'permalink' => EasyBlogRouter::_( 'index.php?option=com_easyblog&view=entry&id=' . $post['id'] )
 				);
 
 			if( EasyBlogHelper::getHelper( 'Akismet' )->isSpam( $data ) )
 			{
-				$this->plugin->setResponse( $this->getErrorResponse(500, JText::_('COM_EASYBLOG_SPAM_DETECTED_IN_COMMENT')) );
+				$this->plugin->setResponse( $this->getErrorResponse(500, Text::_('COM_EASYBLOG_SPAM_DETECTED_IN_COMMENT')) );
 			}
 		}
 
@@ -199,7 +200,7 @@ class EasyblogApiResourceComments extends ApiResource
 
 		if( !$comment->store() )
 		{
-			$this->plugin->setResponse( $this->getErrorResponse(500, JText::_( 'PLG_API_EASYBLOG_COMMENT_PROBLEM_MESSAGE' )) );
+			$this->plugin->setResponse( $this->getErrorResponse(500, Text::_( 'PLG_API_EASYBLOG_COMMENT_PROBLEM_MESSAGE' )) );
 		}
 
 		// @rule: Process subscription for blog automatically when the user submits a new comment and wants to subscribe to the blog.
@@ -263,7 +264,7 @@ class EasyblogApiResourceComments extends ApiResource
 		// Author
 		$item->author->name = isset($comment->poster->nickname) ? $comment->poster->nickname : $comment->name;
 		$item->author->photo = isset($comment->poster->avatar) ? $comment->poster->avatar : 'default_blogger.png';
-		$item->author->photo = JURI::root() . 'components/com_easyblog/assets/images/' . $item->author->photo;
+		$item->author->photo = Uri::root() . 'components/com_easyblog/assets/images/' . $item->author->photo;
 		$item->author->email = $comment->email;
 		$item->author->website = isset($comment->poster->url) ? $comment->poster->url : $comment->url;
 		
@@ -283,7 +284,7 @@ class EasyblogApiResourceComments extends ApiResource
 	function _validateFields($post)
 	{
 		$config = EasyBlogHelper::getConfig();
-		$my     = JFactory::getUser();
+		$my     = Factory::getUser();
 
 		if( !isset( $post[ 'comment' ] ) )
 		{
@@ -292,47 +293,47 @@ class EasyblogApiResourceComments extends ApiResource
 
 		if(JString::strlen($post['comment']) == 0)
 		{
-			$this->err[0]	= JText::_('COM_EASYBLOG_COMMENT_IS_EMPTY');
-			$this->err[1]	= JText::_('PLG_API_EASYBLOG_COMMENT');
+			$this->err[0]	= Text::_('COM_EASYBLOG_COMMENT_IS_EMPTY');
+			$this->err[1]	= Text::_('PLG_API_EASYBLOG_COMMENT');
 			return false;
 		}
 
-		if( $config->get('comment_requiretitle') && (JString::strlen($post['title']) == 0 || $post['title'] == JText::_('COM_EASYBLOG_TITLE')))
+		if( $config->get('comment_requiretitle') && (JString::strlen($post['title']) == 0 || $post['title'] == Text::_('COM_EASYBLOG_TITLE')))
 		{
-			$this->err[0]	= JText::_( 'COM_EASYBLOG_COMMENT_TITLE_IS_EMPTY' );
-			$this->err[1]	= JText::_('PLG_API_EASYBLOG_TITLE');
+			$this->err[0]	= Text::_( 'COM_EASYBLOG_COMMENT_TITLE_IS_EMPTY' );
+			$this->err[1]	= Text::_('PLG_API_EASYBLOG_TITLE');
 			return false;
 		}
 
 		if(isset($post['esregister']) && isset($post['esusername']))
 		{
-			if(JString::strlen($post['esusername']) == 0 || $post['esusername'] == JText::_('COM_EASYBLOG_USERNAME'))
+			if(JString::strlen($post['esusername']) == 0 || $post['esusername'] == Text::_('COM_EASYBLOG_USERNAME'))
 			{
-				$this->err[0]	= JText::_('COM_EASYBLOG_SUBSCRIPTION_USERNAME_IS_EMPTY');
-				$this->err[1]	= JText::_('PLG_API_EASYBLOG_ESUSERNAME');
+				$this->err[0]	= Text::_('COM_EASYBLOG_SUBSCRIPTION_USERNAME_IS_EMPTY');
+				$this->err[1]	= Text::_('PLG_API_EASYBLOG_ESUSERNAME');
 				return false;
 			}
 		}
 
-		if(JString::strlen($post['esname']) == 0 || $post['esname'] == JText::_('COM_EASYBLOG_NAME'))
+		if(JString::strlen($post['esname']) == 0 || $post['esname'] == Text::_('COM_EASYBLOG_NAME'))
 		{
-			$this->err[0]	= JText::_('COM_EASYBLOG_COMMENT_NAME_IS_EMPTY');
-			$this->err[1]	= JText::_('PLG_API_EASYBLOG_ESNAME');
+			$this->err[0]	= Text::_('COM_EASYBLOG_COMMENT_NAME_IS_EMPTY');
+			$this->err[1]	= Text::_('PLG_API_EASYBLOG_ESNAME');
 			return false;
 		}
 
 
 		// @rule: Only check for valid email when the email is really required
-		if( $config->get( 'comment_require_email' ) && (JString::strlen($post['esemail']) == 0 || $post['esemail'] == JText::_('COM_EASYBLOG_EMAIL') ) )
+		if( $config->get( 'comment_require_email' ) && (JString::strlen($post['esemail']) == 0 || $post['esemail'] == Text::_('COM_EASYBLOG_EMAIL') ) )
 		{
-			$this->err[0]	= JText::_('COM_EASYBLOG_COMMENT_EMAIL_IS_EMPTY');
-			$this->err[1]	= JText::_('PLG_API_EASYBLOG_ESEMAIL');
+			$this->err[0]	= Text::_('COM_EASYBLOG_COMMENT_EMAIL_IS_EMPTY');
+			$this->err[1]	= Text::_('PLG_API_EASYBLOG_ESEMAIL');
 			return false;
 		}
-		else if( isset( $post['subscribe-to-blog']) && (JString::strlen($post['esemail']) == 0 || $post['esemail'] == JText::_('COM_EASYBLOG_EMAIL') ))
+		else if( isset( $post['subscribe-to-blog']) && (JString::strlen($post['esemail']) == 0 || $post['esemail'] == Text::_('COM_EASYBLOG_EMAIL') ))
 		{
-			$this->err[0]	= JText::_('COM_EASYBLOG_COMMENT_EMAIL_IS_EMPTY');
-			$this->err[1]	= JText::_('PLG_API_EASYBLOG_ESEMAIL');
+			$this->err[0]	= Text::_('COM_EASYBLOG_COMMENT_EMAIL_IS_EMPTY');
+			$this->err[1]	= Text::_('PLG_API_EASYBLOG_ESEMAIL');
 			return false;
 		}
 		else
@@ -350,8 +351,8 @@ class EasyblogApiResourceComments extends ApiResource
 				{
 					return false;
 				}				
-				$this->err[0]	= JText::_('COM_EASYBLOG_COMMENT_EMAIL_INVALID');
-				$this->err[1]	= JText::_('PLG_API_EASYBLOG_ESEMAIL');
+				$this->err[0]	= Text::_('COM_EASYBLOG_COMMENT_EMAIL_INVALID');
+				$this->err[1]	= Text::_('PLG_API_EASYBLOG_ESEMAIL');
 				return false;
 			}
 		}
@@ -366,11 +367,11 @@ class EasyblogApiResourceComments extends ApiResource
 
 	function _revertValue(&$text)
 	{
-		if( $text == JText::_('COM_EASYBLOG_TITLE') ||
-			$text == JText::_('COM_EASYBLOG_USERNAME') ||
-			$text == JText::_('COM_EASYBLOG_NAME') ||
-			$text == JText::_('COM_EASYBLOG_EMAIL') ||
-			$text == JText::_('COM_EASYBLOG_WEBSITE'))
+		if( $text == Text::_('COM_EASYBLOG_TITLE') ||
+			$text == Text::_('COM_EASYBLOG_USERNAME') ||
+			$text == Text::_('COM_EASYBLOG_NAME') ||
+			$text == Text::_('COM_EASYBLOG_EMAIL') ||
+			$text == Text::_('COM_EASYBLOG_WEBSITE'))
 		{
 			$text = '';
 		}

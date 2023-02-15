@@ -10,9 +10,9 @@
  * and the com_api extension by Brian Edgerton (http://www.edgewebworks.com)
  */
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
 /**
@@ -44,7 +44,7 @@ class EasysocialApiResourceEvent_Guest extends ApiResource
 	public function post()
 	{
 		$this->plugin->err_code = 405;
-		$this->plugin->err_message = JText::_('PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE');
+		$this->plugin->err_message = Text::_('PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE');
 		$this->plugin->setResponse(null);
 	}
 
@@ -57,7 +57,7 @@ class EasysocialApiResourceEvent_Guest extends ApiResource
 	 */
 	public function get_guests()
 	{
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 
 		// Getting log_user.
 		$log_user = $this->plugin->get('user')->id;

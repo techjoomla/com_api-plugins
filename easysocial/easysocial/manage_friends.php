@@ -10,9 +10,9 @@
  * and the com_api extension by Brian Edgerton (http://www.edgewebworks.com)
  */
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/friends.php';
@@ -59,10 +59,10 @@ class EasysocialApiResourceManage_Friends extends ApiResource
 	public function manageFriends()
 	{
 		// Init variable
-		$app	=	JFactory::getApplication();
+		$app	=	Factory::getApplication();
 
-		$log_user	=	JFactory::getUser($this->plugin->get('user')->id);
-		$db			=	JFactory::getDbo();
+		$log_user	=	Factory::getUser($this->plugin->get('user')->id);
+		$db			=	Factory::getDbo();
 		$frnd_id	=	$app->input->post->get('friend_id', 0, 'INT');
 		$choice		=	$app->input->post->get('choice', 0, 'INT');
 		$userid		=	$log_user->id;
@@ -70,7 +70,7 @@ class EasysocialApiResourceManage_Friends extends ApiResource
 
 		if (!$frnd_id)
 		{
-			return JText::_('PLG_API_EASYSOCIAL_FRIEND_ID_NOT_FOUND');
+			return Text::_('PLG_API_EASYSOCIAL_FRIEND_ID_NOT_FOUND');
 		}
 
 		if ($choice)
@@ -82,7 +82,7 @@ class EasysocialApiResourceManage_Friends extends ApiResource
 			{
 				$res->frnd_id	=	$frnd_id;
 				$res->code		=	200;
-				$res->message	=	JText::_('COM_EASYSOCIAL_FRIENDS_REQUEST_SENT');
+				$res->message	=	Text::_('COM_EASYSOCIAL_FRIENDS_REQUEST_SENT');
 			}
 			else
 			{
@@ -99,12 +99,12 @@ class EasysocialApiResourceManage_Friends extends ApiResource
 			if ($res->result == true)
 			{
 				$res->code		=	200;
-				$res->message	=	JText::_('PLG_API_EASYSOCIAL_FRIEND_DELETED_MESSAGE');
+				$res->message	=	Text::_('PLG_API_EASYSOCIAL_FRIEND_DELETED_MESSAGE');
 			}
 			else
 			{
 				$res->code		=	403;
-				$res->message	=	JText::_('PLG_API_EASYSOCIAL_UNABLE_DELETE_FRIEND_MESSAGE');
+				$res->message	=	Text::_('PLG_API_EASYSOCIAL_UNABLE_DELETE_FRIEND_MESSAGE');
 			}
 		}
 

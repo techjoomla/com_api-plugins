@@ -10,9 +10,9 @@
  * and the com_api extension by Brian Edgerton (http://www.edgewebworks.com)
  */
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
 
@@ -34,7 +34,7 @@ class EasysocialApiResourcePages extends ApiResource
 	 */
 	public function post()
 	{
-		$this->plugin->setResponse(JText::_('PLG_API_EASYSOCIAL_UNSUPPORTED_METHOD_MESSAGE'));
+		$this->plugin->setResponse(Text::_('PLG_API_EASYSOCIAL_UNSUPPORTED_METHOD_MESSAGE'));
 	}
 
 	/**
@@ -46,7 +46,7 @@ class EasysocialApiResourcePages extends ApiResource
 	 */
 	public function get()
 	{
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$input = $app->input;
 		$filters = $input->get("filters", array(), "ARRAY");
 		$user = ES::user();
@@ -73,23 +73,23 @@ class EasysocialApiResourcePages extends ApiResource
 		{
 			if (! empty($filters['all']))
 			{
-				$res->empty_message = JText::_('PLG_API_PAGES_EMPTY_ALL');
+				$res->empty_message = Text::_('PLG_API_PAGES_EMPTY_ALL');
 			}
 			elseif (! empty($filters['featured']))
 			{
-				$res->empty_message = JText::_('PLG_API_PAGES_EMPTY_FEATURED');
+				$res->empty_message = Text::_('PLG_API_PAGES_EMPTY_FEATURED');
 			}
 			elseif (! empty($filters['uid']))
 			{
-				$res->empty_message = JText::_('PLG_API_PAGES_EMPTY_CREATED');
+				$res->empty_message = Text::_('PLG_API_PAGES_EMPTY_CREATED');
 			}
 			elseif (! empty($filters['liked']))
 			{
-				$res->empty_message = JText::_('PLG_API_PAGES_EMPTY_LIKE');
+				$res->empty_message = Text::_('PLG_API_PAGES_EMPTY_LIKE');
 			}
 			else
 			{
-				$res->empty_message = JText::_('PLG_API_EASYSOCIAL_PAGE_NOT_FOUND');
+				$res->empty_message = Text::_('PLG_API_EASYSOCIAL_PAGE_NOT_FOUND');
 			}
 		}
 

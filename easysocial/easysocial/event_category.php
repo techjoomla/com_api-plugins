@@ -10,9 +10,8 @@
  * and the com_api extension by Brian Edgerton (http://www.edgewebworks.com)
  */
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
 
@@ -44,7 +43,7 @@ class EasysocialApiResourceEvent_Category extends ApiResource
 	 */
 	public function get_cat()
 	{
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 
 		// Getting log_user
 		$log_user = $this->plugin->get('user')->id;

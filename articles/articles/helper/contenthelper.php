@@ -8,6 +8,10 @@
 */
 
 defined('_JEXEC') or die('Restricted access');
+
+use Joomla\CMS\Factory;
+use Joomla\CMS\Helper\ModuleHelper;
+
 require_once JPATH_SITE.'/plugins/api/articles/articles/blogs/blog/post.php';
 require_once JPATH_SITE.'/plugins/api/articles/articles/blogs/category.php';
 
@@ -115,10 +119,10 @@ class BlogappContentHelper
 	public function _load($position, $style = 'none')
 	{
 		$this->modules[$position] = '';
-		$document	= JFactory::getDocument();
+		$document	= Factory::getDocument();
 		$document->setType('html');
 		$renderer	= $document->loadRenderer('module');
-		$modules	= JModuleHelper::getModules($position);
+		$modules	= ModuleHelper::getModules($position);
 		$params		= array('style' => $style);
 		ob_start();
 
@@ -147,17 +151,17 @@ class BlogappContentHelper
 	public function _loadmod($module, $title, $style = 'none')
 	{
 		$this->mods[$module] = '';
-		$document	= JFactory::getDocument();
+		$document	= Factory::getDocument();
 		$document->setType('html');
 		$renderer	= $document->loadRenderer('module');
-		$mod		= JModuleHelper::getModule($module, $title);
+		$mod		= ModuleHelper::getModule($module, $title);
 
 		// If the module without the mod_ isn't found, try it with mod_.
 		// This allows people to enter it either way in the content
 		if (!isset($mod))
 		{
 			$name = 'mod_' . $module;
-			$mod  = JModuleHelper::getModule($name, $title);
+			$mod  = ModuleHelper::getModule($name, $title);
 		}
 
 		$params = array('style' => $style);
@@ -176,5 +180,3 @@ class BlogappContentHelper
 	}
 	
 }
-
-

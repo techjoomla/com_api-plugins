@@ -7,21 +7,22 @@
 */
 defined('_JEXEC') or die( 'Restricted access' );
 
-jimport('joomla.plugin.plugin');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Log\Log;
 
 class RedshopApiResourceSummary extends ApiResource
 {
 	public function get()
 	{
 		//set offset & date for server
-		$config =& JFactory::getConfig();
+		$config =Factory::getConfig();
         $offset = $config->getValue('config.offset');
         $dt=date($_SERVER['REQUEST_TIME']);
-        $odate= & JFactory::getDate($dt,$offset);
+        $odate= Factory::getDate($dt,$offset);
         $date = $odate->toFormat('%F %T');
              	
 		// Write query to get daily, weekly, mohthly & yearly sales
-		$db = JFactory::getDBO();
+		$db = Factory::getDbo();
 		
 		//Daily data BETWEEN(CONVERT(int(10),DATE(time()),20) AND time()) 
 		$query = "SELECT SUM(order_total)
@@ -146,29 +147,28 @@ class RedshopApiResourceSummary extends ApiResource
 	public function post()
 	{
 		//query to get daily, weekly, mohthly & yearly sales
-		$db = JFactory::getDBO();
+		$db = Factory::getDbo();
 		
 		require_once(dirname(__FILE__).DS.'helper.php');
-		$current_date = JRequest::getVar('current_date');
+		$current_date = Factory::getApplication()->input->get('current_date');
 							
 		//for log record
-		/*jimport('joomla.error.log');
 		$options = array(
     			'format' => "{DATE}\t{TIME}\t{USER_ID}\t{COMMENT}\t{CDATE}\t{}"
 						);
 
-		$log = &JLog::getInstance('com_api.log.php');
+		$log = Log::getInstance('com_api.log.php');
 		$log->setOptions($options);
-		$user = &JFactory::getUser();
+		$user = Factory::getUser();
 		$userId = $user->get('id');
 		$log->addEntry(array('user_id' => $userId, 'comment' => 'This is the comment','cdate' => $current_date));
 		*/
 
 		//set offset & date for server
-		$config =& JFactory::getConfig();
+		$config =Factory::getConfig();
         $offset = $config->getValue('config.offset');	
   		//$offset = '';
-  		$current_date= & JFactory::getDate($current_date,$offset);
+  		$current_date= Factory::getDate($current_date,$offset);
   		$current_date = $current_date->toFormat('%F %T');
 		
 		//daily data
@@ -183,7 +183,7 @@ class RedshopApiResourceSummary extends ApiResource
 		list($year,$month, $day) = split('[/.-]',$current_date );		
 		
 		//weekly data
-		$db = JFactory::getDBO();
+		$db = Factory::getDbo();
 		$query ="SELECT WEEKDAY('".$current_date."')"; 
 		$db->setQuery( $query );
 		$wstart = $db->loadResult();
@@ -256,8 +256,8 @@ class RedshopApiResourceSummary extends ApiResource
 
 	public function put()
 	{	
-		$app = JFactory::getApplication();
-		$data = JRequest::getVar('jform', array(), 'post', 'array');
+		$app = Factory::getApplication();
+		$data = Factory::getApplication()->input->get('jform', array(), 'post', 'array');
 		$context = 'com_content.edit.article';
 
 		// Fake parameters
@@ -265,7 +265,7 @@ class RedshopApiResourceSummary extends ApiResource
 		array_push($values, (int) $data['id']);
 		$values = array_unique($values);
 		$app->setUserState($context.'.id', $values);
-		if ( !JRequest::getInt( 'id' ) ) {
+		if ( !Factory::getApplication()->input->get( 'id' ) ) {
 			$_POST['id'] = $data['id'];
 			$_REQUEST['id'] = $data['id'];
 		}

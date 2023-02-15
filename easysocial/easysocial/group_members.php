@@ -11,9 +11,9 @@
  */
 
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/groupmembers.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/model.php';
@@ -60,7 +60,7 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 	public function getGroup_Members()
 	{
 		// Init variable
-		$app		=	JFactory::getApplication();
+		$app		=	Factory::getApplication();
 		$log_user	=	$this->plugin->get('user')->id;
 		$clusterId	=	$app->input->get('id', 0, 'INT');
 		$limitstart	=	$app->input->get('limitstart', 0, 'INT');
@@ -95,7 +95,7 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 
 		if (empty($data))
 		{
-			$res->empty_message	=	JText::_('PLG_API_EASYSOCIAL_MEMBER_NOT_FOUND_MESSAGE');
+			$res->empty_message	=	Text::_('PLG_API_EASYSOCIAL_MEMBER_NOT_FOUND_MESSAGE');
 		}
 
 		// Manual pagination code
@@ -226,7 +226,7 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 	public function joineGroup()
 	{
 		// Init variable
-		$app		=	JFactory::getApplication();
+		$app		=	Factory::getApplication();
 		$log_user	=	$this->plugin->get('user')->id;
 		$clusterId	=	$app->input->get('id', 0, 'INT');
 		$type		=	$app->input->get('type', 'group', 'string');
@@ -253,7 +253,7 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 			if ($access->exceeded('groups.join', $total))
 			{
 				$res->result->status = 0;
-				$res->result->message = JText::_('PLG_API_EASYSOCIAL_GROUP_JOIN_LIMIT_EXCEEDS_MESSAGE');
+				$res->result->message = Text::_('PLG_API_EASYSOCIAL_GROUP_JOIN_LIMIT_EXCEEDS_MESSAGE');
 
 				$this->plugin->setResponse($res);
 			}
@@ -275,22 +275,22 @@ class EasysocialApiResourceGroup_Members extends ApiResource
 
 				if ($cluster->type == 1 && $res->result->state == 1)
 				{
-					$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_OPEN_GROUP_JOIN_SUCCESS');
+					$res->result->message	=	Text::_('PLG_API_EASYSOCIAL_OPEN_GROUP_JOIN_SUCCESS');
 				}
 				elseif (($cluster->type == 3 || $cluster->type == 2) && $res->result->state == 1)
 				{
-					$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_JOIN_SUCCESS');
+					$res->result->message	=	Text::_('PLG_API_EASYSOCIAL_GROUP_JOIN_SUCCESS');
 				}
 				elseif ($res->result->state == 2)
 				{
-					$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_PENDING_APPROVAL');
+					$res->result->message	=	Text::_('PLG_API_EASYSOCIAL_GROUP_PENDING_APPROVAL');
 				}
 			}
 			else
 			{
 				$res->result->status	=	0;
 				$res->result->state		=	0;
-				$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_ALREADY_JOINED_MESSAGE');
+				$res->result->message	=	Text::_('PLG_API_EASYSOCIAL_GROUP_ALREADY_JOINED_MESSAGE');
 			}
 
 			$this->plugin->setResponse($res);

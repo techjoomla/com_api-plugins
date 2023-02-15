@@ -10,8 +10,9 @@
  * and the com_api extension by Brian Edgerton (http://www.edgewebworks.com)
  */
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.user.user');
 jimport('simpleschema.easyblog.category');
 jimport('simpleschema.easyblog.person');
 jimport('simpleschema.easyblog.blog.post');
@@ -61,7 +62,7 @@ class EasyblogApiResourceBlog extends ApiResource
 	 */
 	public function post()
 	{
-		$input = JFactory::getApplication()->input;
+		$input = Factory::getApplication()->input;
 		$blog = EasyBlogHelper::table('Blog');
 		$data = $input->post->getArray(array());
 		$log_user = $this->plugin->get('user')->id;
@@ -83,7 +84,7 @@ class EasyblogApiResourceBlog extends ApiResource
 		$key = 'post:'.$post->id;
 
 		// @TODO get this from JInput object
-		$file = JRequest::getVar('file', '', 'FILES', 'array');
+		$file = Factory::getApplication()->input->get('file', '', 'FILES', 'array');
 		$data['image'] = basename($data['image']);
 		$data['image'] = $key . '/' . $data['image'];
 
@@ -142,7 +143,7 @@ class EasyblogApiResourceBlog extends ApiResource
 	 */
 	public function get()
 	{
-		$input = JFactory::getApplication()->input;
+		$input = Factory::getApplication()->input;
 		$model = EasyBlogHelper::getModel('Blog');
 		$config = EasyBlogHelper::getConfig();
 		$id = $input->get('id', null, 'INT');
@@ -153,14 +154,14 @@ class EasyblogApiResourceBlog extends ApiResource
 
 		if (! $id)
 		{
-			$this->plugin->setResponse($this->getErrorResponse(404, JText::_('PLG_API_EASYBLOG_BLOG_ID_MESSAGE')));
+			$this->plugin->setResponse($this->getErrorResponse(404, Text::_('PLG_API_EASYBLOG_BLOG_ID_MESSAGE')));
 
 			return;
 		}
 
 		if (! $blog->id)
 		{
-			$this->plugin->setResponse($this->getErrorResponse(404, JText::_('PLG_API_EASYBLOG_BLOG_NOT_FOUND_MESSAGE')));
+			$this->plugin->setResponse($this->getErrorResponse(404, Text::_('PLG_API_EASYBLOG_BLOG_NOT_FOUND_MESSAGE')));
 
 			return;
 		}
@@ -190,7 +191,7 @@ class EasyblogApiResourceBlog extends ApiResource
 	 */
 	public function delete_blog()
 	{
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$id = $app->input->get('id', 0, 'INT');
 		$blog = EasyBlogHelper::table('Blog', 'Table');
 		$blog->load($id);
@@ -198,7 +199,7 @@ class EasyblogApiResourceBlog extends ApiResource
 		if (! $blog->id || ! $id)
 		{
 			$res->status = 0;
-			$res->message = JText::_('PLG_API_EASYBLOG_BLOG_NOT_EXISTS_MESSAGE');
+			$res->message = Text::_('PLG_API_EASYBLOG_BLOG_NOT_EXISTS_MESSAGE');
 
 			return $res;
 		}
@@ -206,7 +207,7 @@ class EasyblogApiResourceBlog extends ApiResource
 		{
 			$val = $blog->delete($id);
 			$re->status = $val;
-			$res->message = JText::_('PLG_API_EASYBLOG_DELETE_MESSAGE');
+			$res->message = Text::_('PLG_API_EASYBLOG_DELETE_MESSAGE');
 
 			return $res;
 		}
@@ -228,7 +229,7 @@ class EasyblogApiResourceBlog extends ApiResource
 		$placeId = EBMM::getUri($key);
 
 		// @TODO get this from JInput object
-		$file = JRequest::getVar('file', '', 'FILES', 'array');
+		$file = Factory::getApplication()->input->get('file', '', 'FILES', 'array');
 
 		// Check if the file is really allowed to be uploaded to the site.
 		$state = EB::image()->canUploadFile($file);

@@ -11,8 +11,8 @@
  */
 
 defined('_JEXEC') or die( 'Restricted access' );
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
 
 
@@ -51,7 +51,7 @@ class EasysocialApiResourceVotes extends ApiResource
 	private function getPollData()
 	{
 		$mapp = new EasySocialApiMappingHelper;
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$poll_id = $app->input->get('poll_id', 0, 'INT');
 		$poll = ES::table('Polls');
 		$poll->load(array('uid' => $poll_id));
@@ -69,7 +69,7 @@ class EasysocialApiResourceVotes extends ApiResource
 	 */
 	private function processVote()
 	{
-		$app		=	JFactory::getApplication();
+		$app		=	Factory::getApplication();
 		$pollId		=	$app->input->get('id', 0, 'int');
 		$itemId		=	$app->input->get('itemId', 0, 'int');
 		$action		=	$app->input->get('act', '', 'STRING');
@@ -80,7 +80,7 @@ class EasysocialApiResourceVotes extends ApiResource
 
 		if (!$allowed)
 		{
-			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_VOTE_NOT_ALLOW_MESSAGE'));
+			ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_VOTE_NOT_ALLOW_MESSAGE'));
 		}
 
 		$res->result->message = $this->votesCount($pollId, $itemId, $action);
@@ -111,7 +111,7 @@ class EasysocialApiResourceVotes extends ApiResource
 		if (! $state_poll_id || !$state_item_id)
 		{
 			// Error. invalid poll id and poll item id.
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_VOTE_ID'));
+			ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_INVALID_VOTE_ID'));
 		}
 
 		$pollLib = ES::get('Polls');
@@ -119,23 +119,23 @@ class EasysocialApiResourceVotes extends ApiResource
 		// Error. if, missing any field
 		if (!$pollId || !$itemId  || !$action )
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_VALID_DETAILS'));
+			ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_VALID_DETAILS'));
 		}
 
 		// Action vote to give vote poll item and unvote to remove vote
 		if ($action == 'vote')
 		{
 			$pollLib->vote($pollId, $itemId, $my->id);
-			$res->message = JText::_('PLG_API_EASYSOCIAL_VOTING');
+			$res->message = Text::_('PLG_API_EASYSOCIAL_VOTING');
 		}
 		elseif ($action == 'unvote')
 		{
 			$pollLib->unvote($pollId, $itemId, $my->id);
-			$res->message = JText::_('PLG_API_EASYSOCIAL_VOTE_REMOVED_SUCCESS');
+			$res->message = Text::_('PLG_API_EASYSOCIAL_VOTE_REMOVED_SUCCESS');
 		}
 		else
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_VALID_DETAILS'));
+			ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_VALID_DETAILS'));
 		}
 
 		return $res;

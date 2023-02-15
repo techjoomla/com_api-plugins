@@ -11,9 +11,8 @@
  */
 
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
 require_once JPATH_SITE . '/components/com_easysocial/controllers/videos.php';
@@ -46,7 +45,7 @@ class EasysocialApiResourceTags extends ApiResource
 	 */
 	public function getTags()
 	{
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$log_user	=	$this->plugin->get('user')->id;
 
 		// Get the video
@@ -87,7 +86,7 @@ class EasysocialApiResourceTags extends ApiResource
 		// Check for request forgeries
 		// ES::checkToken();
 
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 
 		// Get the user id's.
 		$friends_tags = $app->input->get('friends_tags', null, 'ARRAY');

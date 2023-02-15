@@ -11,9 +11,10 @@
  */
 
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Mail\MailHelper;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/sharing/sharing.php';
 
@@ -66,7 +67,7 @@ class EasysocialApiResourceSocial_Share extends ApiResource
 	 */
 	public function put_data()
 	{
-	$app = JFactory::getApplication();
+	$app = Factory::getApplication();
 	$recep = $app->input->get('recipient', '', 'STRING');
 	$stream_id = $app->input->get('stream_uid', 0, 'INT');
 	$msg = $app->input->get('message', '', 'STRING');
@@ -76,7 +77,7 @@ class EasysocialApiResourceSocial_Share extends ApiResource
 	if (!$stream_id)
 	{
 		$res->success = 0;
-		$res->message = JText::_('COM_EASYSOCIAL_STREAM_INVALID_STREAM_ID');
+		$res->message = Text::_('COM_EASYSOCIAL_STREAM_INVALID_STREAM_ID');
 	}
 
 	// Create sharing url
@@ -87,7 +88,7 @@ class EasysocialApiResourceSocial_Share extends ApiResource
 																		'xhtml' => true)
 																		),
 										'display' => 'dialog',
-										'text' => JText::_('COM_EASYSOCIAL_STREAM_SOCIAL'),
+										'text' => Text::_('COM_EASYSOCIAL_STREAM_SOCIAL'),
 										'css' => 'fd-small')
 										);
 	$tok = base64_encode($sharing->url);
@@ -103,7 +104,7 @@ class EasysocialApiResourceSocial_Share extends ApiResource
 			{
 				$recipient = FD::string()->escape($recipient);
 
-				if (!JMailHelper::isEmailAddress($recipient))
+				if (!MailHelper::isEmailAddress($recipient))
 				{
 					return false;
 				}
@@ -123,7 +124,7 @@ class EasysocialApiResourceSocial_Share extends ApiResource
 			return false;
 		}
 
-		$session	= JFactory::getSession();
+		$session	= Factory::getSession();
 
 		$config		= FD::config();
 
@@ -168,7 +169,7 @@ class EasysocialApiResourceSocial_Share extends ApiResource
 		$result = $library->sendLink($recep, $tok, $msg);
 
 		$res->success = 1;
-		$res->message = JText::_('PLG_API_EASYSOCIAL_SHARE_SUCCESS_MESSAGE');
+		$res->message = Text::_('PLG_API_EASYSOCIAL_SHARE_SUCCESS_MESSAGE');
 		$res->result = $result;
 
 		return $res;

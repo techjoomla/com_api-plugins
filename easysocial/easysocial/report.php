@@ -11,8 +11,8 @@
  */
 
 defined('_JEXEC') or die('Restricted access');
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Factory;
 
 require_once JPATH_SITE . '/components/com_easysocial/controllers/reports.php';
 /**
@@ -31,7 +31,7 @@ class EasysocialApiResourceReport extends ApiResource
 	 */
 	public function get()
 	{
-			ApiError::raiseError(405, JText::_('PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE'));
+			ApiError::raiseError(405, Text::_('PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE'));
 	}
 
 	/**
@@ -55,7 +55,7 @@ class EasysocialApiResourceReport extends ApiResource
 	 */
 	private function createReport()
 	{
-		$app				=	JFactory::getApplication();
+		$app				=	Factory::getApplication();
 		$msg				=	$app->input->get('message', '', 'STRING');
 		$title				=	$app->input->get('user_title', '', 'STRING');
 		$item_id			=	$app->input->get('itemId', 0, 'INT');
@@ -84,7 +84,7 @@ class EasysocialApiResourceReport extends ApiResource
 																				)
 																				),
 															'display' => 'dialog',
-															'text' => JText::_('COM_EASYSOCIAL_STREAM_SOCIAL'),
+															'text' => Text::_('COM_EASYSOCIAL_STREAM_SOCIAL'),
 															'css' => 'fd-small'
 														)
 									);
@@ -127,14 +127,14 @@ class EasysocialApiResourceReport extends ApiResource
 
 		if (!$allowed)
 		{
-			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_REPORT_NOT_ALLOW_MESSAGE'));
+			ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_REPORT_NOT_ALLOW_MESSAGE'));
 		}
 
 		$total		= $model->getCount(array('created_by' => $log_user));
 
 		if ($access->exceeded('reports.limit', $total))
 		{
-			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_LIMIT_EXCEEDS_MESSAGE'));
+			ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_LIMIT_EXCEEDS_MESSAGE'));
 		}
 
 		// Create the report
@@ -153,12 +153,12 @@ class EasysocialApiResourceReport extends ApiResource
 		// If there's an error, throw it
 		if (!$state)
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_CANT_SAVE_REPORT'));
+			ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_CANT_SAVE_REPORT'));
 		}
 
 		// @badge: reports.create Add badge for the author when a report is created.
 		$badge 	= ES::badges();
-		$badge->log('com_easysocial', 'reports.create', $log_user, JText::_('COM_EASYSOCIAL_REPORTS_BADGE_CREATED_REPORT'));
+		$badge->log('com_easysocial', 'reports.create', $log_user, Text::_('COM_EASYSOCIAL_REPORTS_BADGE_CREATED_REPORT'));
 
 		// @points: reports.create Add points for the author when a report is created.
 		$points = ES::points();
@@ -172,7 +172,7 @@ class EasysocialApiResourceReport extends ApiResource
 			$report->notify();
 		}
 
-		$res->result->message = JText::_('COM_EASYSOCIAL_REPORTS_STORED_SUCCESSFULLY');
+		$res->result->message = Text::_('COM_EASYSOCIAL_REPORTS_STORED_SUCCESSFULLY');
 
 		$this->plugin->setResponse($res);
 	}

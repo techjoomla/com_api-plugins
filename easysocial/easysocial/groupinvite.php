@@ -11,9 +11,9 @@
  */
 
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/groups.php';
@@ -36,7 +36,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 	 */
 	public function get()
 	{
-		ApiError::raiseError(405, JText::_('PLG_API_EASYSOCIAL_USE_POST_OR_DELETE_MESSAGE'));
+		ApiError::raiseError(405, Text::_('PLG_API_EASYSOCIAL_USE_POST_OR_DELETE_MESSAGE'));
 	}
 
 	/**
@@ -62,14 +62,14 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 	 */
 	private function leaveGroupPage($cluster)
 	{
-		$app			=	JFactory::getApplication();
+		$app			=	Factory::getApplication();
 		$target_user	=	$app->input->get('target_user', 0, 'INT');
 		$operation		=	$app->input->get('operation', 0, 'STRING');
 		$res			=	new stdClass;
 
 		if (!$target_user)
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE'));
+			ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE'));
 		}
 
 		// Only allow super admins to delete groups
@@ -77,7 +77,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 
 		if ($target_user == $my->id && $operation == 'leave' && $cluster->creator_uid == $my->id)
 		{
-			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_GROUP_OWNER_NOT_LEAVE_MESSAGE'));
+			ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_GROUP_OWNER_NOT_LEAVE_MESSAGE'));
 		}
 
 		// Target user obj
@@ -91,13 +91,13 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 
 							if (!$res->result->status)
 							{
-								ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE'));
+								ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE'));
 							}
 							else
 							{
 								// Notify group/page members
 								$cluster->notifyMembers('leave', array('userId' => $my->id));
-								$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_LEAVE_GROUP_MESSAGE');
+								$res->result->message	=	Text::_('PLG_API_EASYSOCIAL_LEAVE_GROUP_MESSAGE');
 							}
 							break;
 
@@ -108,13 +108,13 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 
 							if (!$res->result->status)
 							{
-								ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE'));
+								ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE'));
 							}
 							else
 							{
 								// Notify group/page member
 								$cluster->notifyMembers('user.remove', array('userId' => $user->id));
-								$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_USER_REMOVE_SUCCESS_MESSAGE');
+								$res->result->message	=	Text::_('PLG_API_EASYSOCIAL_USER_REMOVE_SUCCESS_MESSAGE');
 							}
 							break;
 		}
@@ -133,13 +133,13 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 	 */
 	public function delete()
 	{
-		$app			=	JFactory::getApplication();
+		$app			=	Factory::getApplication();
 		$group_id		=	$app->input->get('group_id', 0, 'INT');
 		$page_id		=	$app->input->get('page_id', 0, 'INT');
 
 		if (!$group_id && !$page_id)
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_ID'));
+			ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_INVALID_ID'));
 		}
 
 		if ($group_id)
@@ -148,7 +148,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 
 			if (!$group->id)
 			{
-				ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_GROUP_MESSAGE'));
+				ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_INVALID_GROUP_MESSAGE'));
 			}
 
 			$this->leaveGroupPage($group);
@@ -159,7 +159,7 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 
 			if (!$page->id)
 			{
-				ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_PAGE_MESSAGE'));
+				ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_INVALID_PAGE_MESSAGE'));
 			}
 
 			$this->leaveGroupPage($page);
@@ -176,8 +176,8 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 	private function inviteGroup()
 	{
 		// Init variable
-		$app			=	JFactory::getApplication();
-		$log_user		=	JFactory::getUser($this->plugin->get('user')->id);
+		$app			=	Factory::getApplication();
+		$log_user		=	Factory::getUser($this->plugin->get('user')->id);
 		$res			=	new stdClass;
 		$group_id		=	$app->input->get('group_id', 0, 'INT');
 		$target_users	=	$app->input->get('target_users', null, 'ARRAY');
@@ -193,11 +193,11 @@ class EasysocialApiResourceGroupinvite extends ApiResource
 
 			foreach ($target_users as $id)
 			{
-				$target_username	=	JFactory::getUser($id)->name;
+				$target_username	=	Factory::getUser($id)->name;
 
 				if ($es_params->get('users')->displayName == 'username')
 				{
-					$target_username = JFactory::getUser($id)->username;
+					$target_username = Factory::getUser($id)->username;
 				}
 
 				// Check that the user is not a member or has been invited already

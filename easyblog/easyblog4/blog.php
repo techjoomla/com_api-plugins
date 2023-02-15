@@ -7,8 +7,9 @@
 */
 
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.user.user');
 jimport( 'simpleschema.easyblog.category' );
 jimport( 'simpleschema.easyblog.person' );
 jimport( 'simpleschema.easyblog.blog.post' );
@@ -36,7 +37,7 @@ class EasyblogApiResourceBlog extends ApiResource
 	}
 	public function post()
 	{    	
-		$input = JFactory::getApplication()->input;
+		$input = Factory::getApplication()->input;
 		$blog = EasyBlogHelper::getTable( 'Blog', 'Table' );
 		$post = $input->post->getArray(array());
 		$log_user = $this->plugin->get('user')->id;
@@ -82,7 +83,7 @@ class EasyblogApiResourceBlog extends ApiResource
 	}
 	
 	public function get() {
-		$input = JFactory::getApplication()->input;
+		$input = Factory::getApplication()->input;
 		$model = EasyBlogHelper::getModel( 'Blog' );
 		$config = EasyBlogHelper::getConfig();
 		$id = $input->get('id', null, 'INT');
@@ -93,13 +94,13 @@ class EasyblogApiResourceBlog extends ApiResource
 		
 		if (!$id) 
 		{
-			$this->plugin->setResponse( $this->getErrorResponse(404, JText::_( 'PLG_API_EASYBLOG_BLOG_ID_MESSAGE' )) );
+			$this->plugin->setResponse( $this->getErrorResponse(404, Text::_( 'PLG_API_EASYBLOG_BLOG_ID_MESSAGE' )) );
 			return;
 		}
 				
 		if (!$blog->id) 
 		{
-			$this->plugin->setResponse( $this->getErrorResponse(404, JText::_( 'PLG_API_EASYBLOG_BLOG_NOT_FOUND_MESSAGE' )) );
+			$this->plugin->setResponse( $this->getErrorResponse(404, Text::_( 'PLG_API_EASYBLOG_BLOG_NOT_FOUND_MESSAGE' )) );
 			return;
 		}
 
@@ -117,29 +118,29 @@ class EasyblogApiResourceBlog extends ApiResource
 		$item->tags = $modelPT->getBlogTags($blog->id);
 		
 		//created by vishal - for show extra images
-		//$item->text = preg_replace('/"images/i', '"'.JURI::root().'images', $item->text );
-		$item->text = str_replace('href="','href="'.JURI::root(),$item->text);
-		$item->text = str_replace('src="','src="'.JURI::root(),$item->text);
+		//$item->text = preg_replace('/"images/i', '"'.Uri::root().'images', $item->text );
+		$item->text = str_replace('href="','href="'.Uri::root(),$item->text);
+		$item->text = str_replace('src="','src="'.Uri::root(),$item->text);
 				
 		$this->plugin->setResponse( $item );
 	}
 	public function delete_blog()
 	{		
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$id = $app->input->get('id',0,'INT');
 		$blog = EasyBlogHelper::getTable( 'Blog', 'Table' );
 		$blog->load( $id );
 		if(!$blog->id || !$id)
 		{
 			$res->status =0;	
-			$res->message=JText::_( 'PLG_API_EASYBLOG_BLOG_NOT_EXISTS_MESSAGE' );
+			$res->message=Text::_( 'PLG_API_EASYBLOG_BLOG_NOT_EXISTS_MESSAGE' );
 			return $res;	
 		}
 		else
 		{
 			$val = $blog->delete($id);
 			$re->status = $val;
-			$res->message=JText::_( 'PLG_API_EASYBLOG_DELETE_MESSAGE' );
+			$res->message=Text::_( 'PLG_API_EASYBLOG_DELETE_MESSAGE' );
 			return $res;
 		}	
 	}	

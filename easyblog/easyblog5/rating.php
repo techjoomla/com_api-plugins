@@ -6,7 +6,7 @@
  * @link http://www.techjoomla.com
 */
 defined('_JEXEC') or die( 'Restricted access' );
-jimport('joomla.user.user');
+use Joomla\CMS\Factory;
 jimport( 'simpleschema.easyblog.category' );
 jimport( 'simpleschema.easyblog.person' );
 jimport( 'simpleschema.easyblog.blog.post' );
@@ -30,7 +30,7 @@ class EasyblogApiResourceRating extends ApiResource
 	}	
 	public function setRatings()
 	{
-		 $input = JFactory::getApplication()->input;
+		 $input = Factory::getApplication()->input;
 		 $user_id = $input->get('uid',0,'INT');		
 		 $blog_id = $input->get('blogid',0,'INT');		 	 
 		 $values = $input->get('values',0,'INT');		 	 

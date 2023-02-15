@@ -8,7 +8,13 @@
  */
 
 defined('_JEXEC') or die;
-jimport('joomla.plugin.plugin');
+
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\Registry\Registry;
+
 require_once JPATH_ADMINISTRATOR.'/components/com_jticketing/models/mypayouts.php';
 
 /**
@@ -30,10 +36,10 @@ class JticketApiResourceGetPayouts extends ApiResource
 	public function get()
 	{
 		
-		$com_params  = JComponentHelper::getParams('com_jticketing');
+		$com_params  = ComponentHelper::getParams('com_jticketing');
 		$integration = $com_params->get('integration');
-		$input       = JFactory::getApplication()->input;
-		$lang      = JFactory::getLanguage();
+		$input       = Factory::getApplication()->input;
+		$lang      = Factory::getLanguage();
 		$extension = 'com_jticketing';
 		$base_dir  = JPATH_SITE;
 		$lang->load($extension, $base_dir);
@@ -45,20 +51,20 @@ class JticketApiResourceGetPayouts extends ApiResource
 		if (empty($userid))
 		{
 			$obj->success = 0;
-			$obj->message = JText::_("COM_JTICKETING_INVALID_USER");
+			$obj->message = Text::_("COM_JTICKETING_INVALID_USER");
 			$this->plugin->setResponse($obj);
 
 			return;
 		}
 
 		$jticketingmainhelper = new jticketingmainhelper;
-		$plugin = JPluginHelper::getPlugin('api', 'jticket');
+		$plugin = PluginHelper::getPlugin('api', 'jticket');
 
 		// Check if plugin is enabled
 		if ($plugin)
 		{
 			// Get plugin params
-			$pluginParams = new JRegistry($plugin->params);
+			$pluginParams = new Registry($plugin->params);
 			$users_allow_access_app = $pluginParams->get('users_allow_access_app');
 		}
 
@@ -72,7 +78,7 @@ class JticketApiResourceGetPayouts extends ApiResource
 			$eventdatapaid        = $jticketingmainhelper->getMypayoutData($userid,$search);																				
 		}
 				
-		$db = JFactory::getDBO();
+		$db = Factory::getDbo();
 		$db->setQuery($eventdatapaid);
 		$obj_merged = $db->loadObjectlist();	
 
@@ -85,7 +91,7 @@ class JticketApiResourceGetPayouts extends ApiResource
 		else
 		{
 			$obj->success = "0";
-			$obj->message = JText::_("COM_JTICKETING_NO_EVENT_DATA_USER");
+			$obj->message = Text::_("COM_JTICKETING_NO_EVENT_DATA_USER");
 		}
 
 		$this->plugin->setResponse($obj);
@@ -103,7 +109,7 @@ class JticketApiResourceGetPayouts extends ApiResource
 		$obj          = new stdClass;
 		$obj->success = 0;
 		$obj->code    = 20;
-		$obj->message = JText::_("COM_JTICKETING_SELECT_GET_METHOD");
+		$obj->message = Text::_("COM_JTICKETING_SELECT_GET_METHOD");
 		$this->plugin->setResponse($obj);
 	}
 
@@ -119,7 +125,7 @@ class JticketApiResourceGetPayouts extends ApiResource
 		$obj          = new stdClass;
 		$obj->success = 0;
 		$obj->code    = 20;
-		$obj->message = JText::_("COM_JTICKETING_SELECT_GET_METHOD");
+		$obj->message = Text::_("COM_JTICKETING_SELECT_GET_METHOD");
 		$this->plugin->setResponse($obj);
 	}
 
@@ -135,7 +141,7 @@ class JticketApiResourceGetPayouts extends ApiResource
 		$obj          = new stdClass;
 		$obj->success = 0;
 		$obj->code    = 20;
-		$obj->message = JText::_("COM_JTICKETING_SELECT_GET_METHOD");
+		$obj->message = Text::_("COM_JTICKETING_SELECT_GET_METHOD");
 		$this->plugin->setResponse($obj);
 	}
 }

@@ -11,9 +11,9 @@
  */
 
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/groups.php';
@@ -52,7 +52,7 @@ class EasysocialApiResourceGroup_Category extends ApiResource
 	public function post()
 	{
 		$this->plugin->err_code = 405;
-		$this->plugin->err_message = JText::_('PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE');
+		$this->plugin->err_message = Text::_('PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE');
 		$this->plugin->setResponse(null);
 	}
 
@@ -66,7 +66,7 @@ class EasysocialApiResourceGroup_Category extends ApiResource
 	public function getCategory()
 	{
 		// Init variable
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$log_user = $this->plugin->get('user')->id;
 		$other_user_id	=	$app->input->get('user_id', 0, 'INT');
 		$userid			=	($other_user_id) ? $other_user_id : $log_user;

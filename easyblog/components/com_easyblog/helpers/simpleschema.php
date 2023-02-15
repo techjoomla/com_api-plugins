@@ -77,12 +77,12 @@ class EasyBlogSimpleSchemaHelper11
 		$item->created_date_elapsed	= EasyBlogDateHelper::getLapsedTime( $blog->created );
 		
 		$item->author->name = $profile->nickname;
-		$item->author->photo = JURI::root() . $profile->avatar;
+		$item->author->photo = Uri::root() . $profile->avatar;
 		
 		$item->category->categoryid = $category->id;
 		$item->category->title = $category->title;
 
-		$item->url = JURI::root() . trim('index.php?option=com_easyblog&view=entry&id=' . $blog->id, '/');
+		$item->url = Uri::root() . trim('index.php?option=com_easyblog&view=entry&id=' . $blog->id, '/');
 
 		foreach ($skip as $v) {
 			unset($item->$v);

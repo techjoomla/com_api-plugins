@@ -11,17 +11,16 @@
  */
 
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\MVC\Model\BaseDatabaseModel;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Factory;
+use Joomla\CMS\User\User;
+use Joomla\CMS\Session\Session;
+use Joomla\CMS\Filesystem\File;
+use Joomla\CMS\Component\ComponentHelper;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
-jimport('joomla.application.component.controller');
-jimport('joomla.application.component.model');
-jimport('joomla.user.helper');
-jimport('joomla.user.user');
-jimport('joomla.application.component.helper');
-jimport('joomla.database.table.user');
 
-JModelLegacy::addIncludePath(JPATH_SITE . 'components/com_api/models');
+BaseDatabaseModel::addIncludePath(JPATH_SITE . 'components/com_api/models');
 require_once JPATH_SITE . '/components/com_api/libraries/authentication/user.php';
 require_once JPATH_SITE . '/components/com_api/libraries/authentication/login.php';
 require_once JPATH_SITE . '/components/com_api/models/key.php';
@@ -46,7 +45,7 @@ class EasysocialApiResourceSlogin extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse(JText::_('PLG_API_EASYSOCIAL_UNSUPPORTED_METHOD_MESSAGE'));
+		$this->plugin->setResponse(Text::_('PLG_API_EASYSOCIAL_UNSUPPORTED_METHOD_MESSAGE'));
 	}
 
 	/**
@@ -70,7 +69,7 @@ class EasysocialApiResourceSlogin extends ApiResource
 	 */
 	public function keygen()
 	{
-		$app          = JFactory::getApplication();
+		$app          = Factory::getApplication();
 		$user_details = 0;
 
 		// Code for social login
@@ -98,25 +97,25 @@ class EasysocialApiResourceSlogin extends ApiResource
 				}
 			}
 
-			$user = JFactory::getUser($reg_usr);
+			$user = Factory::getUser($reg_usr);
 		}
 		else
 		{
 			// Init variable
 			$obj    = new stdclass;
-			$umodel = new JUser;
+			$umodel = new User;
 			$user   = $umodel->getInstance();
 
 			if (!$user->id)
 			{
-				$user = JFactory::getUser($this->plugin->get('user')->id);
+				$user = Factory::getUser($this->plugin->get('user')->id);
 			}
 		}
 
 		if (!$user->id)
 		{
 			$obj->code    = 403;
-			$obj->message = JText::_('PLG_API_EASYSOCIAL_INVALID_USER');
+			$obj->message = Text::_('PLG_API_EASYSOCIAL_INVALID_USER');
 
 			return $obj;
 		}
@@ -146,7 +145,7 @@ class EasysocialApiResourceSlogin extends ApiResource
 							'c' => 'key',
 							'ret' => 'index.php?option=com_api&view=keys',
 							'option' => 'com_api',
-							JSession::getFormToken() => 1
+							Session::getFormToken() => 1
 					);
 			$result = $kmodel->save($data);
 			$key    = $result->hash;
@@ -154,7 +153,7 @@ class EasysocialApiResourceSlogin extends ApiResource
 			// Add new key in easysocial table
 			$easyblog = JPATH_ROOT . '/administrator/components/com_easyblog/easyblog.php';
 
-			if (JFile::exists($easyblog) && JComponentHelper::isEnabled('com_easysocial', true))
+			if (File::exists($easyblog) && ComponentHelper::isEnabled('com_easysocial', true))
 			{
 				$this->updateEauth($user, $key);
 			}
@@ -169,7 +168,7 @@ class EasysocialApiResourceSlogin extends ApiResource
 		else
 		{
 			$obj->code    = 403;
-			$obj->message = JText::_('PLG_API_EASYSOCIAL_BAD_REQUEST');
+			$obj->message = Text::_('PLG_API_EASYSOCIAL_BAD_REQUEST');
 		}
 
 		return ($obj);
@@ -186,7 +185,7 @@ class EasysocialApiResourceSlogin extends ApiResource
 	 */
 	public function check_user($email)
 	{
-		$db    = JFactory::getDBO();
+		$db    = Factory::getDbo();
 		$query = $db->getQuery(true);
 
 		$query->select('u.id');
@@ -240,24 +239,23 @@ class EasysocialApiResourceSlogin extends ApiResource
 		$userid         = null;
 		$data           = array();
 
-		$app              = JFactory::getApplication();
+		$app              = Factory::getApplication();
 		$data['username'] = $username;
-		$data['password'] = JUserHelper::genRandomPassword(8);
+		$data['password'] = UserHelper::genRandomPassword(8);
 		$data['name']     = $name;
 		$data['email']    = $email;
 
 		global $message;
-		jimport('joomla.user.helper');
-		$authorize = JFactory::getACL();
-		$user      = clone JFactory::getUser();
+		$authorize = Factory::getACL();
+		$user      = clone Factory::getUser();
 		$user->set('username', $data['username']);
 		$user->set('password', $data['password']);
 		$user->set('name', $data['name']);
 		$user->set('email', $data['email']);
 
 		// Password encryption
-		$salt           = JUserHelper::genRandomPassword(32);
-		$crypt          = JUserHelper::getCryptedPassword($user->password, $salt);
+		$salt           = UserHelper::genRandomPassword(32);
+		$crypt          = UserHelper::getCryptedPassword($user->password, $salt);
 		$user->password = "$crypt:$salt";
 
 		// User group/type
@@ -266,7 +264,7 @@ class EasysocialApiResourceSlogin extends ApiResource
 
 		if (JVERSION >= '1.6.0')
 		{
-			$userConfig = JComponentHelper::getParams('com_users');
+			$userConfig = ComponentHelper::getParams('com_users');
 
 			// Default to Registered.
 			$defaultUserGroup = $userConfig->get('new_usertype', 2);
@@ -277,19 +275,19 @@ class EasysocialApiResourceSlogin extends ApiResource
 			$user->set('gid', $authorize->get_group_id('', 'Registered', 'ARO'));
 		}
 
-		$date =& JFactory::getDate();
+		$date =Factory::getDate();
 		$user->set('registerDate', $date->toSql());
 
 		// True on success, false otherwise
 		if (!$user->save())
 		{
-			$message = JText::_('PLG_API_EASYSOCIAL_NOT_CREATED') . $user->getError();
+			$message = Text::_('PLG_API_EASYSOCIAL_NOT_CREATED') . $user->getError();
 
 			return false;
 		}
 		else
 		{
-			$message = JText::_('PLG_API_EASYSOCIAL_CREATED_USERNAME') . $user->username . JText::_('PLG_API_EASYSOCIAL_SEND_MAIL_DETAILS');
+			$message = Text::_('PLG_API_EASYSOCIAL_CREATED_USERNAME') . $user->username . Text::_('PLG_API_EASYSOCIAL_SEND_MAIL_DETAILS');
 		}
 
 		$userid = $user->id;

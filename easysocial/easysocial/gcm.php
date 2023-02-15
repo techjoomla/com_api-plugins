@@ -11,9 +11,9 @@
  */
 
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
 /**
@@ -70,7 +70,7 @@ class EasysocialApiResourceGcm extends ApiResource
 	{
 		$result		=	new stdClass;
 		$state		=	false;
-		$app		=	JFactory::getApplication();
+		$app		=	Factory::getApplication();
 		$log_user	=	$this->plugin->get('user')->id;
 		$dev_id		=	$app->input->get('device_id', '', 'RAW');
 		$nval		=	$app->input->get('notify_val', 1, 'INT');
@@ -80,14 +80,14 @@ class EasysocialApiResourceGcm extends ApiResource
 
 		if ($dev_id == "null" || $dev_id == null )
 		{
-			$result->message	=	JText::_('PLG_API_EASYSOCIAL_NO_DEVICE_ID');
+			$result->message	=	Text::_('PLG_API_EASYSOCIAL_NO_DEVICE_ID');
 			$result->success 	=	$state;
 		}
 		else
 		{
 			$state				=	$this->tnotify($log_user, $dev_id, $nval);
 			$result->success	=	$state;
-			$result->message	=	($state && $nval)?JText::_('PLG_API_EASYSOCIAL_NOTIFICATION_ON'):JText::_('PLG_API_EASYSOCIAL_NOTIFICATION_OFF');
+			$result->message	=	($state && $nval)?Text::_('PLG_API_EASYSOCIAL_NOTIFICATION_ON'):Text::_('PLG_API_EASYSOCIAL_NOTIFICATION_OFF');
 		}
 
 		return $result;
@@ -127,7 +127,7 @@ class EasysocialApiResourceGcm extends ApiResource
 	 */
 		public function send_notif()
 		{
-			$app		=	JFactory::getApplication();
+			$app		=	Factory::getApplication();
 			$log_user	=	$this->plugin->get('user')->id;
 			$user		=	FD::user($log_user);
 			$reg_id		=	$app->input->get('device_id', '', 'STRING');
@@ -137,7 +137,7 @@ class EasysocialApiResourceGcm extends ApiResource
 // Not allow empty device id for registration
 			if ($reg_id == "null" || $reg_id == null )
 			{
-				$res->message	=	JText::_('PLG_API_EASYSOCIAL_NO_DEVICE_ID');
+				$res->message	=	Text::_('PLG_API_EASYSOCIAL_NO_DEVICE_ID');
 				$res->status	=	false;
 
 				return $res;
@@ -164,7 +164,7 @@ class EasysocialApiResourceGcm extends ApiResource
 
 			if ($ids_dev)
 			{
-				$res->message	=	JText::_('PLG_API_EASYSOCIAL_DEVICE_ALREADY_REGISTERED_MESSAGE');
+				$res->message	=	Text::_('PLG_API_EASYSOCIAL_DEVICE_ALREADY_REGISTERED_MESSAGE');
 				$res->status	=	false;
 
 				return $res;
@@ -181,7 +181,7 @@ class EasysocialApiResourceGcm extends ApiResource
 				$inserquery->insert($db->quoteName('#__acpush_users'))->columns($db->quoteName($columns))->values(implode(',', $values));
 				$db->setQuery($inserquery);
 				$result			=	$db->query();
-				$res->message	=	JText::_('PLG_API_EASYSOCIAL_DEVICE_REGISTER_MESSAGE');
+				$res->message	=	Text::_('PLG_API_EASYSOCIAL_DEVICE_REGISTER_MESSAGE');
 				$res->status	=	$result;
 
 				return $res;
@@ -197,7 +197,7 @@ class EasysocialApiResourceGcm extends ApiResource
 	 */
 	public function delete_notif()
 	{
-		$app	=	JFactory::getApplication();
+		$app	=	Factory::getApplication();
 		$reg_id	=	$app->input->get('device_id', '', 'STRING');
 
 // Not allow empty device id for registration

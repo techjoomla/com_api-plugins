@@ -11,6 +11,10 @@
  */
 defined('_JEXEC') or die('Restricted access');
 
+use Joomla\CMS\Object\CMSObject;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Filesystem\File;
+
 jimport('libraries.schema.group');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
@@ -29,7 +33,7 @@ require_once JPATH_SITE . '/media/com_easysocial/apps/fields/user/cover/helper.p
  *
  * @since  1.0
  */
-class EasySocialApiUploadHelper extends JObject
+class EasySocialApiUploadHelper extends CMSObject
 {
 	/**
 	 * Method uploadCover photo
@@ -304,7 +308,7 @@ class EasySocialApiUploadHelper extends JObject
 		// Ensure that the image is valid.
 		if (!$image->isValid())
 		{
-			$this->setError(JText::_("PLG_FIELDS_COVER_VALIDATION_INVALID_IMAGE"));
+			$this->setError(Text::_("PLG_FIELDS_COVER_VALIDATION_INVALID_IMAGE"));
 
 			return false;
 		}
@@ -315,7 +319,7 @@ class EasySocialApiUploadHelper extends JObject
 
 		$source 	= $file['tmp_name'];
 		$target 	= $tmpPath . '/' . $tmpName;
-		$state 		= JFile::copy($source, $target);
+		$state 		= File::copy($source, $target);
 
 		$tmpUri		= SocialFieldsUserAvatarHelper::getStorageURI('file');
 		$uri 		= $tmpUri . '/' . $tmpName;
@@ -376,7 +380,7 @@ class EasySocialApiUploadHelper extends JObject
 		// Ensure that the image is valid.
 		if (!$image->isValid())
 		{
-			$this->setError(JText::_("PLG_FIELDS_COVER_VALIDATION_INVALID_IMAGE"));
+			$this->setError(Text::_("PLG_FIELDS_COVER_VALIDATION_INVALID_IMAGE"));
 
 			return false;
 		}
@@ -402,7 +406,7 @@ class EasySocialApiUploadHelper extends JObject
 			$row->title	= $file['name'];
 			$row->file = $value;
 			$row->path = JPATH_ROOT . '/media/com_easysocial/tmp/' . $base . '/' . $value;
-			$row->uri = rtrim(JURI::root(), '/') . '/media/com_easysocial/tmp/' . $base . '/' . $value;
+			$row->uri = rtrim(Uri::root(), '/') . '/media/com_easysocial/tmp/' . $base . '/' . $value;
 
 			$result[$size] = $row;
 		}
@@ -567,7 +571,7 @@ class EasySocialApiUploadHelper extends JObject
 		$photo->afterStore($file, $image);
 
 		// Determine if we should create a stream item for this upload
-		$createStream   = JRequest::getBool('createStream');
+		$createStream   = Factory::getApplication()->input->getBool('createStream');
 
 		// Add Stream when a new photo is uploaded
 		if ($createStream)
@@ -724,7 +728,7 @@ class EasySocialApiUploadHelper extends JObject
 		$photo->afterStore($file, $image);
 
 		// Determine if we should create a stream item for this upload
-		$createStream = JRequest::getBool('createStream');
+		$createStream = Factory::getApplication()->input->getBool('createStream');
 
 		// Add Stream when a new photo is uploaded
 		if ($createStream)

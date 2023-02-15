@@ -11,9 +11,9 @@
  */
 
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/groups.php';
@@ -65,7 +65,7 @@ class EasysocialApiResourceEvent extends ApiResource
 	 */
 	private function getEvent()
 	{
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$log_user = $this->plugin->get('user')->id;
 		$event_id = $app->input->get('event_id', 0, 'INT');
 		$mapp = new EasySocialApiMappingHelper;
@@ -93,8 +93,8 @@ class EasysocialApiResourceEvent extends ApiResource
 	 */
 	private function createEvent()
 	{
-		$app = JFactory::getApplication();
-		$log_user = JFactory::getUser($this->plugin->get('user')->id);
+		$app = Factory::getApplication();
+		$log_user = Factory::getUser($this->plugin->get('user')->id);
 		$user = ES::user($log_user->id);
 		$config	= ES::config();
 
@@ -123,7 +123,7 @@ class EasysocialApiResourceEvent extends ApiResource
 		$post['group_id'] = $app->input->post->get('group_id', null, 'INT');
 		$category = ES::table('EventCategory');
 		$category->load($categoryId);
-		$session = JFactory::getSession();
+		$session = Factory::getSession();
 		$session->set('category_id', $category->id, SOCIAL_SESSION_NAMESPACE);
 		$stepSession = ES::table('StepSession');
 		$stepSession->load(array('session_id' => $session->getId(), 'type' => SOCIAL_TYPE_EVENT));
@@ -139,7 +139,7 @@ class EasysocialApiResourceEvent extends ApiResource
 		// Check if the user really has access to create event
 		if (! $canCreate->getAccess()->allowed('events.create') && ! $canCreate->isSiteAdmin())
 		{
-			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_EVENTS_NO_ACCESS_CREATE_EVENT'));
+			ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_EVENTS_NO_ACCESS_CREATE_EVENT'));
 		}
 
 		// Check the group access for event creation
@@ -149,7 +149,7 @@ class EasysocialApiResourceEvent extends ApiResource
 
 			if (!$group->canCreateEvent())
 			{
-				ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_EVENTS_NO_ACCESS_CREATE_EVENT'));
+				ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_EVENTS_NO_ACCESS_CREATE_EVENT'));
 			}
 
 			$stepSession->setValue('group_id', $post['group_id']);
@@ -168,7 +168,7 @@ class EasysocialApiResourceEvent extends ApiResource
 		$stepSession->store();
 
 		// Step 2 - create event
-		$session = JFactory::getSession();
+		$session = Factory::getSession();
 		$stepSession = ES::table('StepSession');
 		$stepSession->load(array('session_id' => $session->getId(), 'type' => SOCIAL_TYPE_EVENT));
 		$category = ES::table('EventCategory');
@@ -178,7 +178,7 @@ class EasysocialApiResourceEvent extends ApiResource
 		// For api test purpose
 		if (empty($sequence))
 		{
-			ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_EVENTS_NO_VALID_CREATION_STEP'));
+			ApiError::raiseError(400, Text::_('COM_EASYSOCIAL_EVENTS_NO_VALID_CREATION_STEP'));
 		}
 
 		// Load the steps and fields
@@ -271,7 +271,7 @@ class EasysocialApiResourceEvent extends ApiResource
 		{
 			$res->result->status = 1;
 			$res->result->event_id = $event->id;
-			$res->result->message = JText::_('COM_EASYSOCIAL_EVENTS_CREATED_PENDING_APPROVAL');
+			$res->result->message = Text::_('COM_EASYSOCIAL_EVENTS_CREATED_PENDING_APPROVAL');
 		}
 		else
 		{
@@ -279,7 +279,7 @@ class EasysocialApiResourceEvent extends ApiResource
 			{
 				$res->result->status = 1;
 				$res->result->event_id = $event->id;
-				$res->result->message = JText::_('PLG_API_EASYSOCIAL_EVENT_CREATE_SUCCESS_MESSAGE');
+				$res->result->message = Text::_('PLG_API_EASYSOCIAL_EVENT_CREATE_SUCCESS_MESSAGE');
 			}
 		}
 

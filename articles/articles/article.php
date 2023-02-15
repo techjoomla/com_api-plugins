@@ -6,6 +6,9 @@
  * @link       http://www.techjoomla.com
  */
 defined('_JEXEC') or die( 'Restricted access' );
+
+use Joomla\CMS\Factory;
+
 require_once JPATH_SITE . '/components/com_content/models/articles.php';
 require_once JPATH_SITE . '/components/com_content/models/article.php';
 
@@ -49,7 +52,7 @@ class ArticlesApiResourceArticle extends ApiResource
 	 */
 	public function getArticles()
 	{
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$items = array();
 		$article_id = $app->input->get('id', 0, 'INT');
 		$catid = $app->input->get('category_id', 0, 'INT');
@@ -146,7 +149,7 @@ class ArticlesApiResourceArticle extends ApiResource
 				{
 					if ($value)
 					{
-						$images->$key = JURI::base() . $value;
+						$images->$key = Uri::base() . $value;
 					}
 				}
 
@@ -210,12 +213,13 @@ class ArticlesApiResourceArticle extends ApiResource
 	{
 		if (version_compare(JVERSION, '3.0', 'lt'))
 		{
-			JTable::addIncludePath(JPATH_PLATFORM . 'joomla/database/table');
+use Joomla\CMS\Table\Table;
+			Table::addIncludePath(JPATH_PLATFORM . 'joomla/database/table');
 		}
 
 		$obj = new stdclass;
 
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$article_id = $app->input->get('id', 0, 'INT');
 
 		if (empty($app->input->get('title', '', 'STRING')))
@@ -244,7 +248,7 @@ class ArticlesApiResourceArticle extends ApiResource
 
 		if ($article_id)
 		{
-			$article = JTable::getInstance('Content', 'JTable', array());
+			$article = Table::getInstance('Content', 'Table', array());
 			$article->load($article_id);
 			$data = array(
 			'title' => $app->input->get('title', '', 'STRING'),
@@ -269,7 +273,7 @@ class ArticlesApiResourceArticle extends ApiResource
 		}
 		else
 		{
-			$article = JTable::getInstance('content');
+			$article = Table::getInstance('content');
 			$article->title = $app->input->get('title', '', 'STRING');
 			$article->alias = $app->input->get('alias', '', 'STRING');
 			$article->introtext = $app->input->get('introtext', '', 'STRING');
@@ -305,7 +309,7 @@ class ArticlesApiResourceArticle extends ApiResource
 		{
 			if ($value)
 			{
-				$images->$key = JURI::base() . $value;
+				$images->$key = Uri::base() . $value;
 			}
 		}
 

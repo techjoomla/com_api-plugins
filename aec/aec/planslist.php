@@ -7,8 +7,8 @@
 */
 
 defined('_JEXEC') or die;
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
 //function in file - /var/www/mppronline/administrator/components/com_acctexp/admin.acctexp.php
 
 
@@ -17,11 +17,11 @@ class AecApiResourcePlanslist extends ApiResource
 	public function get()
 	{
 		require_once JPATH_SITE .'/components/com_acctexp/acctexp.class.php';
-		$limitstart = JRequest::getInt('limitstart',0);
-		$limit = JRequest::getInt('limit',20);	
-        $active = JRequest::getInt('active',0);	 
-		$visible = JRequest::getInt('visible',0);			
-		$name = JRequest::getVar('name','');
+		$limitstart = Factory::getApplication()->input->get('limitstart',0);
+		$limit = Factory::getApplication()->input->get('limit',20);	
+        $active = Factory::getApplication()->input->get('active',0);	 
+		$visible = Factory::getApplication()->input->get('visible',0);			
+		$name = Factory::getApplication()->input->get('name','');
 		$pattern = '/' . preg_quote($name, '/') . '/';      
 
         $limit = ($limit>100)?100:$limit;
@@ -109,7 +109,7 @@ class AecApiResourcePlanslist extends ApiResource
 
   function qry()
  {
-    $db = &JFactory::getDBO();
+    $db = Factory::getDbo();
     $qry = "SELECT count(*) FROM #__acctexp_subscr AS a INNER JOIN #__users AS b ON a.userid = b.id WHERE ((a.status = 'Active' || a.status = 'Trial'))";
     $db->setQuery( $query );
 	$total = $db->loadResult(); 

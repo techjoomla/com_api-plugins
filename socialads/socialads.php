@@ -8,8 +8,6 @@
 
 defined('_JEXEC') or die( 'Restricted access' );
 
-jimport('joomla.plugin.plugin');
-
 class plgAPISocialads extends ApiPlugin
 {
 	public function __construct()

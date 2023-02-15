@@ -11,9 +11,9 @@
  */
 
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/groups.php';
@@ -39,7 +39,7 @@ class EasysocialApiResourceRequest extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse(JText::_('PLG_API_EASYSOCIAL_UNSUPPORTED_METHOD_MESSAGE'));
+		$this->plugin->setResponse(Text::_('PLG_API_EASYSOCIAL_UNSUPPORTED_METHOD_MESSAGE'));
 	}
 
 	/**
@@ -64,8 +64,8 @@ class EasysocialApiResourceRequest extends ApiResource
 	public function request()
 	{
 		// Init variable
-		$app		= JFactory::getApplication();
-		$log_user	= JFactory::getUser($this->plugin->get('user')->id);
+		$app		= Factory::getApplication();
+		$log_user	= Factory::getUser($this->plugin->get('user')->id);
 		$clusterId	= $app->input->get('id', 0, 'INT');
 		$req_val	= $app->input->get('request', '', 'STRING');
 		$other_user_id	= $app->input->get('target_user', 0, 'INT');
@@ -80,7 +80,7 @@ class EasysocialApiResourceRequest extends ApiResource
 		if (!$clusterId || !$other_user_id)
 		{
 			$res->success = 0;
-			$res->message = JText::_('PLG_API_EASYSOCIAL_INSUFFICIENT_INPUTS_MESSAGE');
+			$res->message = Text::_('PLG_API_EASYSOCIAL_INSUFFICIENT_INPUTS_MESSAGE');
 
 			return $res;
 		}
@@ -88,10 +88,10 @@ class EasysocialApiResourceRequest extends ApiResource
 		{
 			$group = FD::$type($clusterId);
 
-			if ($group->isAdmin() != $log_user && ($req_val != 'withdraw') && ($req_val != 'reject'))
+			if ($group->isClient("administrator") != $log_user && ($req_val != 'withdraw') && ($req_val != 'reject'))
 			{
 				$res->success = 0;
-				$res->message = JText::_('PLG_API_EASYSOCIAL_UNAUTHORISED_USER_MESSAGE');
+				$res->message = Text::_('PLG_API_EASYSOCIAL_UNAUTHORISED_USER_MESSAGE');
 
 				return $res;
 			}
@@ -103,19 +103,19 @@ class EasysocialApiResourceRequest extends ApiResource
 					case 'Approve':
 					case 'approve':
 						$res->success = $group->approveUser($other_user_id);
-						$res->message = ($res->success) ? JText::_('PLG_API_EASYSOCIAL_USER_REQ_GRANTED') :
-						JText::_('PLG_API_EASYSOCIAL_USER_REQ_UNSUCCESS');
+						$res->message = ($res->success) ? Text::_('PLG_API_EASYSOCIAL_USER_REQ_GRANTED') :
+						Text::_('PLG_API_EASYSOCIAL_USER_REQ_UNSUCCESS');
 						break;
 					case 'Reject':
 					case 'reject':
 						$res->success = $group->rejectUser($other_user_id);
-						$res->message = ($res->success) ? JText::_('PLG_API_EASYSOCIAL_USER_APPLICATION_REJECTED') :
-						JText::_('PLG_API_EASYSOCIAL_UNABLE_REJECT_APPLICATION');
+						$res->message = ($res->success) ? Text::_('PLG_API_EASYSOCIAL_USER_APPLICATION_REJECTED') :
+						Text::_('PLG_API_EASYSOCIAL_UNABLE_REJECT_APPLICATION');
 						break;
 					case 'Withdraw':
 					case 'withdraw':
 						$res->success = $group->deleteMember($other_user_id);
-						$res->message = ($res->success) ? JText::_('PLG_API_EASYSOCIAL_REQUEST_WITHDRAWN') : JText::_('PLG_API_EASYSOCIAL_UNABLE_WITHDRAWN_REQ');
+						$res->message = ($res->success) ? Text::_('PLG_API_EASYSOCIAL_REQUEST_WITHDRAWN') : Text::_('PLG_API_EASYSOCIAL_UNABLE_WITHDRAWN_REQ');
 						break;
 				}
 			}
@@ -126,19 +126,19 @@ class EasysocialApiResourceRequest extends ApiResource
 					case 'Approve':
 					case 'approve':
 						$res->success = $group->approveUser($other_user_id);
-						$res->message = ($res->success) ? JText::_('PLG_API_EASYSOCIAL_PAGE_USER_REQ_GRANTED') :
-						JText::_('PLG_API_EASYSOCIAL_PAGE_USER_REQ_UNSUCCESS');
+						$res->message = ($res->success) ? Text::_('PLG_API_EASYSOCIAL_PAGE_USER_REQ_GRANTED') :
+						Text::_('PLG_API_EASYSOCIAL_PAGE_USER_REQ_UNSUCCESS');
 						break;
 					case 'Reject':
 					case 'reject':
 						$res->success = $group->rejectUser($other_user_id);
-						$res->message = ($res->success) ? JText::_('PLG_API_EASYSOCIAL_PAGE_USER_APPLICATION_REJECTED') :
-						JText::_('PLG_API_EASYSOCIAL_UNABLE_REJECT_APPLICATION');
+						$res->message = ($res->success) ? Text::_('PLG_API_EASYSOCIAL_PAGE_USER_APPLICATION_REJECTED') :
+						Text::_('PLG_API_EASYSOCIAL_UNABLE_REJECT_APPLICATION');
 						break;
 					case 'Withdraw':
 					case 'withdraw':
 						$res->success = $group->deleteMember($other_user_id);
-			$res->message = ($res->success) ? JText::_('PLG_API_EASYSOCIAL_PAGE_REQUEST_WITHDRAWN') : JText::_('PLG_API_EASYSOCIAL_PAGE_UNABLE_WITHDRAWN_REQ');
+			$res->message = ($res->success) ? Text::_('PLG_API_EASYSOCIAL_PAGE_REQUEST_WITHDRAWN') : Text::_('PLG_API_EASYSOCIAL_PAGE_UNABLE_WITHDRAWN_REQ');
 						break;
 				}
 			}
@@ -153,38 +153,38 @@ class EasysocialApiResourceRequest extends ApiResource
 
 				if (!$state || empty($guest->id))
 				{
-					$res->message = JText::_('COM_EASYSOCIAL_EVENTS_INVALID_GUEST_ID');
+					$res->message = Text::_('COM_EASYSOCIAL_EVENTS_INVALID_GUEST_ID');
 				}
 				elseif (empty($event) || empty($event->id))
 				{
-					$res->message = JText::_('COM_EASYSOCIAL_EVENTS_INVALID_EVENT_ID');
+					$res->message = Text::_('COM_EASYSOCIAL_EVENTS_INVALID_EVENT_ID');
 				}
-				elseif ($myGuest->isAdmin() && $guest->isPending())
+				elseif ($myGuest->isClient("administrator") && $guest->isPending())
 				{
 					switch ($req_val)
 					{
 						case 'Approve':
 						case 'approve':
 							$res->success = $guest->approve();
-							$res->message = ($res->success) ? JText::_('PLG_API_EASYSOCIAL_USER_REQ_GRANTED') : JText::_('PLG_API_EASYSOCIAL_USER_REQ_UNSUCCESS');
+							$res->message = ($res->success) ? Text::_('PLG_API_EASYSOCIAL_USER_REQ_GRANTED') : Text::_('PLG_API_EASYSOCIAL_USER_REQ_UNSUCCESS');
 							break;
 						case 'Reject':
 						case 'reject':
 							$res->success = $guest->reject();
-							$res->message = ($res->success) ? JText::_('PLG_API_EASYSOCIAL_USER_APPLICATION_REJECTED') :
-							JText::_('PLG_API_EASYSOCIAL_UNABLE_REJECT_APPLICATION');
+							$res->message = ($res->success) ? Text::_('PLG_API_EASYSOCIAL_USER_APPLICATION_REJECTED') :
+							Text::_('PLG_API_EASYSOCIAL_UNABLE_REJECT_APPLICATION');
 							break;
 						case 'remove':
 						case 'Remove':
 							$res->success = $guest->remove();
-							$res->message = ($res->success) ? JText::_('COM_EASYSOCIAL_EVENTS_GUEST_REMOVAL_SUCCESS') :
-							JText::_('COM_EASYSOCIAL_EVENTS_NO_ACCESS_TO_EVENT');
+							$res->message = ($res->success) ? Text::_('COM_EASYSOCIAL_EVENTS_GUEST_REMOVAL_SUCCESS') :
+							Text::_('COM_EASYSOCIAL_EVENTS_NO_ACCESS_TO_EVENT');
 							break;
 					}
 				}
 				else
 				{
-					$res->message = JText::_('COM_EASYSOCIAL_EVENTS_NO_ACCESS_TO_EVENT');
+					$res->message = Text::_('COM_EASYSOCIAL_EVENTS_NO_ACCESS_TO_EVENT');
 				}
 			}
 

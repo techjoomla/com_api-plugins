@@ -10,9 +10,9 @@
  * and the com_api extension by Brian Edgerton (http://www.edgewebworks.com)
  */
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
 
@@ -56,7 +56,7 @@ class EasysocialApiResourceEvents extends ApiResource
 	 */
 	private function getEvents()
 	{
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 
 		// Getting log_user
 		$log_user = $this->plugin->get('user')->id;
@@ -114,7 +114,7 @@ class EasysocialApiResourceEvents extends ApiResource
 			}
 			else
 			{
-				$res->empty_message = JText::_('PLG_API_EASYSOCIAL_INVALID_DATE_FORMAT_MESSAGE');
+				$res->empty_message = Text::_('PLG_API_EASYSOCIAL_INVALID_DATE_FORMAT_MESSAGE');
 				$res->result = [];
 				$this->plugin->setResponse($res);
 			}
@@ -223,7 +223,7 @@ class EasysocialApiResourceEvents extends ApiResource
 
 		if (!$res->result->events)
 		{
-			$res->empty_message = JText::_('PLG_API_EASYSOCIAL_EVENT_NOT_FOUND_MESSAGE');
+			$res->empty_message = Text::_('PLG_API_EASYSOCIAL_EVENT_NOT_FOUND_MESSAGE');
 		}
 
 		$this->plugin->setResponse($res);
@@ -287,7 +287,7 @@ class EasysocialApiResourceEvents extends ApiResource
 	 */
 	private function putStatus()
 	{
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$log_user = $this->plugin->get('user')->id;
 		$event_id = $app->input->get('event_id', 0, 'INT');
 		$state = $app->input->get('state', '', 'STRING');
@@ -304,7 +304,7 @@ class EasysocialApiResourceEvents extends ApiResource
 
 		if (empty($event) || empty($event->id) || ! $event->isPublished())
 		{
-			$res->message = JText::_('PLG_API_EASYSOCIAL_EVENT_NOT_FOUND_MESSAGE');
+			$res->message = Text::_('PLG_API_EASYSOCIAL_EVENT_NOT_FOUND_MESSAGE');
 			$res->status = 0;
 
 			return $res;
@@ -313,7 +313,7 @@ class EasysocialApiResourceEvents extends ApiResource
 		if (($event->isClosed() && ((! $guest->isParticipant() && $state !== 'request') || ($guest->isPending() && $state !== 'withdraw')))
 			||($event->isInviteOnly() && ! $guest->isParticipant()))
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_ERROR_MESSAGE'));
+			ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_ERROR_MESSAGE'));
 		}
 
 		$guest->cluster_id = $event_id;
@@ -322,7 +322,7 @@ class EasysocialApiResourceEvents extends ApiResource
 
 		if (in_array($state, array('going', 'maybe', 'request')) && $access->exceeded('events.join', $total))
 		{
-			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_LIMIT_EXCEEDS_MESSAGE'));
+			ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_LIMIT_EXCEEDS_MESSAGE'));
 		}
 
 		switch ($state)
@@ -355,7 +355,7 @@ class EasysocialApiResourceEvents extends ApiResource
 				break;
 
 			default:
-				$final = JText::_('PLG_API_EASYSOCIAL_SELECT_VALID_OPTION_MESSAGE');
+				$final = Text::_('PLG_API_EASYSOCIAL_SELECT_VALID_OPTION_MESSAGE');
 				break;
 		}
 

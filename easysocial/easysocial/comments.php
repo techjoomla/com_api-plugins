@@ -7,9 +7,9 @@
  */
 
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/groups.php';
@@ -38,7 +38,7 @@ class EasysocialApiResourceComments extends ApiResource
 	 */
 	public function post()
 	{
-		$app		=	JFactory::getApplication();
+		$app		=	Factory::getApplication();
 		$element	=	$app->input->get('element', '', 'string');
 		$group		=	$app->input->get('group', '', 'string');
 		$verb		=	$app->input->get('verb', '', 'string');
@@ -55,7 +55,7 @@ class EasysocialApiResourceComments extends ApiResource
 
 		if (!$uid)
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_EMPTY_ELEMENT_NOT_ALLOWED_MESSAGE'));
+			ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_EMPTY_ELEMENT_NOT_ALLOWED_MESSAGE'));
 		}
 
 		// Determine if this user has the permissions to add comment.
@@ -64,12 +64,12 @@ class EasysocialApiResourceComments extends ApiResource
 
 		if (!$allowed)
 		{
-			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_COMMENT_NOT_ALLOW_MESSAGE'));
+			ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_COMMENT_NOT_ALLOW_MESSAGE'));
 		}
 
 		if (empty($input))
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_EMPTY_COMMENT_NOT_ALLOWED_MESSAGE'));
+			ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_EMPTY_COMMENT_NOT_ALLOWED_MESSAGE'));
 		}
 
 			// Normalize CRLF (\r\n) to just LF (\n)
@@ -115,15 +115,15 @@ class EasysocialApiResourceComments extends ApiResource
 				$args		=	array(&$comments);
 
 				// @trigger: onPrepareComments
-				$dispatcher->trigger($group, 'onPrepareComments', $args);
+				Factory::getApplication()->triggerEvent($group, 'onPrepareComments', $args);
 
 				// Create result obj
-				$res->result->message		=	JText::_('PLG_API_EASYSOCIAL_COMMENT_SAVE_SUCCESS_MESSAGE');
+				$res->result->message		=	Text::_('PLG_API_EASYSOCIAL_COMMENT_SAVE_SUCCESS_MESSAGE');
 			}
 			else
 			{
 				// Create result obj
-				ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_COMMENT_SAVE_UNSUCCESS_MESSAGE'));
+				ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_COMMENT_SAVE_UNSUCCESS_MESSAGE'));
 			}
 
 		$this->plugin->setResponse($res);
@@ -135,8 +135,8 @@ class EasysocialApiResourceComments extends ApiResource
 	 */
 	private function getComments()
 	{
-		$app				=	JFactory::getApplication();
-		$log_user			=	JFactory::getUser($this->plugin->get('user')->id);
+		$app				=	Factory::getApplication();
+		$log_user			=	Factory::getUser($this->plugin->get('user')->id);
 		$row				=	new stdClass;
 		$row->uid			=	$app->input->get('uid', 0, 'INT');
 		$row->element		=	$app->input->get('element', '', 'STRING');
@@ -162,12 +162,12 @@ class EasysocialApiResourceComments extends ApiResource
 
 		if (!$allowed)
 		{
-			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_READ_COMMENT_NOT_ALLOW_MESSAGE'));
+			ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_READ_COMMENT_NOT_ALLOW_MESSAGE'));
 		}
 
 		if (count($data['data']) < 1)
 		{
-			$res->empty_message	=	JText::_('APP_USER_KOMENTO_NO_COMMENTS_FOUND');
+			$res->empty_message	=	Text::_('APP_USER_KOMENTO_NO_COMMENTS_FOUND');
 		}
 		else
 		{
@@ -183,19 +183,19 @@ class EasysocialApiResourceComments extends ApiResource
 	 */
 	public function delete()
 	{
-		$app			=	JFactory::getApplication();
+		$app			=	Factory::getApplication();
 		$conversion_id	=	$app->input->get('conversation_id', 0, 'INT');
 		$result			=	new stdClass;
 
 		if (!$conversion_id)
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_CONVERSATION_MESSAGE'));
+			ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_INVALID_CONVERSATION_MESSAGE'));
 		}
 
 		// Try to delete the group
 		$conv_model			=	ES::model('Conversations');
 		$conv_model->delete($conversion_id, $this->plugin->get('user')->id);
-		$result->message	=	JText::_('PLG_API_EASYSOCIAL_CONVERSATION_DELETED_MESSAGE');
+		$result->message	=	Text::_('PLG_API_EASYSOCIAL_CONVERSATION_DELETED_MESSAGE');
 
 		$this->plugin->setResponse($result);
 	}

@@ -6,10 +6,11 @@
  * @link http://www.techjoomla.com
 */
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
 error_reporting(E_ERROR | E_PARSE);
 
-jimport('joomla.user.user');
 /*
 require_once( EBLOG_CONTROLLERS . '/media.php' );
 require_once( EBLOG_HELPERS . '/date.php' );
@@ -48,11 +49,11 @@ class EasyblogApiResourceImage extends ApiResource
 			$op = $controller->upload();
 			*/
 			
-			$input = JFactory::getApplication()->input;
+			$input = Factory::getApplication()->input;
 			$log_user = $this->plugin->get('user')->id;
 			$res = new stdClass;
 			// Let's get the path for the current request.
-			$file	= JRequest::getVar( 'file' , '' , 'FILES' , 'array' );
+			$file	= Factory::getApplication()->input->get( 'file' , '' , 'FILES' , 'array' );
 
 
 			if($file['name'])
@@ -81,7 +82,7 @@ class EasyblogApiResourceImage extends ApiResource
 			if( $allowed !== true )
 			{
 				$res->status= 0;
-				$res->message = JText::_( 'PLG_API_EASYBLOG_UPLOAD_DENIED_MESSAGE' );
+				$res->message = Text::_( 'PLG_API_EASYBLOG_UPLOAD_DENIED_MESSAGE' );
 				return $res;
 			}
 
@@ -103,12 +104,12 @@ class EasyblogApiResourceImage extends ApiResource
 			}
 			else
 			{
-				$this->plugin->setResponse( $this->getErrorResponse(404, __FUNCTION__ . JText::_( 'PLG_API_EASYBLOG_UPLOAD_UNSUCCESSFULL' ) ) );
+				$this->plugin->setResponse( $this->getErrorResponse(404, __FUNCTION__ . Text::_( 'PLG_API_EASYBLOG_UPLOAD_UNSUCCESSFULL' ) ) );
 			}
 	}
 	
 	public function get() {
-		$this->plugin->setResponse( $this->getErrorResponse(404, __FUNCTION__ . JText::_( 'PLG_API_EASYBLOG_NOT_SUPPORTED' ) ) );
+		$this->plugin->setResponse( $this->getErrorResponse(404, __FUNCTION__ . Text::_( 'PLG_API_EASYBLOG_NOT_SUPPORTED' ) ) );
 	}
 	
 }

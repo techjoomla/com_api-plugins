@@ -10,8 +10,9 @@
  * and the com_api extension by Brian Edgerton (http://www.edgewebworks.com)
  */
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.plugin.plugin');
 use Joomla\Registry\Registry;
 JLoader::register("EasySocialApiUploadHelper", JPATH_SITE . '/plugins/api/easysocial/libraries/uploadHelper.php');
 JLoader::register("EasySocialApiMappingHelper", JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php');
@@ -35,7 +36,7 @@ class EasysocialApiResourceGroup extends ApiResource
 	 */
 	public function get()
 	{
-		$input = JFactory::getApplication()->input;
+		$input = Factory::getApplication()->input;
 
 		// Get the group object
 		$id		=	$input->get('id', 0, 'int');
@@ -45,13 +46,13 @@ class EasysocialApiResourceGroup extends ApiResource
 		// Ensure that the id provided is valid
 		if (! $group || ! $group->id)
 		{
-			ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_GROUPS_INVALID_GROUP_ID'));
+			ApiError::raiseError(400, Text::_('COM_EASYSOCIAL_GROUPS_INVALID_GROUP_ID'));
 		}
 
 		// Ensure that the user has access to view group's item
 		if (! $group->canViewItem() || !$group->isPublished() || ($user->id != $group->creator_uid && $user->isBlockedBy($group->creator_uid)))
 		{
-			ApiError::raiseError(403, JText::_('COM_EASYSOCIAL_GROUPS_NO_ACCESS'));
+			ApiError::raiseError(403, Text::_('COM_EASYSOCIAL_GROUPS_NO_ACCESS'));
 		}
 
 		$EasySocialApiMappingHelper = new EasySocialApiMappingHelper;
@@ -74,7 +75,7 @@ class EasysocialApiResourceGroup extends ApiResource
 	public function post()
 	{
 		$user	=	ES::user();
-		$input	=	JFactory::getApplication()->input;
+		$input	=	Factory::getApplication()->input;
 		$id		=	$input->get('id', 0, 'int');
 
 		$apiResponse			=	new stdClass;
@@ -86,25 +87,25 @@ class EasysocialApiResourceGroup extends ApiResource
 
 		if (empty($postValues['title']))
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_GROUP_NAME'));
+			ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_INVALID_GROUP_NAME'));
 		}
 
 		// Check parmalink
 		if (empty($postValues['permalink']))
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_PARMALINK'));
+			ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_INVALID_PARMALINK'));
 		}
 
 		// Check description
 		if (empty($postValues['description']))
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_EMPTY_DESCRIPTION'));
+			ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_EMPTY_DESCRIPTION'));
 		}
 
 		// Check group type
 		if (empty($postValues['type']))
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_ADD_GROUP_TYPE_MESSAGE'));
+			ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_ADD_GROUP_TYPE_MESSAGE'));
 		}
 
 		// Flag to see if this is new or edit
@@ -114,13 +115,13 @@ class EasysocialApiResourceGroup extends ApiResource
 		{
 			if (! $user->getAccess()->allowed('groups.create') && ! $user->isSiteAdmin())
 			{
-				ApiError::raiseError(403, JText::_('COM_EASYSOCIAL_GROUPS_NO_ACCESS_CREATE_GROUP'));
+				ApiError::raiseError(403, Text::_('COM_EASYSOCIAL_GROUPS_NO_ACCESS_CREATE_GROUP'));
 			}
 
 			// Ensure that the user did not exceed their group creation limit
 			if ($user->getAccess()->intervalExceeded('groups.limit', $user->id) && ! $user->isSiteAdmin())
 			{
-				ApiError::raiseError(403, JText::_('COM_EASYSOCIAL_GROUPS_EXCEEDED_LIMIT'));
+				ApiError::raiseError(403, Text::_('COM_EASYSOCIAL_GROUPS_EXCEEDED_LIMIT'));
 			}
 
 			if ( $version >= '2.1.0')
@@ -134,19 +135,19 @@ class EasysocialApiResourceGroup extends ApiResource
 
 			if (! $category->id || ($category->type != SOCIAL_FIELDS_GROUP_GROUP))
 			{
-				ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_GROUPS_INVALID_CATEGORY_ID'));
+				ApiError::raiseError(400, Text::_('COM_EASYSOCIAL_GROUPS_INVALID_CATEGORY_ID'));
 			}
 
 			// Check if the user really has access to create groups
 			if (! $user->getAccess()->allowed('groups.create') && ! $user->isSiteAdmin())
 			{
-				ApiError::raiseError(403, JText::_('COM_EASYSOCIAL_GROUPS_NO_ACCESS_CREATE_GROUP'));
+				ApiError::raiseError(403, Text::_('COM_EASYSOCIAL_GROUPS_NO_ACCESS_CREATE_GROUP'));
 			}
 
 			// Need to check if this clsuter category has creation limit based on user points or not.
 			if (! $category->hasPointsToCreate($user->id))
 			{
-				ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_GROUPS_INSUFFICIENT_POINTS'));
+				ApiError::raiseError(400, Text::_('COM_EASYSOCIAL_GROUPS_INSUFFICIENT_POINTS'));
 			}
 
 			$options				=	array();
@@ -208,7 +209,7 @@ class EasysocialApiResourceGroup extends ApiResource
 			$fieldArray = $this->createFieldArr($postValues, $options);
 
 			// Get current user's info
-			$session = JFactory::getSession();
+			$session = Factory::getSession();
 
 			// Get necessary info about the current registration process.
 			$stepSession = ES::table('StepSession');
@@ -286,7 +287,7 @@ class EasysocialApiResourceGroup extends ApiResource
 			// Saving was intercepted by one of the field applications.
 			if (is_array($errors) && count($errors) > 0)
 			{
-				ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_REGISTRATION_SOME_ERRORS_IN_THE_REGISTRATION_FORM'));
+				ApiError::raiseError(400, Text::_('COM_EASYSOCIAL_REGISTRATION_SOME_ERRORS_IN_THE_REGISTRATION_FORM'));
 			}
 
 			// Update creation date
@@ -310,12 +311,12 @@ class EasysocialApiResourceGroup extends ApiResource
 
 			// Add this action into access logs.
 			ES::access()->log('groups.limit', $user->id, $group->id, SOCIAL_TYPE_GROUP);
-			$message = JText::_('COM_EASYSOCIAL_GROUPS_CREATED_PENDING_APPROVAL');
+			$message = Text::_('COM_EASYSOCIAL_GROUPS_CREATED_PENDING_APPROVAL');
 
 			// If the group is published, we need to perform other activities
 			if ($group->state == SOCIAL_STATE_PUBLISHED)
 			{
-				$message = JText::_('COM_EASYSOCIAL_GROUPS_CREATED_SUCCESSFULLY');
+				$message = Text::_('COM_EASYSOCIAL_GROUPS_CREATED_SUCCESSFULLY');
 				$this->addTostream($user, $group);
 
 				// Update social goals
@@ -333,17 +334,17 @@ class EasysocialApiResourceGroup extends ApiResource
 
 			if (!$id || !$group->id)
 			{
-				ApiError::raiseError(400, JText::_("COM_EASYSOCIAL_GROUPS_INVALID_GROUP_ID"));
+				ApiError::raiseError(400, Text::_("COM_EASYSOCIAL_GROUPS_INVALID_GROUP_ID"));
 			}
 
-			if (!$group->isOwner() && !$group->isAdmin() && !$user->isSiteAdmin())
+			if (!$group->isOwner() && !$group->isClient("administrator") && !$user->isSiteAdmin())
 			{
-				ApiError::raiseError(400, JText::_("COM_EASYSOCIAL_GROUPS_NO_ACCESS"));
+				ApiError::raiseError(400, Text::_("COM_EASYSOCIAL_GROUPS_NO_ACCESS"));
 			}
 
 			if (! SocialFieldsGroupPermalinkHelper::valid($postValues['permalink'], new Registry))
 			{
-				ApiError::raiseError(400, JText::_('PLG_FIELDS_GROUP_PERMALINK_INVALID_PERMALINK'));
+				ApiError::raiseError(400, Text::_('PLG_FIELDS_GROUP_PERMALINK_INVALID_PERMALINK'));
 			}
 
 			$this->validateGroupPermalink($postValues['permalink'], $group);
@@ -422,14 +423,14 @@ class EasysocialApiResourceGroup extends ApiResource
 
 			if (is_array($errors) && count($errors) > 0)
 			{
-				ApiError::raiseError(400, JText::_("COM_EASYSOCIAL_GROUPS_PROFILE_SAVE_ERRORS"));
+				ApiError::raiseError(400, Text::_("COM_EASYSOCIAL_GROUPS_PROFILE_SAVE_ERRORS"));
 			}
 
 			$errors = $fieldsLib->trigger('onEditBeforeSave', SOCIAL_FIELDS_GROUP_GROUP, $fields, $args, array($handler, 'beforeSave'));
 
 			if (is_array($errors) && count($errors) > 0)
 			{
-				ApiError::raiseError(400, JText::_("COM_EASYSOCIAL_PROFILE_ERRORS_IN_FORM"));
+				ApiError::raiseError(400, Text::_("COM_EASYSOCIAL_PROFILE_ERRORS_IN_FORM"));
 			}
 
 			if ($group->isDraft() || $user->getAccess()->get('groups.moderate'))
@@ -459,7 +460,7 @@ class EasysocialApiResourceGroup extends ApiResource
 			$messageLang = $group->isPending() ? 'COM_EASYSOCIAL_GROUPS_UPDATED_PENDING_APPROVAL' : 'COM_EASYSOCIAL_GROUPS_PROFILE_UPDATED_SUCCESSFULLY';
 
 			$apiResponse->result->status = 1;
-			$apiResponse->result->message = JText::_($messageLang);
+			$apiResponse->result->message = Text::_($messageLang);
 
 			$this->plugin->setResponse($apiResponse);
 		}
@@ -474,7 +475,7 @@ class EasysocialApiResourceGroup extends ApiResource
 	 */
 	public function delete()
 	{
-		$input = JFactory::getApplication()->input;
+		$input = Factory::getApplication()->input;
 
 		$user = ES::user();
 
@@ -484,13 +485,13 @@ class EasysocialApiResourceGroup extends ApiResource
 
 		if (! $group->id || ! $id)
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_GROUP_MESSAGE'));
+			ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_INVALID_GROUP_MESSAGE'));
 		}
 
 		// Only group owner and site admins are allowed to delete the group
 		if (! $user->isSiteAdmin() && ! $group->isOwner())
 		{
-			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_ACCESS_DENIED_MESSAGE'));
+			ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_ACCESS_DENIED_MESSAGE'));
 		}
 
 		// Try to delete the group
@@ -499,7 +500,7 @@ class EasysocialApiResourceGroup extends ApiResource
 		$apiResponse = new stdclass;
 
 		$apiResponse->result->status = 1;
-		$apiResponse->result->message = JText::_('PLG_API_EASYSOCIAL_GROUP_DELETED_MESSAGE');
+		$apiResponse->result->message = Text::_('PLG_API_EASYSOCIAL_GROUP_DELETED_MESSAGE');
 
 		$this->plugin->setResponse($apiResponse);
 	}
@@ -631,18 +632,18 @@ class EasysocialApiResourceGroup extends ApiResource
 
 		if (!SocialFieldsGroupPermalinkHelper::allowed($permalink))
 		{
-			ApiError::raiseError(400, JText::_('PLG_FIELDS_PERMALINK_CONFLICTS_WITH_SYSTEM'));
+			ApiError::raiseError(400, Text::_('PLG_FIELDS_PERMALINK_CONFLICTS_WITH_SYSTEM'));
 		}
 
 		// Peramalink validation
 		if (SocialFieldsGroupPermalinkHelper::exists($permalink))
 		{
-			ApiError::raiseError(400, JText::_('PLG_FIELDS_GROUP_PERMALINK_NOT_AVAILABLE'));
+			ApiError::raiseError(400, Text::_('PLG_FIELDS_GROUP_PERMALINK_NOT_AVAILABLE'));
 		}
 
 		if (! SocialFieldsGroupPermalinkHelper::valid($permalink, new Registry))
 		{
-			ApiError::raiseError(400, JText::_('PLG_FIELDS_GROUP_PERMALINK_INVALID_PERMALINK'));
+			ApiError::raiseError(400, Text::_('PLG_FIELDS_GROUP_PERMALINK_INVALID_PERMALINK'));
 		}
 
 		return true;

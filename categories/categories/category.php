@@ -10,6 +10,9 @@
 
 // No direct access.
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Table\Table;
+use Joomla\CMS\MVC\Model\BaseDatabaseModel;
+use Joomla\CMS\Factory;
 
 JLoader::register('CategoriesModelCategory', JPATH_ROOT . '/administrator/components/com_categories/models/category.php');
 
@@ -51,13 +54,13 @@ class CategoriesApiResourceCategory extends ApiResource
 	public function getCategory()
 	{
 		// 1. Important to include category table first
-		JTable::addIncludePath(JPATH_ROOT . '/administrator/components/com_categories/tables');
+		Table::addIncludePath(JPATH_ROOT . '/administrator/components/com_categories/tables');
 
 		// 2. Then, get an instance of the generic articles model
-		$model = JModelLegacy::getInstance('Category', 'CategoriesModel', array('ignore_request' => true));
+		$model = BaseDatabaseModel::getInstance('Category', 'CategoriesModel', array('ignore_request' => true));
 
 		// Set application parameters in model
-		$app   = JFactory::getApplication();
+		$app   = Factory::getApplication();
 		$input = $app->input;
 
 		// Important to get from input directly and not from $input->get->get()
@@ -92,12 +95,12 @@ class CategoriesApiResourceCategory extends ApiResource
 	{
 		if (version_compare(JVERSION, '3.0', 'lt'))
 		{
-			JTable::addIncludePath(JPATH_PLATFORM . 'joomla/database/table');
+			Table::addIncludePath(JPATH_PLATFORM . 'joomla/database/table');
 		}
 
 		$obj = new stdclass;
 
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$cat_id = $app->input->post->get('id', 0, 'INT');
 
 		if (empty($app->input->post->get('title', '', 'STRING')))
@@ -118,7 +121,7 @@ class CategoriesApiResourceCategory extends ApiResource
 
 		if ($cat_id)
 		{
-			$category = JTable::getInstance('Content', 'JTable', array());
+			$category = Table::getInstance('Content', 'Table', array());
 			$category->load($cat_id);
 			$data = array(
 				'title' => $app->input->post->get('title', '', 'STRING'),
@@ -133,7 +136,7 @@ class CategoriesApiResourceCategory extends ApiResource
 		}
 		else
 		{
-			$category = JTable::getInstance('content');
+			$category = Table::getInstance('content');
 			$category->title = $app->input->post->get('title', '', 'STRING');
 			$category->alias = $app->input->post->get('alias', '', 'STRING');
 			$category->description = $app->input->post->get('description', '', 'STRING');

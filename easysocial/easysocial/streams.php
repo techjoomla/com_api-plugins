@@ -11,9 +11,9 @@
  */
 
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 ES::import('site:/controllers/controller');
 
 /**
@@ -32,7 +32,7 @@ class EasysocialApiResourceStreams extends ApiResource
 	 */
 		public function get()
 		{
-			$this->plugin->setResponse(JText::_('PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE'));
+			$this->plugin->setResponse(Text::_('PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE'));
 		}
 
 	/**
@@ -56,7 +56,7 @@ class EasysocialApiResourceStreams extends ApiResource
 	 */
 		private function processAction()
 		{
-			$app = JFactory::getApplication();
+			$app = Factory::getApplication();
 			$target_id = $app->input->get('target_id', 0, 'INT');
 			$action = $app->input->get('action', 0, 'STRING');
 			$uid = $app->input->get('uid', 0, 'INT');
@@ -94,7 +94,7 @@ class EasysocialApiResourceStreams extends ApiResource
 		// If id is null, throw an error.
 		if (!$target_id)
 		{
-			ApiError::raiseError(403, JText::_('COM_EASYSOCIAL_ERROR_UNABLE_TO_LOCATE_ID'));
+			ApiError::raiseError(403, Text::_('COM_EASYSOCIAL_ERROR_UNABLE_TO_LOCATE_ID'));
 		}
 
 		// Get logged in user
@@ -107,7 +107,7 @@ class EasysocialApiResourceStreams extends ApiResource
 		// Check if the user is allowed to hide this item
 		if ( !$item->hideable() )
 		{
-			ApiError::raiseError(403, JText::_('COM_EASYSOCIAL_STREAM_NOT_ALLOWED_TO_HIDE'));
+			ApiError::raiseError(403, Text::_('COM_EASYSOCIAL_STREAM_NOT_ALLOWED_TO_HIDE'));
 		}
 
 		// Get the model
@@ -117,11 +117,11 @@ class EasysocialApiResourceStreams extends ApiResource
 		if ($state)
 		{
 			$res->success = 1;
-			$res->message = JText::_('COM_EASYSOCIAL_STREAM_ITEM_HIDDEN_SUCCESS');
+			$res->message = Text::_('COM_EASYSOCIAL_STREAM_ITEM_HIDDEN_SUCCESS');
 		}
 		else
 		{
-			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_HIDE_NEWSFEED_ITEM_ERROR'));
+			ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_HIDE_NEWSFEED_ITEM_ERROR'));
 		}
 
 		return $res;
@@ -143,7 +143,7 @@ class EasysocialApiResourceStreams extends ApiResource
 		// If id is null, throw an error.
 		if (!$target_id)
 		{
-			ApiError::raiseError(403, JText::_('COM_EASYSOCIAL_ERROR_UNABLE_TO_LOCATE_ID'));
+			ApiError::raiseError(403, Text::_('COM_EASYSOCIAL_ERROR_UNABLE_TO_LOCATE_ID'));
 		}
 
 		// Get logged in user
@@ -156,7 +156,7 @@ class EasysocialApiResourceStreams extends ApiResource
 		// Check if the user is allowed to hide this item
 		if ( !$item->hideable())
 		{
-			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_STREAM_NOT_ALLOWED_TO_UNHIDE'));
+			ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_STREAM_NOT_ALLOWED_TO_UNHIDE'));
 		}
 
 		// Get the model
@@ -166,11 +166,11 @@ class EasysocialApiResourceStreams extends ApiResource
 		if ($state)
 		{
 			$res->success = 1;
-			$res->message = JText::_('PLG_API_EASYSOCIAL_UNHIDE_NEWSFEED_ITEM');
+			$res->message = Text::_('PLG_API_EASYSOCIAL_UNHIDE_NEWSFEED_ITEM');
 		}
 		else
 		{
-			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_UNHIDE_NEWSFEED_ITEM_ERROR'));
+			ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_UNHIDE_NEWSFEED_ITEM_ERROR'));
 		}
 
 		return $res;
@@ -191,7 +191,7 @@ class EasysocialApiResourceStreams extends ApiResource
 
 		if (!$target_id)
 		{
-			ApiError::raiseError(403, JText::_('COM_EASYSOCIAL_ERROR_UNABLE_TO_LOCATE_ID'));
+			ApiError::raiseError(403, Text::_('COM_EASYSOCIAL_ERROR_UNABLE_TO_LOCATE_ID'));
 		}
 
 		// Load the stream item.
@@ -217,16 +217,16 @@ class EasysocialApiResourceStreams extends ApiResource
 					$cluster = ES::event($item->cluster_id);
 				}
 
-				if (!$cluster->isAdmin() && !$access->allowed('stream.delete', false))
+				if (!$cluster->isClient("administrator") && !$access->allowed('stream.delete', false))
 				{
-					ApiError::raiseError(403, JText::_('COM_EASYSOCIAL_STREAM_NOT_ALLOWED_TO_DELETE'));
+					ApiError::raiseError(403, Text::_('COM_EASYSOCIAL_STREAM_NOT_ALLOWED_TO_DELETE'));
 				}
 			}
 			else
 			{
 				if (!$access->allowed('stream.delete', false))
 				{
-					ApiError::raiseError(403, JText::_('COM_EASYSOCIAL_STREAM_NOT_ALLOWED_TO_DELETE'));
+					ApiError::raiseError(403, Text::_('COM_EASYSOCIAL_STREAM_NOT_ALLOWED_TO_DELETE'));
 				}
 			}
 		}
@@ -236,11 +236,11 @@ class EasysocialApiResourceStreams extends ApiResource
 		if ($state)
 		{
 			$res->success = 1;
-			$res->message = JText::_('PLG_API_EASYSOCIAL_DELETE_NEWSFEED_ITEM');
+			$res->message = Text::_('PLG_API_EASYSOCIAL_DELETE_NEWSFEED_ITEM');
 		}
 		else
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_DELETE_NEWSFEED_ITEM_ERROR'));
+			ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_DELETE_NEWSFEED_ITEM_ERROR'));
 		}
 
 		return $res;

@@ -10,9 +10,9 @@
  * and the com_api extension by Brian Edgerton (http://www.edgewebworks.com)
  */
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
 require_once JPATH_SITE . '/components/com_easysocial/controllers/videos.php';
@@ -33,7 +33,7 @@ class EasysocialApiResourceRemoveTags extends ApiResource
 	public function get()
 	{
 		$this->plugin->err_code = 405;
-		$this->plugin->err_message = JText::_('PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE');
+		$this->plugin->err_message = Text::_('PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE');
 		$this->plugin->setApiResponse(null);
 	}
 
@@ -46,7 +46,7 @@ class EasysocialApiResourceRemoveTags extends ApiResource
 	 */
 	public function post()
 	{
-		$app	=	JFactory::getApplication();
+		$app	=	Factory::getApplication();
 
 		// Get the tag id
 		$id		=	$app->input->get('friends_tagsid', 0, 'int');

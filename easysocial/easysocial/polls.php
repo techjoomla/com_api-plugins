@@ -11,10 +11,9 @@
  */
 
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
 jimport('libraries.schema.group');
-jimport('joomla.html.html');
 FD::import('site:/controllers/controller');
 
 /**
@@ -57,8 +56,8 @@ class EasysocialApiResourcePollsOne extends ApiResource
 	 */
 	public function processAction()
 	{
-		$app      = JFactory::getApplication();
-		$log_user = JFactory::getUser($this->plugin->get('user')->id);
+		$app      = Factory::getApplication();
+		$log_user = Factory::getUser($this->plugin->get('user')->id);
 		$filterType = $app->input->get('type', 'hidden', 'STRING');
 		$isloadmore = $app->input->get('loadmore', '', '');
 		$limitstart = $app->input->get('limitstart', '0', '');

@@ -11,9 +11,9 @@
  */
 
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/search.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/avatars.php';
@@ -50,7 +50,7 @@ class EasysocialApiResourceSearch extends ApiResource
 	public function post()
 	{
 		$this->plugin->err_code = 405;
-		$this->plugin->err_message = JText::_('PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE');
+		$this->plugin->err_message = Text::_('PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE');
 		$this->plugin->setResponse(null);
 	}
 
@@ -63,8 +63,8 @@ class EasysocialApiResourceSearch extends ApiResource
 	 */
 	public function getSearch()
 	{
-		$app = JFactory::getApplication();
-		$log_user = JFactory::getUser($this->plugin->get('user')->id);
+		$app = Factory::getApplication();
+		$log_user = Factory::getUser($this->plugin->get('user')->id);
 
 		$search = $app->input->get('search', '', 'STRING');
 		$type = $app->input->get('type', '', 'STRING');
@@ -85,13 +85,13 @@ class EasysocialApiResourceSearch extends ApiResource
 
 		if (empty($search))
 		{
-			$res->empty_message = JText::_('PLG_API_EASYSOCIAL_EMPTY_SEARCHTEXT_MESSAGE');
+			$res->empty_message = Text::_('PLG_API_EASYSOCIAL_EMPTY_SEARCHTEXT_MESSAGE');
 			$this->plugin->setResponse($res);
 		}
 
 		if (empty($type))
 		{
-			$res->empty_message = JText::_('PLG_API_EASYSOCIAL_EMPTY_SEARCH_TYPE');
+			$res->empty_message = Text::_('PLG_API_EASYSOCIAL_EMPTY_SEARCH_TYPE');
 		}
 		else
 		{
@@ -102,7 +102,7 @@ class EasysocialApiResourceSearch extends ApiResource
 				if (empty($res->result))
 				{
 					// Message to show when the list is empty
-					$res->empty_message = JText::_('PLG_API_EASYSOCIAL_USER_NOT_FOUND');
+					$res->empty_message = Text::_('PLG_API_EASYSOCIAL_USER_NOT_FOUND');
 				}
 			}
 			elseif ($type == 'event')
@@ -112,7 +112,7 @@ class EasysocialApiResourceSearch extends ApiResource
 				if (empty($res->result->events))
 				{
 					// Message to show when the list is empty
-					$res->empty_message = JText::_('PLG_API_EASYSOCIAL_SEARCH_EVENT_NOT_FOUND');
+					$res->empty_message = Text::_('PLG_API_EASYSOCIAL_SEARCH_EVENT_NOT_FOUND');
 				}
 			}
 			elseif ($type == 'page')
@@ -122,7 +122,7 @@ class EasysocialApiResourceSearch extends ApiResource
 				if (empty($res->result))
 				{
 					// Message to show when the list is empty
-					$res->empty_message = JText::_('PLG_API_EASYSOCIAL_PAGE_NOT_FOUND');
+					$res->empty_message = Text::_('PLG_API_EASYSOCIAL_PAGE_NOT_FOUND');
 				}
 			}
 			else
@@ -132,7 +132,7 @@ class EasysocialApiResourceSearch extends ApiResource
 				if (empty($res->result))
 				{
 					// Message to show when the list is empty
-					$res->empty_message = JText::_('PLG_API_EASYSOCIAL_GROUP_NOT_FOUND');
+					$res->empty_message = Text::_('PLG_API_EASYSOCIAL_GROUP_NOT_FOUND');
 				}
 			}
 		}
@@ -160,7 +160,7 @@ class EasysocialApiResourceSearch extends ApiResource
 
 		$serch_obj = new EasySocialModelSearch;
 
-		$db = JFactory::getDbo();
+		$db = Factory::getDbo();
 		$query = $db->getQuery(true);
 		$frnd_obj = new EasySocialModelFriends;
 
@@ -214,7 +214,7 @@ class EasysocialApiResourceSearch extends ApiResource
 		$mapp = new EasySocialApiMappingHelper;
 		$result = new stdClass;
 
-		$db = JFactory::getDbo();
+		$db = Factory::getDbo();
 		$query1 = $db->getQuery(true);
 		$query1->select($db->quoteName(array('cl.id')));
 		$query1->from($db->quoteName('#__social_clusters', 'cl'));
@@ -268,7 +268,7 @@ class EasysocialApiResourceSearch extends ApiResource
 		// $res = new stdClass;
 		$group = array();
 
-		$db = JFactory::getDbo();
+		$db = Factory::getDbo();
 
 		$query1 = $db->getQuery(true);
 		$query1->select($db->quoteName(array('cl.id')));
@@ -385,7 +385,7 @@ class EasysocialApiResourceSearch extends ApiResource
 
 		$myarr = array();
 
-		$user = JFactory::getUser($this->plugin->get('user')->id);
+		$user = Factory::getUser($this->plugin->get('user')->id);
 		$frnd_mod = new EasySocialModelFriends;
 		$options['state'] = SOCIAL_FRIENDS_STATE_PENDING;
 		$options['isRequest'] = true;

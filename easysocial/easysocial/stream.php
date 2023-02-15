@@ -11,9 +11,9 @@
  */
 
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 FD::import('site:/controllers/controller');
 
 /**
@@ -50,7 +50,7 @@ class EasysocialApiResourceStreams extends ApiResource
 	 */
 	public function processAction()
 	{
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$target_id = $app->input->get('target_id', 0, 'INT');
 		$action = $app->input->get('action', 0, 'STRING');
 
@@ -85,7 +85,7 @@ class EasysocialApiResourceStreams extends ApiResource
 		if (!$target_id)
 		{
 			$res->success = 0;
-			$res->message = JText::_('PLG_API_EASYSOCIAL_ERROR_UNABLE_TO_LOCATE_ID');
+			$res->message = Text::_('PLG_API_EASYSOCIAL_ERROR_UNABLE_TO_LOCATE_ID');
 		}
 
 		// Get logged in user
@@ -99,7 +99,7 @@ class EasysocialApiResourceStreams extends ApiResource
 		if (!$item->hideable())
 		{
 			$res->success = 0;
-			$res->message = JText::_('PLG_API_EASYSOCIAL_STREAM_NOT_ALLOWED_TO_HIDE');
+			$res->message = Text::_('PLG_API_EASYSOCIAL_STREAM_NOT_ALLOWED_TO_HIDE');
 		}
 
 		// Get the model
@@ -109,12 +109,12 @@ class EasysocialApiResourceStreams extends ApiResource
 		if ($state)
 		{
 			$res->success = 1;
-			$res->message = JText::_('PLG_API_EASYSOCIAL_HIDE_NEWSFEED_ITEM');
+			$res->message = Text::_('PLG_API_EASYSOCIAL_HIDE_NEWSFEED_ITEM');
 		}
 		else
 		{
 			$res->success = 0;
-			$res->message = JText::_('PLG_API_EASYSOCIAL_HIDE_NEWSFEED_ITEM_ERROR');
+			$res->message = Text::_('PLG_API_EASYSOCIAL_HIDE_NEWSFEED_ITEM_ERROR');
 		}
 
 		return $res;
@@ -137,7 +137,7 @@ class EasysocialApiResourceStreams extends ApiResource
 		if (!$target_id)
 		{
 			$res->success = 0;
-			$res->message = JText::_('PLG_API_EASYSOCIAL_ERROR_UNABLE_TO_LOCATE_ID');
+			$res->message = Text::_('PLG_API_EASYSOCIAL_ERROR_UNABLE_TO_LOCATE_ID');
 		}
 
 		// Get logged in user
@@ -152,7 +152,7 @@ class EasysocialApiResourceStreams extends ApiResource
 		if ( !$item->hideable() )
 		{
 			$res->success = 0;
-			$res->message = JText::_('PLG_API_EASYSOCIAL_STREAM_NOT_ALLOWED_TO_UNHIDE');
+			$res->message = Text::_('PLG_API_EASYSOCIAL_STREAM_NOT_ALLOWED_TO_UNHIDE');
 		}
 
 		// Get the model
@@ -162,12 +162,12 @@ class EasysocialApiResourceStreams extends ApiResource
 		if ($state)
 		{
 			$res->success = 1;
-			$res->message = JText::_('PLG_API_EASYSOCIAL_HIDE_NEWSFEED_ITEM');
+			$res->message = Text::_('PLG_API_EASYSOCIAL_HIDE_NEWSFEED_ITEM');
 		}
 		else
 		{
 			$res->success = 0;
-			$res->message = JText::_('PLG_API_EASYSOCIAL_HIDE_NEWSFEED_ITEM_ERROR');
+			$res->message = Text::_('PLG_API_EASYSOCIAL_HIDE_NEWSFEED_ITEM_ERROR');
 		}
 
 		return $res;
@@ -189,7 +189,7 @@ class EasysocialApiResourceStreams extends ApiResource
 		if (!$target_id)
 		{
 			$res->success = 0;
-			$res->message = JText::_('PLG_API_EASYSOCIAL_ERROR_UNABLE_TO_LOCATE_ID');
+			$res->message = Text::_('PLG_API_EASYSOCIAL_ERROR_UNABLE_TO_LOCATE_ID');
 		}
 
 		// Load the stream item.
@@ -216,10 +216,10 @@ class EasysocialApiResourceStreams extends ApiResource
 					$cluster = FD::event($item->cluster_id);
 				}
 
-				if (!$cluster->isAdmin() && !$access->allowed('stream.delete', false))
+				if (!$cluster->isClient("administrator") && !$access->allowed('stream.delete', false))
 				{
 					$res->success = 0;
-					$res->message = JText::_('PLG_API_EASYSOCIAL_STREAM_NOT_ALLOWED_TO_DELETE');
+					$res->message = Text::_('PLG_API_EASYSOCIAL_STREAM_NOT_ALLOWED_TO_DELETE');
 
 					return $res;
 				}
@@ -229,7 +229,7 @@ class EasysocialApiResourceStreams extends ApiResource
 				if (!$access->allowed('stream.delete', false))
 				{
 					$res->success = 0;
-					$res->message = JText::_('PLG_API_EASYSOCIAL_STREAM_NOT_ALLOWED_TO_DELETE');
+					$res->message = Text::_('PLG_API_EASYSOCIAL_STREAM_NOT_ALLOWED_TO_DELETE');
 
 					return $res;
 				}
@@ -241,12 +241,12 @@ class EasysocialApiResourceStreams extends ApiResource
 		if ($state)
 		{
 			$res->success = 1;
-			$res->message = JText::_('PLG_API_EASYSOCIAL_DELETE_NEWSFEED_ITEM');
+			$res->message = Text::_('PLG_API_EASYSOCIAL_DELETE_NEWSFEED_ITEM');
 		}
 		else
 		{
 			$res->success = 0;
-			$res->message = JText::_('PLG_API_EASYSOCIAL_DELETE_NEWSFEED_ITEM_ERROR');
+			$res->message = Text::_('PLG_API_EASYSOCIAL_DELETE_NEWSFEED_ITEM_ERROR');
 		}
 
 		return $res;

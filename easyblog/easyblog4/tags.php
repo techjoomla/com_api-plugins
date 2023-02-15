@@ -6,7 +6,7 @@
  * @link http://www.techjoomla.com
 */
 defined('_JEXEC') or die( 'Restricted access' );
-jimport('joomla.user.user');
+use Joomla\CMS\Factory;
 jimport( 'simpleschema.easyblog.category' );
 jimport( 'simpleschema.easyblog.person' );
 jimport( 'simpleschema.easyblog.blog.post' );
@@ -33,7 +33,7 @@ class EasyblogApiResourceTags extends ApiResource
 	//get tags
 	public function getTags()
 	{
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$limitstart = $app->input->get('limitstart',0,'INT');
 	   	$limit =  $app->input->get('limit',20,'INT');
 		$Tagmodel = EasyBlogHelper::getModel( 'Tags' );
@@ -45,11 +45,11 @@ class EasyblogApiResourceTags extends ApiResource
 	
 	public function searchTag()
 	{
-	   $app = JFactory::getApplication();
+	   $app = Factory::getApplication();
 	   $limitstart = $app->input->get('limitstart',0,'INT');
 	   $limit =  $app->input->get('limit',20,'INT');
 	   $Tagmodel = EasyBlogHelper::getModel( 'Tags' );
-	   $input = JFactory::getApplication()->input;
+	   $input = Factory::getApplication()->input;
 	   $keyword = $input->get('title','', 'STRING');
 	   $wordSearch = true;                
 	   $db = EB::db();

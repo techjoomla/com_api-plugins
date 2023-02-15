@@ -7,10 +7,17 @@
 */
 
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Date\Date;
+use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\Registry\Registry;
+use Joomla\CMS\User\UserHelper;
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Uri\Uri;
 
-jimport('joomla.plugin.plugin');
 require_once JPATH_ROOT . '/components/com_akeebasubs/helpers/email.php';
-$jlang = JFactory::getLanguage();
+$jlang = Factory::getLanguage();
 
 
 class AkeebasubsApiResourceSubscription extends ApiResource
@@ -46,11 +53,11 @@ class AkeebasubsApiResourceSubscription extends ApiResource
 
 	public function post() {
 
-			$input = JFactory::getApplication()->input;
+			$input = Factory::getApplication()->input;
 			$user = $this->plugin->getUser();
 
 			if (!$user) {
-				$this->plugin->setResponse( $this->getErrorResponse(404, JText::_('JERROR_ALERTNOAUTHOR')) );
+				$this->plugin->setResponse( $this->getErrorResponse(404, Text::_('JERROR_ALERTNOAUTHOR')) );
 				return;
 			}
 
@@ -60,7 +67,7 @@ class AkeebasubsApiResourceSubscription extends ApiResource
 			$allowed = $authorised || $is_override;
 
 			if (!$allowed) {
-				$this->plugin->setResponse( $this->getErrorResponse(404, JText::_('JERROR_ALERTNOAUTHOR')) );
+				$this->plugin->setResponse( $this->getErrorResponse(404, Text::_('JERROR_ALERTNOAUTHOR')) );
 				return;
 			}
 
@@ -94,33 +101,33 @@ class AkeebasubsApiResourceSubscription extends ApiResource
 				return;
 			}
 
-			$jNow = new JDate();
+			$jNow = new Date();
 			$now = $jNow->toUnix();
 			$mNow = $jNow->toSql();
 			$startDate = $now;
-			$nullDate = JFactory::getDbo()->getNullDate();
+			$nullDate = Factory::getDbo()->getNullDate();
 			$level = FOFModel::getTmpInstance('Levels','AkeebasubsModel')
 				->setId($levelid)
 				->getItem();
 			if($level->forever)
 			{
-				$jStartDate = new JDate();
+				$jStartDate = new Date();
 				$endDate = '2038-01-01 00:00:00';
 			}
 			elseif(!is_null($level->fixed_date) && ($level->fixed_date != $nullDate))
 			{
-				$jStartDate = new JDate();
+				$jStartDate = new Date();
 				$endDate = $level->fixed_date;
 			}
 			else
 			{
-				$jStartDate = new JDate($startDate);
+				$jStartDate = new Date($startDate);
 
 				// Subscription duration (length) modifiers, via plugins
 				$duration_modifier = 0;
 				JLoader::import('joomla.plugin.helper');
-				JPluginHelper::importPlugin('akeebasubs');
-				$app = JFactory::getApplication();
+				PluginHelper::importPlugin('akeebasubs');
+				$app = Factory::getApplication();
 				$jResponse = $app->triggerEvent('onValidateSubscriptionLength', array($state));
 				if(is_array($jResponse) && !empty($jResponse)) {
 					foreach($jResponse as $pluginResponse) {
@@ -141,7 +148,7 @@ class AkeebasubsApiResourceSubscription extends ApiResource
 			}
 
 			$mStartDate = $jStartDate->toSql();
-			$jEndDate = new JDate($endDate);
+			$jEndDate = new Date($endDate);
 			$mEndDate = $jEndDate->toSql();
 
 			$note = 'Subscription created via API.'.PHP_EOL.'API User : %1$s'.PHP_EOL.'API Userid : %2$s'.PHP_EOL.'Subscriber Name : %3$s'.PHP_EOL.'Subscriber Email : %4$s'.PHP_EOL.'Date : %5$s'.PHP_EOL.'Level id : %6$s';
@@ -175,8 +182,8 @@ class AkeebasubsApiResourceSubscription extends ApiResource
 	}
 
 	private function getOverrideUsers() {
-		$plugin = JPluginHelper::getPlugin('api', 'akeebasubs');
-		$params = new JRegistry($plugin->params);
+		$plugin = PluginHelper::getPlugin('api', 'akeebasubs');
+		$params = new Registry($plugin->params);
 
 		$users = explode("\n", $params->get('override_create'));
 
@@ -194,9 +201,9 @@ class AkeebasubsApiResourceSubscription extends ApiResource
 
 	private function getSubscriberUserid($newuser) {
 
-		$db = JFactory::getDBO();
-		$config = JFactory::getConfig();
-		$jlang = JFactory::getLanguage();
+		$db = Factory::getDbo();
+		$config = Factory::getConfig();
+		$jlang = Factory::getLanguage();
 		$jlang->load('com_users', JPATH_SITE, 'en-GB', true); // Load English (British)
 		$jlang->load('com_users', JPATH_SITE, $jlang->getDefault(), true); // Load the site's default language
 		$jlang->load('com_users', JPATH_SITE, null, true); // Load the currently selected language
@@ -212,14 +219,14 @@ class AkeebasubsApiResourceSubscription extends ApiResource
 		} else {
 			$uid = 0;
 			JLoader::import('joomla.application.component.helper');
-			$password_clear = JUserHelper::genRandomPassword();
-			$salt  = JUserHelper::genRandomPassword(32);
-			$crypt = JUserHelper::getCryptedPassword($password_clear, $salt);
-			$usersConfig = JComponentHelper::getParams( 'com_users' );
+			$password_clear = UserHelper::genRandomPassword();
+			$salt  = UserHelper::genRandomPassword(32);
+			$crypt = UserHelper::getCryptedPassword($password_clear, $salt);
+			$usersConfig = ComponentHelper::getParams( 'com_users' );
 			$defaultUserGroup = $usersConfig->get( 'new_usertype', 2 );
 
 			$password = "$crypt:$salt";
-			$instance = JUser::getInstance();
+			$instance = User::getInstance();
 			$instance->set('id'         , 0);
 			$instance->set('name'           , $newuser['name']);
 			$instance->set('username'       , $newuser['email']);
@@ -236,16 +243,16 @@ class AkeebasubsApiResourceSubscription extends ApiResource
 			$data['fromname'] = $config->get('fromname');
 			$data['mailfrom'] = $config->get('mailfrom');
 			$data['sitename'] = $config->get('sitename');
-			$data['siteurl'] = JUri::root();
+			$data['siteurl'] = Uri::root();
 
 			$data = array_merge($newuser, $data);
-			$emailSubject = JText::sprintf(
+			$emailSubject = Text::sprintf(
 				'COM_USERS_EMAIL_ACCOUNT_DETAILS',
 				$data['name'],
 				$data['sitename']
 			);
 
-			$emailBody = JText::sprintf(
+			$emailBody = Text::sprintf(
 				'COM_USERS_EMAIL_REGISTERED_BODY',
 				$data['name'],
 				$data['sitename'],
@@ -254,7 +261,7 @@ class AkeebasubsApiResourceSubscription extends ApiResource
 				$password_clear
 			);
 
-			$return = JFactory::getMailer()->sendMail($data['mailfrom'], $data['fromname'], $data['email'], $emailSubject, $emailBody);
+			$return = Factory::getMailer()->sendMail($data['mailfrom'], $data['fromname'], $data['email'], $emailSubject, $emailBody);
 
 			if ($uid) {
 				return $uid;

@@ -10,9 +10,9 @@
  * and the com_api extension by Brian Edgerton (http://www.edgewebworks.com)
  */
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/router.php';
@@ -63,13 +63,13 @@ class EasysocialApiResourceReply extends ApiResource
 	private function getDiscussionReply()
 	{
 		// Init variable
-		$mainframe		=	JFactory::getApplication();
+		$mainframe		=	Factory::getApplication();
 		$group_id		=	$mainframe->input->get('group_id', 0, 'INT');
 		$discussId		=	$mainframe->input->get('discussion_id', 0, 'INT');
 		$limit			=	$mainframe->input->get('limit', 10, 'INT');
 		$limitstart		=	$mainframe->input->get('limitstart', 0, 'INT');
 		$valid			=	0;
-		$log_user = JFactory::getUser($this->plugin->get('user')->id);
+		$log_user = Factory::getUser($this->plugin->get('user')->id);
 
 		// Response object
 		$res = new stdclass;
@@ -80,11 +80,11 @@ class EasysocialApiResourceReply extends ApiResource
 
 		if (!$group_id)
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_EMPTY_GROUP_ID_MESSAGE'));
+			ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_EMPTY_GROUP_ID_MESSAGE'));
 		}
 		elseif (!$is_member)
 		{
-			ApiError::raiseError(403, JText::_('COM_ES_GROUPS_PRIVATE_GROUP_INFO'));
+			ApiError::raiseError(403, Text::_('COM_ES_GROUPS_PRIVATE_GROUP_INFO'));
 		}
 		else
 		{
@@ -145,7 +145,7 @@ class EasysocialApiResourceReply extends ApiResource
 	private function postDiscussionReply()
 	{
 		// Init variable
-		$mainframe	=	JFactory::getApplication();
+		$mainframe	=	Factory::getApplication();
 		$log_user	=	$this->plugin->get('user')->id;
 
 		// Load the discussion
@@ -190,7 +190,7 @@ class EasysocialApiResourceReply extends ApiResource
 		{
 			$this->createStream($discussion, $group, $reply, $log_user);
 			$res->result->id			=	$discussion->id;
-			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_DISCUSSION_REPLY_MESSAGE');
+			$res->result->message	=	Text::_('PLG_API_EASYSOCIAL_DISCUSSION_REPLY_MESSAGE');
 
 			$this->plugin->setResponse($res);
 		}

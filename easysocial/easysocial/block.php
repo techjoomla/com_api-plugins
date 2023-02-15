@@ -7,9 +7,9 @@
  */
 
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 /** Block API 
  * 
@@ -23,7 +23,7 @@ class EasysocialApiResourceBlock extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse(JText::_('PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE'));
+		$this->plugin->setResponse(Text::_('PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE'));
 	}
 
 	/** POST
@@ -41,7 +41,7 @@ class EasysocialApiResourceBlock extends ApiResource
 	 */
 	private function processUser()
 	{
-		$app		=	JFactory::getApplication();
+		$app		=	Factory::getApplication();
 		$reason		=	$app->input->get('reason', '', 'STRING');
 		$target_id	=	$app->input->get('target_id', 0, 'INT');
 		$block_this	=	$app->input->get('block', 0, 'INT');
@@ -65,7 +65,7 @@ class EasysocialApiResourceBlock extends ApiResource
 
 		if (!$target_id)
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE'));
+			ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE'));
 		}
 
 		// Load up the block library
@@ -74,11 +74,11 @@ class EasysocialApiResourceBlock extends ApiResource
 
 		if ($result->id)
 		{
-			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_BLOCK_USER');
+			$res->result->message	=	Text::_('PLG_API_EASYSOCIAL_BLOCK_USER');
 		}
 		else
 		{
-			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_BLOCK_USER_ERROR');
+			$res->result->message	=	Text::_('PLG_API_EASYSOCIAL_BLOCK_USER_ERROR');
 		}
 
 		return $res;
@@ -98,7 +98,7 @@ class EasysocialApiResourceBlock extends ApiResource
 
 		if (!$target_id)
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE'));
+			ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE'));
 		}
 
 		// Load up the block library
@@ -107,7 +107,7 @@ class EasysocialApiResourceBlock extends ApiResource
 
 		if ($result)
 		{
-			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_UNBLOCK_USER');
+			$res->result->message	=	Text::_('PLG_API_EASYSOCIAL_UNBLOCK_USER');
 		}
 		else
 		{

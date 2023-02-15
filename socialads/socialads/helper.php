@@ -5,6 +5,10 @@
  * @license GNU GPLv2 <http://www.gnu.org/licenses/old-licenses/gpl-2.0.html>
  * @link http://www.techjoomla.com
 */
+defined('_JEXEC') or die( 'Restricted access' );
+
+use Joomla\CMS\Factory;
+
 class Sale_Data 
 {  
   function __construct() 
@@ -13,7 +17,7 @@ class Sale_Data
     }
    public function total($startdate,$enddate)
    {
-            $db = JFactory::getDBO();
+            $db = Factory::getDbo();
             	    
 		    $query = "SELECT SUM(ad_amount) FROM #__ad_payment_info
 		              WHERE status = 1 AND mdate 
@@ -34,7 +38,7 @@ class Sale_Data
    }
    public function projected_sale($startdate,$enddate,$total)
    {
-            $db = JFactory::getDBO();
+            $db = Factory::getDbo();
             $query = "SELECT DATEDIFF('".$enddate."', '".$startdate."')+1";
 		    $db->setQuery( $query ); 
 			$tday = $db->loadResult();

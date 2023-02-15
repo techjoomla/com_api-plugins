@@ -10,10 +10,14 @@
 
 defined('_JEXEC') or die( 'Restricted access' );
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
-jimport('joomla.user.helper');
-jimport('joomla.application.component.model');
+use Joomla\CMS\MVC\Model\BaseDatabaseModel;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\Registry\Registry;
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Access\Access;
+use Joomla\CMS\Router\Route;
+
 jimport( 'joomla.application.component.model' );
 jimport( 'joomla.database.table.user' );
 
@@ -24,7 +28,7 @@ require_once( JPATH_SITE.'/components/com_content/helpers/query.php');
 
 require_once JPATH_SITE . '/components/com_content/helpers/route.php';
 
-JModelLegacy::addIncludePath(JPATH_SITE . '/components/com_content/models', 'ContentModel');
+BaseDatabaseModel::addIncludePath(JPATH_SITE . '/components/com_content/models', 'ContentModel');
 
 
 class ArticlesApiResourceLatest extends ApiResource
@@ -38,20 +42,20 @@ class ArticlesApiResourceLatest extends ApiResource
 	public function getLatest()
 	{
 		// Get the dbo
-		$db = JFactory::getDbo();
+		$db = Factory::getDbo();
 		$result = new stdClass();
 
 		// Get an instance of the generic articles model
-		$model = JModelLegacy::getInstance('Articles', 'ContentModel', array('ignore_request' => true));
+		$model = BaseDatabaseModel::getInstance('Articles', 'ContentModel', array('ignore_request' => true));
 		
-		$plugin = JPluginHelper::getPlugin('api', 'articles');
+		$plugin = PluginHelper::getPlugin('api', 'articles');
 
 		if ($plugin)
 		{
-		$params = new JRegistry($plugin->params);
+		$params = new Registry($plugin->params);
 		
 		// Set application parameters in model
-		$app       = JFactory::getApplication();
+		$app       = Factory::getApplication();
 		$appParams = $app->getParams();
 		$model->setState('params', $appParams);
 
@@ -61,15 +65,15 @@ class ArticlesApiResourceLatest extends ApiResource
 		$model->setState('filter.published', 1);
 
 		// Access filter
-		$access     = !JComponentHelper::getParams('com_content')->get('show_noauth');
-		$authorised = JAccess::getAuthorisedViewLevels(JFactory::getUser()->get('id'));
+		$access     = !ComponentHelper::getParams('com_content')->get('show_noauth');
+		$authorised = Access::getAuthorisedViewLevels(Factory::getUser()->get('id'));
 		$model->setState('filter.access', $access);
 
 		// Category filter
 		$model->setState('filter.category_id', $params->get('catid', array()));
 
 		// User filter
-		$userId = JFactory::getUser()->get('id');
+		$userId = Factory::getUser()->get('id');
 
 		switch ($params->get('user_id'))
 		{
@@ -132,11 +136,11 @@ class ArticlesApiResourceLatest extends ApiResource
 			if ($access || in_array($item->access, $authorised))
 			{
 				// We know that user has the privilege to view the article
-				$item->link = JRoute::_(ContentHelperRoute::getArticleRoute($item->slug, $item->catid, $item->language));
+				$item->link = Route::_(ContentHelperRoute::getArticleRoute($item->slug, $item->catid, $item->language));
 			}
 			else
 			{
-				$item->link = JRoute::_('index.php?option=com_users&view=login');
+				$item->link = Route::_('index.php?option=com_users&view=login');
 			}
 			
 			$item = $obj->mapPost($item,'', 100, array());
@@ -160,29 +164,29 @@ class ArticlesApiResourceLatest extends ApiResource
 	{
 		
 		$result = new stdClass();
-		//$article_id	= JRequest::getVar('id', 0, '', 'int');
+		//$article_id	= Factory::getApplication()->input->get('id', 0, '', 'int');
 		
-		$ordering = JRequest::getVar('ordering', 'c_dsc', '', 'string');
-		$catid = JRequest::getVar('catid', '0', '', 'int');
-		$secid = JRequest::getVar('section_id', '0', '', 'int');
+		$ordering = Factory::getApplication()->input->get('ordering', 'c_dsc', '', 'string');
+		$catid = Factory::getApplication()->input->get('catid', '0', '', 'int');
+		$secid = Factory::getApplication()->input->get('section_id', '0', '', 'int');
 		
-		$target_blogs = JRequest::getVar('my_blogs', '0', '', 'string');
-		$target_user = JRequest::getVar('target_user', 0, '', 'int');
+		$target_blogs = Factory::getApplication()->input->get('my_blogs', '0', '', 'string');
+		$target_user = Factory::getApplication()->input->get('target_user', 0, '', 'int');
 		
-		$show_front = JRequest::getVar('show_front', '0', '', 'string');
-		$search = JRequest::getVar('search', '', '', 'string');
+		$show_front = Factory::getApplication()->input->get('show_front', '0', '', 'string');
+		$search = Factory::getApplication()->input->get('search', '', '', 'string');
 		
-		$limit		= JRequest::getVar('limit', 20, '', 'int');
-		$limitstart	= JRequest::getVar('limitstart', 0, '', 'int');
+		$limit		= Factory::getApplication()->input->get('limit', 20, '', 'int');
+		$limitstart	= Factory::getApplication()->input->get('limitstart', 0, '', 'int');
 		
-		$db	= JFactory::getDBO();
+		$db	= Factory::getDbo();
 		
-		$contentConfig = JComponentHelper::getParams( 'com_content' );
+		$contentConfig = ComponentHelper::getParams( 'com_content' );
 		$access		= !$contentConfig->get('show_noauth');
 
 		$nullDate	= $db->getNullDate();
 
-		$date = JFactory::getDate();
+		$date = Factory::getDate();
 		$now = $date->toSQL();
 
 		$where		= 'a.state = 1'
@@ -194,7 +198,7 @@ class ArticlesApiResourceLatest extends ApiResource
 		if($target_blogs)
 		{
 			$log_user = $this->plugin->get('user')->id;
-			$user		= JFactory::getUser($log_user);
+			$user		= Factory::getUser($log_user);
 		
 			switch ($target_blogs)
 			{

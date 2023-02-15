@@ -10,10 +10,10 @@
 
 defined('_JEXEC') or die( 'Restricted access' );
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
-jimport('joomla.user.helper');
-jimport('joomla.application.component.model');
+use Joomla\CMS\MVC\Model\BaseDatabaseModel;
+use Joomla\CMS\Factory;
+use Joomla\CMS\MVC\Model\ListModel;
+
 jimport( 'joomla.application.component.model' );
 jimport( 'joomla.database.table.user' );
 
@@ -28,7 +28,7 @@ require_once JPATH_SITE .'/libraries/legacy/model/list.php';
 require_once JPATH_SITE .'/libraries/cms/menu/menu.php';
 require_once JPATH_SITE .'/components/com_content/helpers/query.php';
 
-JModelLegacy::addIncludePath(JPATH_SITE . '/components/com_tz_portfolio/models', 'TZ_PortfolioModel');
+BaseDatabaseModel::addIncludePath(JPATH_SITE . '/components/com_tz_portfolio/models', 'TZ_PortfolioModel');
 
 
 class ArticlesApiResourceCategory extends ApiResource
@@ -36,7 +36,7 @@ class ArticlesApiResourceCategory extends ApiResource
 	public function get()
 	{
 		//init variable
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		//get data
 		$catid		= $app->input->get('id', 0, 'INT');
 		$limitstart	= $app->input->get('limitstart', 0, 'INT');
@@ -49,7 +49,7 @@ class ArticlesApiResourceCategory extends ApiResource
 			$menu      = $app->getMenu('site');
 			$val = $menu->getItem($menu_id);
 			$menu_cat = json_decode($val->params)->tz_catid;
-			$db = JFactory::getDbo();
+			$db = Factory::getDbo();
 		
 			foreach($menu_cat as $ky => $cid )
 			{
@@ -66,9 +66,9 @@ class ArticlesApiResourceCategory extends ApiResource
 		}
 		$cat_obj = new CategoriesModelCategories();
 		//$cat_obj = new TZ_PortfolioModelCategories();
-		$jlist = new JModelList();
+		$jlist = new ListModel();
 
-		$config = JFactory::getConfig();
+		$config = Factory::getConfig();
 		$old_limit = $config->get('list_limit');
         $config->set('list_limit', 0);
 		
@@ -118,9 +118,9 @@ class ArticlesApiResourceCategory extends ApiResource
 	public function getCatArticle($catid,$limit,$limitstart)
 	{
 		//init variable
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		// Get the dbo
-		$db = JFactory::getDbo();
+		$db = Factory::getDbo();
 		//get data
 		$catid		= $app->input->get('id', 0, 'INT');
 		$featured		= $app->input->get('featured', 0, 'INT');
@@ -129,9 +129,9 @@ class ArticlesApiResourceCategory extends ApiResource
 		//$cat_obj = new ContentModelCategory();
 		//$cat_obj = new TZ_PortfolioModelCategory();
 
-		$model = JModelLegacy::getInstance('Articles', 'TZ_PortfolioModel', array('ignore_request' => true));
+		$model = BaseDatabaseModel::getInstance('Articles', 'TZ_PortfolioModel', array('ignore_request' => true));
 
-		$model->setState('params', JFactory::getApplication()->getParams());
+		$model->setState('params', Factory::getApplication()->getParams());
 		$model->setState('filter.category_id', $catid);
 		$model->setState('filter.published', 1);
 		

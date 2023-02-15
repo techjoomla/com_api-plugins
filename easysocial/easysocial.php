@@ -6,8 +6,8 @@
  * @link       http://www.techjoomla.com
  */
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
 
 // Added this line to EasySocial api compatible with EasySocial 2.1.0 package
 ES::import('site:/controllers/controller');
@@ -30,7 +30,7 @@ class PlgAPIEasysocial extends ApiPlugin
 		ApiResource::addIncludePath(dirname(__FILE__) . '/easysocial');
 
 		/*load language file for plugin frontend*/
-		$lang = JFactory::getLanguage();
+		$lang = Factory::getLanguage();
 		$lang->load('plg_api_easysocial', JPATH_ADMINISTRATOR, '', true);
 		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, '', true);
 		$lang->load('com_easysocial', JPATH_SITE, '', true);

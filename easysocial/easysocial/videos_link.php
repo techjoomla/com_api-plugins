@@ -11,9 +11,9 @@
  */
 
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/videos.php';
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
@@ -43,7 +43,7 @@ class EasysocialApiResourceVideos_Link extends ApiResource
 	 */
 	private function saveVideo()
 	{
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$res = new stdClass;
 		$es_config = ES::config();
 		$log_user = $this->plugin->get('user')->id;
@@ -66,7 +66,7 @@ class EasysocialApiResourceVideos_Link extends ApiResource
 
 		if (!$allowed)
 		{
-			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_VIDEO_NOT_ALLOW_MESSAGE'));
+			ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_VIDEO_NOT_ALLOW_MESSAGE'));
 		}
 
 		if ($post['link'])
@@ -149,7 +149,7 @@ class EasysocialApiResourceVideos_Link extends ApiResource
 			$video->createStream('create', $privacyData);
 		}
 
-		$res->result->message = JText::_('COM_EASYSOCIAL_EMAILS_EVENT_NEW_VIDEO');
+		$res->result->message = Text::_('COM_EASYSOCIAL_EMAILS_EVENT_NEW_VIDEO');
 
 		$this->plugin->setResponse($res);
 	}

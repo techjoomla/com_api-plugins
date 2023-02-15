@@ -11,9 +11,9 @@
  */
 
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/tables/friend.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/friends.php';
@@ -60,7 +60,7 @@ class EasysocialApiResourceNotification extends ApiResource
 	 */
 	public function friend_add_remove()
 	{
-		$app		=	JFactory::getApplication();
+		$app		=	Factory::getApplication();
 		$flag		=	$app->input->get('flag', null, 'STRING');
 
 		if ($flag == 'reject')
@@ -97,7 +97,7 @@ class EasysocialApiResourceNotification extends ApiResource
 
 	public function requestcancel()
 	{
-		$app	=	JFactory::getApplication();
+		$app	=	Factory::getApplication();
 
 		// Getting target id and user id.
 		$user	=	$app->input->get('user_id', 0, 'INT');
@@ -137,7 +137,7 @@ class EasysocialApiResourceNotification extends ApiResource
 	 */
 	public function removefriend()
 	{
-		$app	=	JFactory::getApplication();
+		$app	=	Factory::getApplication();
 
 		// Getting target id and user id.
 		$user	=	$app->input->get('user_id', 0, 'INT');
@@ -154,7 +154,7 @@ class EasysocialApiResourceNotification extends ApiResource
 
 		if (!$addstate)
 		{
-			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_UNABLE_REJECT_FRIEND_REQ');
+			$res->result->message	=	Text::_('PLG_API_EASYSOCIAL_UNABLE_REJECT_FRIEND_REQ');
 			$res->result->status	=	false;
 			$this->plugin->setResponse($res);
 		}
@@ -166,12 +166,12 @@ class EasysocialApiResourceNotification extends ApiResource
 		}
 		else
 		{
-			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_UNABLE_REJECT_FRIEND_REQ');
+			$res->result->message	=	Text::_('PLG_API_EASYSOCIAL_UNABLE_REJECT_FRIEND_REQ');
 			$res->result->status	=	false;
 			$this->plugin->setResponse($res);
 		}
 
-		$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_FRIEND_REQ_CANCEL');
+		$res->result->message	=	Text::_('PLG_API_EASYSOCIAL_FRIEND_REQ_CANCEL');
 		$res->result->status	=	true;
 		$this->plugin->setResponse($res);
 	}
@@ -185,7 +185,7 @@ class EasysocialApiResourceNotification extends ApiResource
 	 */
 	public function addfriend()
 	{
-		$app			=	JFactory::getApplication();
+		$app			=	Factory::getApplication();
 		$user			=	$app->input->get('user_id', 0, 'INT');
 		$target			=	$app->input->get('target_id', 0, 'INT');
 		$friend			=	FD::table('Friend');
@@ -199,7 +199,7 @@ class EasysocialApiResourceNotification extends ApiResource
 
 		if (!$addstate)
 		{
-			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_UNBALE_ADD_FRIEND_REQ');
+			$res->result->message	=	Text::_('PLG_API_EASYSOCIAL_UNBALE_ADD_FRIEND_REQ');
 			$res->result->status	=	false;
 			$this->plugin->setResponse($res);
 		}
@@ -210,12 +210,12 @@ class EasysocialApiResourceNotification extends ApiResource
 		}
 		else
 		{
-			$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_UNBALE_ADD_FRIEND_REQ');
+			$res->result->message	=	Text::_('PLG_API_EASYSOCIAL_UNBALE_ADD_FRIEND_REQ');
 			$res->result->status	=	false;
 			$this->plugin->setResponse($res);
 		}
 
-		$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_FRIEND_REQ_ACCEPT');
+		$res->result->message	=	Text::_('PLG_API_EASYSOCIAL_FRIEND_REQ_ACCEPT');
 		$res->result->status	=	true;
 		$this->plugin->setResponse($res);
 	}
@@ -229,7 +229,7 @@ class EasysocialApiResourceNotification extends ApiResource
 	 */
 	public function get_data()
 	{
-		$app						=	JFactory::getApplication();
+		$app						=	Factory::getApplication();
 		$uid						=	$app->input->get('uid', 0, 'INT');
 		$data						=	array();
 		$data['messagecount']		=	$this->get_message_count($uid);

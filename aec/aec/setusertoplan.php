@@ -7,8 +7,8 @@
 */
 
 defined('_JEXEC') or die;
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
 //function in file - /var/www/mppronline/administrator/components/com_acctexp/admin.acctexp.php
 
 
@@ -28,12 +28,12 @@ class AecApiResourceSetusertoplan extends ApiResource
 	{
 		
 		require_once JPATH_SITE .'/components/com_acctexp/acctexp.class.php';
-		$db = &JFactory::getDBO();	
-		$app = JFactory::getApplication();
+		$db = Factory::getDbo();	
+		$app = Factory::getApplication();
 
-		$userid = JRequest::getInt('user_id',0);	 
-		$planid = JRequest::getInt('plan_id',0);
-		//$new_expiry = JRequest::getString('date',0);		 
+		$userid = Factory::getApplication()->input->get('user_id',0);	 
+		$planid = Factory::getApplication()->input->get('plan_id',0);
+		//$new_expiry = Factory::getApplication()->input->getString('date',0);		 
 	
 		$obj = new stdClass();
 		//validate plan
@@ -117,7 +117,7 @@ $muser = metaUserDB::getIDbyUserid($userid);
 
   function qry()
  {
-    $db = &JFactory::getDBO();
+    $db = Factory::getDbo();
     $qry = "SELECT count(*) FROM #__acctexp_subscr AS a INNER JOIN #__users AS b ON a.userid = b.id WHERE ((a.status = 'Active' || a.status = 'Trial'))";
     $db->setQuery( $query );
 	$total = $db->loadResult(); 

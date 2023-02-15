@@ -17,19 +17,26 @@ use Joomla\Registry\Registry;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Access\Access;
 use Joomla\CMS\Router\Route;
+use Joomla\Utilities\ArrayHelper;
 
 jimport( 'joomla.application.component.model' );
 jimport( 'joomla.database.table.user' );
 
-require_once( JPATH_SITE.'/components/com_content/models/article.php');
-require_once( JPATH_SITE.'/components/com_content/models/category.php');
-require_once( JPATH_SITE.'/components/com_content/models/article.php');
-require_once( JPATH_SITE.'/components/com_content/helpers/query.php');
-
-require_once JPATH_SITE . '/components/com_content/helpers/route.php';
-
-BaseDatabaseModel::addIncludePath(JPATH_SITE . '/components/com_content/models', 'ContentModel');
-
+if (JVERSION < '4.0.0')
+{
+	require_once( JPATH_SITE.'/components/com_content/models/article.php');
+	require_once( JPATH_SITE.'/components/com_content/models/category.php');
+	require_once( JPATH_SITE.'/components/com_content/models/article.php');
+	require_once( JPATH_SITE.'/components/com_content/helpers/query.php');
+	require_once JPATH_SITE . '/components/com_content/helpers/route.php';
+}
+else
+{
+	require_once JPATH_SITE . '/components/com_content/src/Model/ArticleModel.php';
+	require_once JPATH_SITE . '/components/com_content/src/Model/CategoryModel.php';
+	require_once JPATH_SITE . '/components/com_content/src/Helper/QueryHelper.php';
+	require_once JPATH_SITE . '/components/com_content/src/Service/Router.php';
+}
 
 class ArticlesApiResourceLatest extends ApiResource
 {
@@ -47,7 +54,6 @@ class ArticlesApiResourceLatest extends ApiResource
 
 		// Get an instance of the generic articles model
 		$model = BaseDatabaseModel::getInstance('Articles', 'ContentModel', array('ignore_request' => true));
-		
 		$plugin = PluginHelper::getPlugin('api', 'articles');
 
 		if ($plugin)
@@ -118,13 +124,14 @@ class ArticlesApiResourceLatest extends ApiResource
 			'p_dsc' => 'a.publish_up',
 			'random' => 'RAND()',
 		);
-		$ordering = JArrayHelper::getValue($order_map, $params->get('ordering'), 'a.publish_up');
+		$ordering = ArrayHelper::getValue($order_map, $params->get('ordering'), 'a.publish_up');
 		$dir      = 'DESC';
 
 		$model->setState('list.ordering', $ordering);
 		$model->setState('list.direction', $dir);
 
 		$items = $model->getItems();
+
 		//format data
 		$obj = new BlogappSimpleSchema();
 

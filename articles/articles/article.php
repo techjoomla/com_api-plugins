@@ -8,9 +8,19 @@
 defined('_JEXEC') or die( 'Restricted access' );
 
 use Joomla\CMS\Factory;
+use Joomla\CMS\Table\Table;
+use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 
-require_once JPATH_SITE . '/components/com_content/models/articles.php';
-require_once JPATH_SITE . '/components/com_content/models/article.php';
+if (JVERSION < '4.0.0')
+{
+	require_once JPATH_SITE . '/components/com_content/models/articles.php';
+	require_once JPATH_SITE . '/components/com_content/models/article.php';
+}
+else
+{
+	require_once JPATH_SITE . '/components/com_content/src/Model/ArticlesModel.php';
+	require_once JPATH_SITE . '/components/com_content/src/Model/ArticleModel.php';
+}
 
 /**
  * Articles Resource
@@ -71,7 +81,7 @@ class ArticlesApiResourceArticle extends ApiResource
 
 		$listOrder = $app->input->get('listOrder', 'ASC', 'STRING');
 
-		$art_obj = new ContentModelArticles;
+		$art_obj = BaseDatabaseModel::getInstance('Articles', 'ContentModel');
 
 		$art_obj->setState('list.direction', $listOrder);
 
@@ -213,7 +223,6 @@ class ArticlesApiResourceArticle extends ApiResource
 	{
 		if (version_compare(JVERSION, '3.0', 'lt'))
 		{
-use Joomla\CMS\Table\Table;
 			Table::addIncludePath(JPATH_PLATFORM . 'joomla/database/table');
 		}
 

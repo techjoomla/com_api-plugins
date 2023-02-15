@@ -8,6 +8,8 @@
 
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Filesystem\Folder;
+use Joomla\CMS\Factory;
 
 //Script class
 class plgapieasyblogInstallerScript
@@ -18,14 +20,14 @@ class plgapieasyblogInstallerScript
 		if ($type == 'install')
 		{
 			//Move library file to Joomla libraries and delete it from plugin			
-			JFolder::move(JPATH_SITE.'/plugins/api/easyblog/libraries/simpleschema', JPATH_SITE.'/libraries/simpleschema');
-			JFolder::delete(JPATH_SITE.'/plugins/api/easyblog/libraries');
+			Folder::move(JPATH_SITE.'/plugins/api/easyblog/libraries/simpleschema', JPATH_SITE.'/libraries/simpleschema');
+			Folder::delete(JPATH_SITE.'/plugins/api/easyblog/libraries');
 
 			//Move helper file to easyblog helpers and delete it from plugin			
 			//JFile::move(JPATH_SITE.'/plugins/api/easyblog/components/com_easyblog/helpers/simpleschema.php', JPATH_SITE.'/components/com_easyblog/helpers/simpleschema.php');
 			//JFolder::delete(JPATH_SITE.'/plugins/api/easyblog/components');
 			
-			$db = JFactory::getDbo();
+			$db = Factory::getDbo();
 			$query = $db->getQuery(true);
 
 			$fields = array(

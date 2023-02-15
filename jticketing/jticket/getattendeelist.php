@@ -8,7 +8,9 @@
  */
 
 defined('_JEXEC') or die;
-jimport('joomla.plugin.plugin');
+
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
 /**
  * Class for get attendee list based on event id
@@ -28,11 +30,11 @@ class JticketApiResourcegetAttendeelist extends ApiResource
 	 */
 	public function get()
 	{
-		$lang      = JFactory::getLanguage();
+		$lang      = Factory::getLanguage();
 		$extension = 'com_jticketing';
 		$base_dir  = JPATH_SITE;
 		$lang->load($extension, $base_dir);
-		$input                = JFactory::getApplication()->input;
+		$input                = Factory::getApplication()->input;
 		$eventid              = $input->get('eventid', '0', 'INT');
 		$var['attendtype']    = $input->get('attendtype', 'all', 'STRING');
 		$var['tickettypeid']  = $input->get('tickettypeid', '0', 'INT');
@@ -41,7 +43,7 @@ class JticketApiResourcegetAttendeelist extends ApiResource
 		if (empty($eventid) OR empty($var))
 		{
 			$obj->success = 0;
-			$obj->message = JText::_("COM_JTICKETING_INVALID_EVENT");
+			$obj->message = Text::_("COM_JTICKETING_INVALID_EVENT");
 			$this->plugin->setResponse($obj);
 
 			return;
@@ -52,7 +54,7 @@ class JticketApiResourcegetAttendeelist extends ApiResource
 		if (empty($results))
 		{
 			$obj->success = "0";
-			$obj->data    = JText::_("COM_JTICKETING_INVALID_TICKET");
+			$obj->data    = Text::_("COM_JTICKETING_INVALID_TICKET");
 			$this->plugin->setResponse($obj);
 
 			return;
@@ -102,7 +104,7 @@ class JticketApiResourcegetAttendeelist extends ApiResource
 				$obj->tickettypeid      = $orderitem->tickettypeid;
 				$obj->ticket_type_title = $orderitem->ticket_type_title;
 				$obj->event_title       = $orderitem->event_title;
-				$obj->ticket_prefix     = JText::_("TICKET_PREFIX");
+				$obj->ticket_prefix     = Text::_("TICKET_PREFIX");
 				$obj->bought_on       	= $orderitem->cdate;
 				$obj->price_per_ticket  = $orderitem->amount;
 				$obj->original_amount   = $orderitem->totalamount;
@@ -131,7 +133,7 @@ class JticketApiResourcegetAttendeelist extends ApiResource
 		else
 		{
 			$fobj->success = "0";
-			$fobj->data    = JText::_("COM_JTICKETING_INVALID_TICKET");
+			$fobj->data    = Text::_("COM_JTICKETING_INVALID_TICKET");
 		}
 
 		$this->plugin->setResponse($fobj);
@@ -149,7 +151,7 @@ class JticketApiResourcegetAttendeelist extends ApiResource
 		$obj          = new stdClass;
 		$obj->success = 0;
 		$obj->code    = 20;
-		$obj->message = JText::_("COM_JTICKETING_SELECT_GET_METHOD");
+		$obj->message = Text::_("COM_JTICKETING_SELECT_GET_METHOD");
 		$this->plugin->setResponse($obj);
 	}
 
@@ -165,7 +167,7 @@ class JticketApiResourcegetAttendeelist extends ApiResource
 		$obj          = new stdClass;
 		$obj->success = 0;
 		$obj->code    = 20;
-		$obj->message = JText::_("COM_JTICKETING_SELECT_GET_METHOD");
+		$obj->message = Text::_("COM_JTICKETING_SELECT_GET_METHOD");
 		$this->plugin->setResponse($obj);
 	}
 
@@ -181,7 +183,7 @@ class JticketApiResourcegetAttendeelist extends ApiResource
 		$obj          = new stdClass;
 		$obj->success = 0;
 		$obj->code    = 20;
-		$obj->message = JText::_("COM_JTICKETING_SELECT_GET_METHOD");
+		$obj->message = Text::_("COM_JTICKETING_SELECT_GET_METHOD");
 		$this->plugin->setResponse($obj);
 	}
 }

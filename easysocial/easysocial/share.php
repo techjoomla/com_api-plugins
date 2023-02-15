@@ -11,9 +11,9 @@
  */
 
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/story/story.php';
@@ -39,7 +39,7 @@ class EasysocialApiResourceShare extends ApiResource
 	 */
 	public function get()
 	{
-		ApiError::raiseError(405, JText::_('PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE'));
+		ApiError::raiseError(405, Text::_('PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE'));
 	}
 
 	/**
@@ -63,7 +63,7 @@ class EasysocialApiResourceShare extends ApiResource
 	 */
 	private function postStory()
 	{
-		$app      = JFactory::getApplication();
+		$app      = Factory::getApplication();
 		$type     = $app->input->get('type', 'story', 'STRING');
 		$content  = $app->input->get('content', '', 'RAW');
 		$targetId = $app->input->get('target_user', 0, 'INT');
@@ -80,7 +80,7 @@ class EasysocialApiResourceShare extends ApiResource
 
 		if (!$targetId)
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE'));
+			ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_INVALID_USER_MESSAGE'));
 		}
 
 		$link = $app->input->get('link', '', 'STRING');
@@ -101,7 +101,7 @@ class EasysocialApiResourceShare extends ApiResource
 			// If not exists, throw the appropriate error message to the user.
 			if (!isset($data->oembed) || !$data->oembed)
 			{
-				return JText::_('COM_EASYSOCIAL_VIDEO_LINK_EMBED_NOT_SUPPORTED');
+				return Text::_('COM_EASYSOCIAL_VIDEO_LINK_EMBED_NOT_SUPPORTED');
 			}
 
 			$html = '';
@@ -142,7 +142,7 @@ class EasysocialApiResourceShare extends ApiResource
 
 			if (!$allowedToPoast)
 			{
-				ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_POST_NOT_ALLOW_MESSAGE'));
+				ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_POST_NOT_ALLOW_MESSAGE'));
 			}
 		}
 
@@ -150,7 +150,7 @@ class EasysocialApiResourceShare extends ApiResource
 		{
 			$result->id      = 0;
 			$result->status  = 0;
-			$result->message = JText::_('PLG_API_EASYSOCIAL_EMPTY_TYPE');
+			$result->message = Text::_('PLG_API_EASYSOCIAL_EMPTY_TYPE');
 
 			return $result;
 		}
@@ -170,7 +170,7 @@ class EasysocialApiResourceShare extends ApiResource
 
 			if (!$allowed)
 			{
-				ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_POST_NOT_ALLOW_MESSAGE'));
+				ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_POST_NOT_ALLOW_MESSAGE'));
 			}
 
 			// Determines if the current posting is for a cluster
@@ -188,16 +188,16 @@ class EasysocialApiResourceShare extends ApiResource
 				{
 					// If the user is not an admin, ensure that permissions has member
 
-					if ($group->isMember() && !in_array('member', $permissions) && !$group->isOwner() && !$group->isAdmin())
+					if ($group->isMember() && !in_array('member', $permissions) && !$group->isOwner() && !$group->isClient("administrator"))
 					{
-						ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_MEMBER_ACCESS_DENIED_MESSAGE'));
+						ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_MEMBER_ACCESS_DENIED_MESSAGE'));
 					}
 
 					// If the user is an admin, ensure that permissions has admin
 
-					if ($group->isAdmin() && !in_array('admin', $permissions) && !$group->isOwner())
+					if ($group->isClient("administrator") && !in_array('admin', $permissions) && !$group->isOwner())
 					{
-						ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_ADMIN_ACCESS_DENIED_MESSAGE'));
+						ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_ADMIN_ACCESS_DENIED_MESSAGE'));
 					}
 				}
 			}
@@ -339,7 +339,7 @@ class EasysocialApiResourceShare extends ApiResource
 
 			// Add badge for the author when a report is created.
 			$badge = ES::badges();
-			$badge->log('com_easysocial', 'story.create', $log_usr, JText::_('Posted a new update'));
+			$badge->log('com_easysocial', 'story.create', $log_usr, Text::_('Posted a new update'));
 
 			// @points: story.create
 			// Add points for the author when a report is created.
@@ -350,7 +350,7 @@ class EasysocialApiResourceShare extends ApiResource
 			{
 				$result->id      = $stream->id;
 				$result->status  = 1;
-				$result->message = JText::_('PLG_API_EASYSOCIAL_DATA_SHARE_SUCCESS');
+				$result->message = Text::_('PLG_API_EASYSOCIAL_DATA_SHARE_SUCCESS');
 			}
 		}
 
@@ -395,7 +395,7 @@ class EasysocialApiResourceShare extends ApiResource
 		// Detect if this is a really valid image file.
 		if (!$image->isValid())
 		{
-			return JText::_('PLG_API_EASYSOCIAL_INVALID_IMAGE');
+			return Text::_('PLG_API_EASYSOCIAL_INVALID_IMAGE');
 		}
 
 		// Load up the album's model.

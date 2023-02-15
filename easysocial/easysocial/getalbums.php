@@ -11,9 +11,9 @@
  */
 
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/albums.php';
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
@@ -47,7 +47,7 @@ class EasysocialApiResourceGetalbums extends ApiResource
 	 */
 	public function get_albums()
 	{
-		$app	=	JFactory::getApplication();
+		$app	=	Factory::getApplication();
 
 		// Getting log_user
 		$log_user	=	$this->plugin->get('user')->id;
@@ -127,7 +127,7 @@ class EasysocialApiResourceGetalbums extends ApiResource
 
 		if (count($output) == 0)
 		{
-			$res->empty_message = JText::_('COM_EASYSOCIAL_NO_ALBUM_AVAILABLE');
+			$res->empty_message = Text::_('COM_EASYSOCIAL_NO_ALBUM_AVAILABLE');
 		}
 		else
 		{

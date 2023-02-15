@@ -11,9 +11,9 @@
  */
 
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/videos.php';
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
@@ -47,7 +47,7 @@ class EasysocialApiResourceVideos extends ApiResource
 	 */
 	public function post()
 	{
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$type = $app->input->get('source', 'upload', 'STRING');
 		$result = $this->uploadVideos($type);
 		$this->plugin->setResponse($result);
@@ -72,7 +72,7 @@ class EasysocialApiResourceVideos extends ApiResource
 		$res = new stdClass;
 		$res->empty_message = '';
 
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$video_id = $app->input->get('video_id', 0, 'INT');
 
 		$limitstart = $app->input->get('limitstart', 0, 'INT');
@@ -116,7 +116,7 @@ class EasysocialApiResourceVideos extends ApiResource
 		if (!count($res->result->video))
 		{
 			$res->result->video = [];
-			$res->empty_message = JText::_('COM_EASYSOCIAL_VIDEOS_EMPTY_MESSAGE');
+			$res->empty_message = Text::_('COM_EASYSOCIAL_VIDEOS_EMPTY_MESSAGE');
 		}
 
 		$this->plugin->setResponse($res);
@@ -158,7 +158,7 @@ class EasysocialApiResourceVideos extends ApiResource
 	 */
 	private function uploadVideos($type)
 	{
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$res = new stdClass;
 		$es_config = ES::config();
 
@@ -168,7 +168,7 @@ class EasysocialApiResourceVideos extends ApiResource
 		$table->load($id);
 
 		$video = ES::video($table->uid, $table->type, $table);
-		$user = JFactory::getUser();
+		$user = Factory::getUser();
 
 		// $isAdmin = $user->authorise('core.admin');
 		// Get the callback url
@@ -178,8 +178,8 @@ class EasysocialApiResourceVideos extends ApiResource
 		{
 			$res->result->state = $video->setFeatured();
 			$res->result->success = true;
-			$res->result->message = ($result->state) ? (JText::_('PLG_API_EASYSOCIAL_VIDEO_FEATURED_SUCCESS')) :
-			JText::_('PLG_API_EASYSOCIAL_VIDEO_FEATURED_FAIL');
+			$res->result->message = ($result->state) ? (Text::_('PLG_API_EASYSOCIAL_VIDEO_FEATURED_SUCCESS')) :
+			Text::_('PLG_API_EASYSOCIAL_VIDEO_FEATURED_FAIL');
 
 			return $res;
 		}
@@ -187,8 +187,8 @@ class EasysocialApiResourceVideos extends ApiResource
 		{
 			$res->result->state = $video->removeFeatured();
 			$res->result->success = true;
-			$res->result->message = ($result->state) ? (JText::_('PLG_API_EASYSOCIAL_VIDEO_UNFEATURED_SUCCESS')) :
-			JText::_('PLG_API_EASYSOCIAL_VIDEO_UNFEATURED_FAIL');
+			$res->result->message = ($result->state) ? (Text::_('PLG_API_EASYSOCIAL_VIDEO_UNFEATURED_SUCCESS')) :
+			Text::_('PLG_API_EASYSOCIAL_VIDEO_UNFEATURED_FAIL');
 
 			return $res;
 		}
@@ -196,7 +196,7 @@ class EasysocialApiResourceVideos extends ApiResource
 		{
 			$res->result->state = $video->delete();
 			$res->result->success = true;
-			$res->result->message = JText::_('PLG_API_EASYSOCIAL_VIDEO_DELETED_SUCCESS');
+			$res->result->message = Text::_('PLG_API_EASYSOCIAL_VIDEO_DELETED_SUCCESS');
 
 			return $res;
 		}
@@ -227,7 +227,7 @@ class EasysocialApiResourceVideos extends ApiResource
 			$state = $videoEdit->save($post);
 
 			$res->result->success = 1;
-			$res->result->message = JText::_('COM_EASYSOCIAL_VIDEOS_UPDATED_SUCCESS');
+			$res->result->message = Text::_('COM_EASYSOCIAL_VIDEOS_UPDATED_SUCCESS');
 
 			return $res;
 		}

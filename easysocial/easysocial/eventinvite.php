@@ -11,9 +11,9 @@
  */
 
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
@@ -33,7 +33,7 @@ class EasysocialApiResourceEventinvite extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse(JText::_('PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE'));
+		$this->plugin->setResponse(Text::_('PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE'));
 	}
 
 	/**
@@ -58,8 +58,8 @@ class EasysocialApiResourceEventinvite extends ApiResource
 	public function invite()
 	{
 		// Init variable
-		$app = JFactory::getApplication();
-		$log_user = JFactory::getUser($this->plugin->get('user')->id);
+		$app = Factory::getApplication();
+		$log_user = Factory::getUser($this->plugin->get('user')->id);
 		$result = new stdClass;
 		$event_id = $app->input->get('event_id', 0, 'INT');
 		$target_users = $app->input->get('target_users', null, 'ARRAY');
@@ -69,7 +69,7 @@ class EasysocialApiResourceEventinvite extends ApiResource
 
 		if (empty($event) || empty($event->id))
 		{
-			$result->message = JText::_('PLG_API_EASYSOCIAL_EVENT_NOT_FOUND_MESSAGE');
+			$result->message = Text::_('PLG_API_EASYSOCIAL_EVENT_NOT_FOUND_MESSAGE');
 			$result->status = $state;
 
 			return $result;
@@ -83,11 +83,11 @@ class EasysocialApiResourceEventinvite extends ApiResource
 
 			foreach ($target_users as $id)
 			{
-				$target_username = JFactory::getUser($id)->name;
+				$target_username = Factory::getUser($id)->name;
 
 				if ($es_params->get('users')->displayName == 'username')
 				{
-					$target_username = JFactory::getUser($id)->name;
+					$target_username = Factory::getUser($id)->name;
 				}
 
 				$guest = $event->getGuest($id);
@@ -96,13 +96,13 @@ class EasysocialApiResourceEventinvite extends ApiResource
 				{
 					// Invite friend to event
 					$state = $event->invite($id, $log_user->id);
-					$result->message = JText::_('PLG_API_EASYSOCIAL_INVITED_MESSAGE');
+					$result->message = Text::_('PLG_API_EASYSOCIAL_INVITED_MESSAGE');
 					$result->status = $state;
 					$invited[] = $target_username;
 				}
 				else
 				{
-					$result->message = JText::_('PLG_API_EASYSOCIAL_GUEST_CANT_INVITED_MESSAGE');
+					$result->message = Text::_('PLG_API_EASYSOCIAL_GUEST_CANT_INVITED_MESSAGE');
 					$result->status = false;
 					$not_invi[] = $target_username;
 				}

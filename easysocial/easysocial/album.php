@@ -7,9 +7,9 @@
  */
 
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/albums.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/photos.php';
@@ -60,7 +60,7 @@ class EasysocialApiResourceAlbum extends ApiResource
 	 */
 	private function deleteCheck()
 	{
-		$app	=	JFactory::getApplication();
+		$app	=	Factory::getApplication();
 		$flag	=	$app->input->get('flag', '', 'CMD');
 		$res	=	new stdClass;
 
@@ -83,8 +83,8 @@ class EasysocialApiResourceAlbum extends ApiResource
 
 	private function deletePhoto()
 	{
-		$user	=	JFactory::getUser($this->plugin->get('user')->id);
-		$app	=	JFactory::getApplication();
+		$user	=	Factory::getUser($this->plugin->get('user')->id);
+		$app	=	Factory::getApplication();
 		$id		=	$app->input->get('id', 0, 'INT');
 
 		// Load the photo table
@@ -94,14 +94,14 @@ class EasysocialApiResourceAlbum extends ApiResource
 
 		if (!$id && !$photo->id)
 		{
-			ApiError::raiseError(400, JText::_('COM_EASYSOCIAL_PHOTOS_INVALID_ID_PROVIDED'));
+			ApiError::raiseError(400, Text::_('COM_EASYSOCIAL_PHOTOS_INVALID_ID_PROVIDED'));
 		}
 
 		// Load the photo library & Test if the user is allowed to delete the photo
 
 		if (!$lib->deleteable())
 		{
-			ApiError::raiseError(403, JText::_('COM_EASYSOCIAL_PHOTOS_NO_PERMISSION_TO_DELETE_PHOTO'));
+			ApiError::raiseError(403, Text::_('COM_EASYSOCIAL_PHOTOS_NO_PERMISSION_TO_DELETE_PHOTO'));
 		}
 
 		// Try to delete the photo
@@ -125,7 +125,7 @@ class EasysocialApiResourceAlbum extends ApiResource
 	private function getAlbumImages()
 	{
 		$mapp				=	new EasySocialApiMappingHelper;
-		$app				=	JFactory::getApplication();
+		$app				=	Factory::getApplication();
 		$album_id			=	$app->input->get('album_id', 0, 'INT');
 		$uid				=	$app->input->get('uid', 0, 'INT');
 		$state				=	$app->input->get('state', 0, 'INT');
@@ -164,7 +164,7 @@ class EasysocialApiResourceAlbum extends ApiResource
 
 		if (count($all_photos) < 1)
 		{
-			$res->empty_message	=	JText::_('COM_EASYSOCIAL_NO_ITEMS_FOUND');
+			$res->empty_message	=	Text::_('COM_EASYSOCIAL_NO_ITEMS_FOUND');
 		}
 		else
 		{
@@ -182,20 +182,20 @@ class EasysocialApiResourceAlbum extends ApiResource
 
 	private function deleteAlbum()
 	{
-		$app	=	JFactory::getApplication();
+		$app	=	Factory::getApplication();
 		$id		=	$app->input->get('id', 0, 'INT');
 		$album	=	ES::table('Album');
 		$album->load($id);
 
 		if (!$album->id || !$id)
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_ALBUM_NOT_EXISTS'));
+			ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_ALBUM_NOT_EXISTS'));
 		}
 		else
 		{
 			$val	=	$album->delete($id);
 			$album->assignPoints('photos.albums.delete', $album->uid);
-			$val	=	JText::_('PLG_API_EASYSOCIAL_ALBUM_DELETE_SUCCESS_MESSAGE');
+			$val	=	Text::_('PLG_API_EASYSOCIAL_ALBUM_DELETE_SUCCESS_MESSAGE');
 
 			return $val;
 		}
@@ -210,7 +210,7 @@ class EasysocialApiResourceAlbum extends ApiResource
 	private function createAlbum()
 	{
 		// Get the uid and type
-		$app	=	JFactory::getApplication();
+		$app	=	Factory::getApplication();
 		$uid	=	$app->input->get('uid', 0, 'INT');
 		$type	=	$app->input->get('type', 0, 'STRING');
 		$title	=	$app->input->get('title', 0, 'STRING');
@@ -224,7 +224,7 @@ class EasysocialApiResourceAlbum extends ApiResource
 		// Check if the user really has access to create event
 		if (! $canCreate->getAccess()->allowed('albums.create') && ! $canCreate->isSiteAdmin())
 		{
-			ApiError::raiseError(403, JText::_('COM_EASYSOCIAL_ALBUMS_ACCESS_NOT_ALLOWED'));
+			ApiError::raiseError(403, Text::_('COM_EASYSOCIAL_ALBUMS_ACCESS_NOT_ALLOWED'));
 		}
 
 		// Determine if this item is a new item
@@ -242,7 +242,7 @@ class EasysocialApiResourceAlbum extends ApiResource
 
 		if ($isNew && !$lib->canCreateAlbums())
 		{
-			ApiError::raiseError(403, JText::_('COM_EASYSOCIAL_ALBUMS_ACCESS_NOT_ALLOWED'));
+			ApiError::raiseError(403, Text::_('COM_EASYSOCIAL_ALBUMS_ACCESS_NOT_ALLOWED'));
 		}
 
 		// Set the album uid and type
@@ -253,7 +253,7 @@ class EasysocialApiResourceAlbum extends ApiResource
 		// Determine if the user has already exceeded the album creation
 		if ($isNew && $lib->exceededLimits())
 		{
-			ApiError::raiseError(403, JText::_('COM_EASYSOCIAL_ALBUMS_EXCEEDED'));
+			ApiError::raiseError(403, Text::_('COM_EASYSOCIAL_ALBUMS_EXCEEDED'));
 		}
 
 		// Set the album creation alias
@@ -276,7 +276,7 @@ class EasysocialApiResourceAlbum extends ApiResource
 
 		if (!$state)
 		{
-			ApiError::raiseError(403, JText::_('COM_EASYSOCIAL_ALBUMS_EXCEEDED'));
+			ApiError::raiseError(403, Text::_('COM_EASYSOCIAL_ALBUMS_EXCEEDED'));
 		}
 
 		$photo_obj		=	new EasySocialApiUploadHelper;

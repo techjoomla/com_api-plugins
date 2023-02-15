@@ -11,9 +11,9 @@
  */
 
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
 
@@ -46,7 +46,7 @@ class EasysocialApiResourceLeaderboard extends ApiResource
 	public function post()
 	{
 		$this->plugin->err_code = 405;
-		$this->plugin->err_message = JText::_('PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE');
+		$this->plugin->err_message = Text::_('PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE');
 		$this->plugin->setResponse(null);
 	}
 
@@ -59,7 +59,7 @@ class EasysocialApiResourceLeaderboard extends ApiResource
 	 */
 	public function get_leaderboard()
 	{
-		$app			=	JFactory::getApplication();
+		$app			=	Factory::getApplication();
 		$log_user		=	$this->plugin->get('user')->id;
 		$limitstart		=	$app->input->get('limitstart', 0, 'INT');
 		$limit			=	$app->input->get('limit', 10, 'INT');
@@ -76,7 +76,7 @@ class EasysocialApiResourceLeaderboard extends ApiResource
 
 		if (empty($users))
 		{
-			$res->empty_message	=	JText::_('PLG_API_EASYSOCIAL_NO_LEADERS');
+			$res->empty_message	=	Text::_('PLG_API_EASYSOCIAL_NO_LEADERS');
 
 			$this->plugin->setResponse($res);
 		}

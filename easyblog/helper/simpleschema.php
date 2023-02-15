@@ -83,12 +83,12 @@ class EasyBlogSimpleSchema_plg
 		$item->created_date_elapsed	= $ebdate->getLapsedTime( $blog->created );
 		
 		$item->author->name = $profile->nickname;
-		$item->author->photo = JURI::root() . $profile->avatar;
+		$item->author->photo = Uri::root() . $profile->avatar;
 		
 		$item->category->categoryid = $category->id;
 		$item->category->title = $category->title;
 		
-		$item->url = JURI::root() . trim(EBR::_('index.php?option=com_easyblog&view=entry&id=' . $blog->id ), '/');
+		$item->url = Uri::root() . trim(EBR::_('index.php?option=com_easyblog&view=entry&id=' . $blog->id ), '/');
 		
 		// Tags
 		$modelPT	= EasyBlogHelper::getModel( 'PostTag' );
@@ -103,22 +103,22 @@ class EasyBlogSimpleSchema_plg
 			
 			if (strpos($item->text,'href="index'))
 			{
-				$item->introtext = str_replace('href="index','href="'.JURI::root().'index',$item->introtext);
-			    $item->text = str_replace('href="index','href="'.JURI::root().'index',$item->text);
-				//$item->text = str_replace('src="','src="'.JURI::root(),$item->text);	
+				$item->introtext = str_replace('href="index','href="'.Uri::root().'index',$item->introtext);
+			    $item->text = str_replace('href="index','href="'.Uri::root().'index',$item->text);
+				//$item->text = str_replace('src="','src="'.Uri::root(),$item->text);	
 			}
 			
 			if (strpos($item->text,'href="images'))
 			{
-				$item->introtext = str_replace('href="images','href="'.JURI::root().'images',$item->introtext);
-			    $item->text = str_replace('href="images','href="'.JURI::root().'images',$item->text);
-				//$item->text = str_replace('src="','src="'.JURI::root(),$item->text);	
+				$item->introtext = str_replace('href="images','href="'.Uri::root().'images',$item->introtext);
+			    $item->text = str_replace('href="images','href="'.Uri::root().'images',$item->text);
+				//$item->text = str_replace('src="','src="'.Uri::root(),$item->text);	
 			}
 
 			if ( strpos($item->text,'src="images') || strpos($item->introtext,'src="images') )
 			{		    
-			    $item->introtext = str_replace('src="','src="'.JURI::root(),$item->introtext);
-				$item->text = str_replace('src="','src="'.JURI::root(),$item->text);	
+			    $item->introtext = str_replace('src="','src="'.Uri::root(),$item->introtext);
+				$item->text = str_replace('src="','src="'.Uri::root(),$item->text);	
 			}
 
 			if ( strpos($item->text,'src="/'))
@@ -202,12 +202,12 @@ class EasyBlogSimpleSchema_4
 		$item->created_date_elapsed	= EasyBlogDateHelper::getLapsedTime( $blog->created );
 		
 		$item->author->name = $profile->nickname;
-		$item->author->photo = JURI::root() . $profile->avatar;
+		$item->author->photo = Uri::root() . $profile->avatar;
 		
 		$item->category->categoryid = $category->id;
 		$item->category->title = $category->title;
 		
-		$item->url = JURI::root() . trim(EBR::_('index.php?option=com_easyblog&view=entry&id=' . $blog->id ), '/');
+		$item->url = Uri::root() . trim(EBR::_('index.php?option=com_easyblog&view=entry&id=' . $blog->id ), '/');
 		
 		// Tags
 		$modelPT	= EasyBlogHelper::getModel( 'PostTag' );

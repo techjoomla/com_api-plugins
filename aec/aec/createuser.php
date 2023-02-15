@@ -7,17 +7,18 @@
 */
 
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Filesystem\Folder;
+use Joomla\CMS\Factory;
+use Joomla\CMS\User\UserHelper;
+use Joomla\CMS\Component\ComponentHelper;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
-jimport('joomla.user.helper');
 jimport( 'joomla.application.component.helper' );
 jimport( 'joomla.application.component.model' );
 jimport( 'joomla.database.table.user' );
 
 require_once( JPATH_SITE .DS.'libraries'.DS.'joomla'.DS.'filesystem'.DS.'folder.php');
 
-/*if(JFolder::exists(JPATH_BASE.DS.'components'.DS.'com_xipt'))
+/*if(Folder::exists(JPATH_BASE.DS.'components'.DS.'com_xipt'))
 {
 require_once( JPATH_SITE .DS.'components'.DS.'com_xipt'.DS.'api.xipt.php');
 }*/
@@ -33,7 +34,7 @@ class AecApiResourceCreateuser extends ApiResource
 		$response               = NULL;
 		$validated              = true;
 		$userid = NULL;
-		$data	= JRequest::get('post');
+		$data	= Factory::getApplication()->input->get('post');
 	
 		//for rest api only
 		unset($data['format']);
@@ -70,17 +71,16 @@ class AecApiResourceCreateuser extends ApiResource
 		{	//to create new user for joomla
 		
 			global $message;
-			jimport('joomla.user.helper');
-			$authorize 	= & JFactory::getACL();
-			$user 		= clone(JFactory::getUser());
+			$authorize 	= Factory::getACL();
+			$user 		= clone(Factory::getUser());
 			$user->set('username', $data['username']);
 			$user->set('password', $data['password'] );
 			$user->set('name', $data['name']);
 			$user->set('email', $data['email']);
  
 			// password encryption
-			$salt  = JUserHelper::genRandomPassword(32); 
-			$crypt = JUserHelper::getCryptedPassword($user->password, $salt);
+			$salt  = UserHelper::genRandomPassword(32); 
+			$crypt = UserHelper::getCryptedPassword($user->password, $salt);
 			$user->password = "$crypt:$salt";
 
 			// user group/type
@@ -88,7 +88,7 @@ class AecApiResourceCreateuser extends ApiResource
 			$user->set('usertype', 'Registered');
 			if(JVERSION >= '1.6.0')
 			{
-				$userConfig = JComponentHelper::getParams('com_users');
+				$userConfig = ComponentHelper::getParams('com_users');
 				// Default to Registered.
 				$defaultUserGroup = $userConfig->get('new_usertype', 2);
 				$user->set('groups', array($defaultUserGroup));
@@ -96,7 +96,7 @@ class AecApiResourceCreateuser extends ApiResource
 			else
 			$user->set('gid', $authorize->get_group_id( '', 'Registered', 'ARO' ));
 
-			$date =& JFactory::getDate();
+			$date =Factory::getDate();
 			$user->set('registerDate', $date->toMySQL());
 		
 			// true on success, false otherwise

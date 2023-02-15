@@ -11,9 +11,9 @@
  */
 
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/uploadHelper.php';
@@ -34,8 +34,8 @@ class EasysocialApiResourcePage extends ApiResource
 	public function get()
 	{
 		// Init variable
-		$app			=	JFactory::getApplication();
-		$log_user		=	JFactory::getUser($this->plugin->get('user')->id);
+		$app			=	Factory::getApplication();
+		$log_user		=	Factory::getUser($this->plugin->get('user')->id);
 		$page_id		=	$app->input->get('id', 0, 'INT');
 
 		// $other_user_id	=	$app->input->get('user_id', 0, 'INT');
@@ -75,7 +75,7 @@ class EasysocialApiResourcePage extends ApiResource
 
 	public function post()
 	{
-		$this->plugin->setResponse(JText::_('PLG_API_EASYSOCIAL_UNSUPPORTED_POST_METHOD_MESSAGE'));
+		$this->plugin->setResponse(Text::_('PLG_API_EASYSOCIAL_UNSUPPORTED_POST_METHOD_MESSAGE'));
 	}
 
 	/**
@@ -87,7 +87,7 @@ class EasysocialApiResourcePage extends ApiResource
 	 */
 	public function delete()
 	{
-		$app		=	JFactory::getApplication();
+		$app		=	Factory::getApplication();
 		$page_id	=	$app->input->get('id', 0, 'INT');
 		$valid		=	1;
 		$page		=	FD::page($page_id);
@@ -99,7 +99,7 @@ class EasysocialApiResourcePage extends ApiResource
 		if (!$page->id || !$page_id)
 		{
 			$res->result->status = 0;
-			$res->result->message = JText::_('PLG_API_EASYSOCIAL_INVALID_PAGE_MESSAGE');
+			$res->result->message = Text::_('PLG_API_EASYSOCIAL_INVALID_PAGE_MESSAGE');
 			$valid = 0;
 		}
 
@@ -109,7 +109,7 @@ class EasysocialApiResourcePage extends ApiResource
 		if (!$my->isSiteAdmin() && !$pagesModel->isOwner($my->id, $page_id))
 		{
 			$res->result->status = 0;
-			$res->result->message = JText::_('PLG_API_EASYSOCIAL_PAGE_ACCESS_DENIED_MESSAGE');
+			$res->result->message = Text::_('PLG_API_EASYSOCIAL_PAGE_ACCESS_DENIED_MESSAGE');
 			$valid				=	0;
 		}
 
@@ -118,7 +118,7 @@ class EasysocialApiResourcePage extends ApiResource
 			// Try to delete the page
 			$page->delete();
 			$res->result->status = 1;
-			$res->result->message = JText::_('PLG_API_EASYSOCIAL_PAGE_DELETED_MESSAGE');
+			$res->result->message = Text::_('PLG_API_EASYSOCIAL_PAGE_DELETED_MESSAGE');
 		}
 
 		$this->plugin->setResponse($res);

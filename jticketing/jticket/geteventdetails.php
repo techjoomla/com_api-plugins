@@ -8,7 +8,11 @@
  */
 
 defined('_JEXEC') or die;
-jimport('joomla.plugin.plugin');
+
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Uri\Uri;
 
 /**
  * Class for getting ticket list which are chekin or not checkin
@@ -28,21 +32,21 @@ class JticketApiResourceGeteventdetails extends ApiResource
 	 */
 	public function get()
 	{
-		$com_params           = JComponentHelper::getParams('com_jticketing');
+		$com_params           = ComponentHelper::getParams('com_jticketing');
 		$integration          = $com_params->get('integration');
-		$lang                 = JFactory::getLanguage();
+		$lang                 = Factory::getLanguage();
 		$extension            = 'com_jticketing';
 		$base_dir             = JPATH_SITE;
 		$jticketingmainhelper = new jticketingmainhelper;
 		$lang->load($extension, $base_dir);
-		$input   = JFactory::getApplication()->input;
+		$input   = Factory::getApplication()->input;
 		$eventid = $input->get('eventid', '0', 'INT');
 		$userid  = $input->get('userid', '', 'INT');
 
 		if (empty($eventid))
 		{
 			$obj->success = 0;
-			$obj->message = JText::_("COM_JTICKETING_INVALID_EVENT");
+			$obj->message = Text::_("COM_JTICKETING_INVALID_EVENT");
 			$this->plugin->setResponse($obj);
 
 			return;
@@ -90,7 +94,7 @@ class JticketApiResourceGeteventdetails extends ApiResource
 
 		if ($obj_merged)
 		{
-			$config                   = JFactory::getConfig();
+			$config                   = Factory::getConfig();
 			$return                   = $jticketingmainhelper->getTimezoneString($eventdata->id);
 			$sdate = date_create($return['startdate']);
 			$obj_merged[0]->startdate = date_format($sdate, 'l, jS F Y');
@@ -107,11 +111,11 @@ class JticketApiResourceGeteventdetails extends ApiResource
 			{
 				if ($integration == 2)
 				{
-					$obj_merged[0]->avatar = JUri::base() . 'media/com_jticketing/images/' . $obj_merged[0]->avatar;
+					$obj_merged[0]->avatar = Uri::base() . 'media/com_jticketing/images/' . $obj_merged[0]->avatar;
 				}
 				else
 				{
-					$obj_merged[0]->avatar = JUri::base() . $obj_merged[0]->avatar;
+					$obj_merged[0]->avatar = Uri::base() . $obj_merged[0]->avatar;
 				}
 			}
 			else
@@ -144,7 +148,7 @@ class JticketApiResourceGeteventdetails extends ApiResource
 		else
 		{
 			$obj->success = "0";
-			$obj->data    = JText::_("COM_JTICKETING_NO_EVENT_DATA");
+			$obj->data    = Text::_("COM_JTICKETING_NO_EVENT_DATA");
 		}
 
 		$this->plugin->setResponse($obj);
@@ -162,7 +166,7 @@ class JticketApiResourceGeteventdetails extends ApiResource
 		$obj          = new stdClass;
 		$obj->success = 0;
 		$obj->code    = 20;
-		$obj->message = JText::_("COM_JTICKETING_SELECT_GET_METHOD");
+		$obj->message = Text::_("COM_JTICKETING_SELECT_GET_METHOD");
 		$this->plugin->setResponse($obj);
 	}
 
@@ -178,7 +182,7 @@ class JticketApiResourceGeteventdetails extends ApiResource
 		$obj          = new stdClass;
 		$obj->success = 0;
 		$obj->code    = 20;
-		$obj->message = JText::_("COM_JTICKETING_SELECT_GET_METHOD");
+		$obj->message = Text::_("COM_JTICKETING_SELECT_GET_METHOD");
 		$this->plugin->setResponse($obj);
 	}
 
@@ -194,7 +198,7 @@ class JticketApiResourceGeteventdetails extends ApiResource
 		$obj          = new stdClass;
 		$obj->success = 0;
 		$obj->code    = 20;
-		$obj->message = JText::_("COM_JTICKETING_SELECT_GET_METHOD");
+		$obj->message = Text::_("COM_JTICKETING_SELECT_GET_METHOD");
 		$this->plugin->setResponse($obj);
 	}
 }

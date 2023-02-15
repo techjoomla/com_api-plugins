@@ -6,8 +6,9 @@
  * @link http://www.techjoomla.com
 */
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.user.user');
 jimport( 'simpleschema.easyblog.category' );
 jimport( 'simpleschema.easyblog.person' );
 jimport( 'simpleschema.easyblog.blog.post' );
@@ -25,7 +26,7 @@ class EasyblogApiResourceCategory extends ApiResource
 	
 	public function get() {
 
-		$input = JFactory::getApplication()->input;
+		$input = Factory::getApplication()->input;
 		$model = EasyBlogHelper::getModel( 'Blog' );
 		$category = EasyBlogHelper::getTable( 'Category', 'Table' );
 		$id = $input->get('id', null, 'INT');
@@ -54,7 +55,7 @@ class EasyblogApiResourceCategory extends ApiResource
 		
 		if(!$category->id || ! $privacy->allowed )
 		{
-			$this->plugin->setResponse( $this->getErrorResponse(404, JText::_( 'PLG_API_EASYBLOG_CATEGORY_NOT_FOUND_MESSAGE' )) );
+			$this->plugin->setResponse( $this->getErrorResponse(404, Text::_( 'PLG_API_EASYBLOG_CATEGORY_NOT_FOUND_MESSAGE' )) );
 			return;
 		}
 		

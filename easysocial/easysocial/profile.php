@@ -11,9 +11,9 @@
  */
 
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/groups.php';
@@ -53,7 +53,7 @@ class EasysocialApiResourceProfile extends ApiResource
 	public function post()
 	{
 		$this->plugin->err_code = 405;
-		$this->plugin->err_message = JText::_('PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE');
+		$this->plugin->err_message = Text::_('PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE');
 		$this->plugin->setResponse(null);
 	}
 
@@ -67,7 +67,7 @@ class EasysocialApiResourceProfile extends ApiResource
 	public function getProfile()
 	{
 		// Init variable
-		$app			=	JFactory::getApplication();
+		$app			=	Factory::getApplication();
 		$log_user		=	$this->plugin->get('user')->id;
 		$other_user_id	=	$app->input->get('user_id', 0, 'INT');
 		$userid			=	($other_user_id)?$other_user_id:$log_user;
@@ -80,7 +80,7 @@ class EasysocialApiResourceProfile extends ApiResource
 		if ($user->id == 0)
 		{
 			$this->plugin->err_code = 404;
-			$this->plugin->err_message = JText::_('COM_USERS_USER_NOT_FOUND');
+			$this->plugin->err_message = Text::_('COM_USERS_USER_NOT_FOUND');
 			$this->plugin->setResponse(null);
 		}
 

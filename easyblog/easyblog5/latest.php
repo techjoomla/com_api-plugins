@@ -6,7 +6,7 @@
  * @link http://www.techjoomla.com
 */
 defined('_JEXEC') or die( 'Restricted access' );
-jimport('joomla.user.user');
+use Joomla\CMS\Factory;
 jimport( 'simpleschema.easyblog.category' );
 jimport( 'simpleschema.easyblog.person' );
 jimport( 'simpleschema.easyblog.blog.post' );
@@ -31,7 +31,7 @@ class EasyblogApiResourceLatest extends ApiResource
 	
 	public function get() {
 		
-		$input = JFactory::getApplication()->input;
+		$input = Factory::getApplication()->input;
 		$model = EasyBlogHelper::getModel( 'Blog' );
 	
 		//$id = $input->get('id', null, 'INT');
@@ -106,7 +106,7 @@ class EasyblogApiResourceLatest extends ApiResource
 	// get feature blog function.
 	public function getfeature_Blog()
 	{
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$limit = $app->input->get('limit',10,'INT');	
 		$categories = $app->input->get('categories','','STRING');	
 		$blogss = new	EasyBlogModelBlog();

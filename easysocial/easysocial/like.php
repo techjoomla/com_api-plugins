@@ -10,9 +10,9 @@
  * and the com_api extension by Brian Edgerton (http://www.edgewebworks.com)
  */
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/groups.php';
@@ -39,7 +39,7 @@ class EasysocialApiResourceLike extends ApiResource
 	public function get()
 	{
 		$this->plugin->err_code = 405;
-		$this->plugin->err_message = JText::_('PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE');
+		$this->plugin->err_message = Text::_('PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE');
 		$this->plugin->setResponse(null);
 	}
 
@@ -65,7 +65,7 @@ class EasysocialApiResourceLike extends ApiResource
 	public function delete()
 	{
 		$this->plugin->err_code = 405;
-		$this->plugin->err_message = JText::_('PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE');
+		$this->plugin->err_message = Text::_('PLG_API_EASYSOCIAL_USE_POST_METHOD_MESSAGE');
 		$this->plugin->setResponse(null);
 	}
 
@@ -79,8 +79,8 @@ class EasysocialApiResourceLike extends ApiResource
 	public function toggleLike()
 	{
 		// Init variable
-		$app		=	JFactory::getApplication();
-		$log_user	=	JFactory::getUser($this->plugin->get('user')->id);
+		$app		=	Factory::getApplication();
+		$log_user	=	Factory::getUser($this->plugin->get('user')->id);
 		$id			=	$app->input->get('id', 0, 'INT');
 		$type		=	$app->input->get('type', null, 'STRING');
 		$group		=	$app->input->get('group', 'user', 'STRING');
@@ -139,11 +139,11 @@ class EasysocialApiResourceLike extends ApiResource
 		}
 
 		// The current action
-		$verb				=	$hasLiked ? JText::_('PLG_API_EASYSOCIAL_UNLIKE') : JText::_('PLG_API_EASYSOCIAL_LIKE');
+		$verb				=	$hasLiked ? Text::_('PLG_API_EASYSOCIAL_UNLIKE') : Text::_('PLG_API_EASYSOCIAL_LIKE');
 		$res->result->status		= $state;
 
 		// $res->data		=	($state && $verb == 'like')?$model->getLikesCount($id, $type):0;
-		$res->result->message	=	($state)? $verb . JText::_('PLG_API_EASYSOCIAL_SUCCESSFULL'): $verb . JText::_('PLG_API_EASYSOCIAL_UNSUCCESSFULL');
+		$res->result->message	=	($state)? $verb . Text::_('PLG_API_EASYSOCIAL_SUCCESSFULL'): $verb . Text::_('PLG_API_EASYSOCIAL_UNSUCCESSFULL');
 
 		$this->plugin->setResponse($res);
 	}

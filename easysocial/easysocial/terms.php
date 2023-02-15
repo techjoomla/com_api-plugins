@@ -11,8 +11,8 @@
  */
 
 	defined('_JEXEC') or die( 'Restricted access' );
-	jimport('joomla.plugin.plugin');
-	jimport('joomla.html.html');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
 /**
  * API class EasysocialApiResourceTerms
@@ -51,21 +51,21 @@ class EasysocialApiResourceTerms extends ApiResource
 	public function content()
 	{
 		$res = new stdClass;
-		$jinput = JFactory::getApplication();
+		$jinput = Factory::getApplication();
 		$app = $jinput->input->get('appname', null, 'STRING');
 		$company = $jinput->input->get('company', 'Appcarvers', 'STRING');
 		$day = $jinput->input->get('day', 30, 'INT');
 		/* $res->message = "<h3>" .
-						JText::sprintf('PLG_API_EASYSOCIAL_APP_TERM_ONE', $company) .
-						JText::sprintf('PLG_API_EASYSOCIAL_APP_TERM_TWO', $app, $company) .
-						JText::sprintf('PLG_API_EASYSOCIAL_APP_TERM_THREE', $company) .
-						JText::sprintf('PLG_API_EASYSOCIAL_APP_TERM_FOUR', $company, $day) . "</h3>";
+						Text::sprintf('PLG_API_EASYSOCIAL_APP_TERM_ONE', $company) .
+						Text::sprintf('PLG_API_EASYSOCIAL_APP_TERM_TWO', $app, $company) .
+						Text::sprintf('PLG_API_EASYSOCIAL_APP_TERM_THREE', $company) .
+						Text::sprintf('PLG_API_EASYSOCIAL_APP_TERM_FOUR', $company, $day) . "</h3>";
 		*/
 
-		$res->message = JText::sprintf('PLG_API_EASYSOCIAL_APP_TERM_ONE', $company);
-		$res->message_one = JText::sprintf('PLG_API_EASYSOCIAL_APP_TERM_TWO', $app, $company);
-		$res->subtitle = JText::sprintf('PLG_API_EASYSOCIAL_APP_TERM_THREE', $company);
-		$res->rules = JText::sprintf('PLG_API_EASYSOCIAL_APP_TERM_FOUR', $company, $day);
+		$res->message = Text::sprintf('PLG_API_EASYSOCIAL_APP_TERM_ONE', $company);
+		$res->message_one = Text::sprintf('PLG_API_EASYSOCIAL_APP_TERM_TWO', $app, $company);
+		$res->subtitle = Text::sprintf('PLG_API_EASYSOCIAL_APP_TERM_THREE', $company);
+		$res->rules = Text::sprintf('PLG_API_EASYSOCIAL_APP_TERM_FOUR', $company, $day);
 
 		return $res;
 	}

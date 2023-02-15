@@ -11,9 +11,9 @@
  */
 
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/albums.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/photos.php';
@@ -50,14 +50,14 @@ class EasysocialApiResourcePhotoadd extends ApiResource
 	 */
 	private function addPhoto()
 	{
-		$app			=	JFactory::getApplication();
+		$app			=	Factory::getApplication();
 		$userid			=	$app->input->get('userid', 0, 'INT');
 		$album_id		=	$app->input->get('album_id', 0, 'INT');
 		$canCreate = ES::user();
 
 		if (! $canCreate->getAccess()->allowed('photos.create') && ! $canCreate->isSiteAdmin())
 		{
-			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_PHOTO_NO_ACCESS_UPLOAD_PHOTO'));
+			ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_PHOTO_NO_ACCESS_UPLOAD_PHOTO'));
 		}
 
 		// Load the album
@@ -66,8 +66,8 @@ class EasysocialApiResourcePhotoadd extends ApiResource
 		$photo_obj		=	new EasySocialApiUploadHelper;
 		$addphoto		=	$photo_obj->addPhotoAlbum($album_id, $userid);
 		$album->params	=	$addphoto;
-		$album->title	=	JText::_($album->title);
-		$album->caption	=	JText::_($album->caption);
+		$album->title	=	Text::_($album->title);
+		$album->caption	=	Text::_($album->caption);
 
 		return $album;
 	}

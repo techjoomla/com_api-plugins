@@ -8,25 +8,23 @@
 
 defined('_JEXEC') or die( 'Restricted access' );
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
-jimport('joomla.application.component.controller');
-jimport('joomla.application.component.model');
-jimport('joomla.user.helper');
-jimport('joomla.user.user');
-jimport('joomla.application.component.helper');
+use Joomla\CMS\MVC\Model\BaseDatabaseModel;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\User\User;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Session\Session;
+use Joomla\CMS\Filesystem\File;
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\User\UserHelper;
 
-JModelLegacy::addIncludePath(JPATH_SITE . 'components/com_api/models');
 require_once JPATH_SITE . '/components/com_api/libraries/authentication/user.php';
 require_once JPATH_SITE . '/components/com_api/libraries/authentication/login.php';
-require_once JPATH_SITE . '/components/com_api/models/key.php';
-require_once JPATH_SITE . '/components/com_api/models/keys.php';
 
 class UsersApiResourceLogin extends ApiResource
 {
 	public function get()
 	{
-		$this->plugin->setResponse( JText::_('PLG_API_USERS_GET_METHOD_NOT_ALLOWED_MESSAGE'));
+		$this->plugin->setResponse( Text::_('PLG_API_USERS_GET_METHOD_NOT_ALLOWED_MESSAGE'));
 	}
 
 	public function post()
@@ -38,23 +36,25 @@ class UsersApiResourceLogin extends ApiResource
 	{
 		//init variable
 		$obj = new stdclass;
-		$umodel = new JUser;
+		$umodel = new User;
 		$user = $umodel->getInstance();       
 
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$username = $app->input->get('username', 0, 'STRING');
 
-		$user = JFactory::getUser();
-		$id = JUserHelper::getUserId($username);
+		$user = Factory::getUser();
+		$id = UserHelper::getUserId($username);
 
 		if($id == null)
 		{
 			$model = FD::model('Users');
-			$id = $model->getUserId('email', $username);            
+			$id = $model->getUserId('email', $username);
 		}
 
-		$kmodel = new ApiModelKey;
-		$model = new ApiModelKeys;
+		BaseDatabaseModel::addIncludePath(JPATH_SITE . '/administrator/components/com_api/models');
+		$kmodel = BaseDatabaseModel::getInstance('Key', 'ApiModel');
+		$model = BaseDatabaseModel::getInstance('Keys', 'ApiModel');
+
 		$key = null;
 		// Get login user hash
 		//$kmodel->setState('user_id', $user->id);
@@ -78,7 +78,7 @@ class UsersApiResourceLogin extends ApiResource
 				'c' => 'key',
 				'ret' => 'index.php?option=com_api&view=keys',
 				'option' => 'com_api',
-				JSession::getFormToken() => 1
+				Session::getFormToken() => 1
 				);
 
 				$result = $kmodel->save($data);
@@ -86,7 +86,7 @@ class UsersApiResourceLogin extends ApiResource
 				
 				//add new key in easysocial table
 				$easyblog = JPATH_ROOT . '/administrator/components/com_easyblog/easyblog.php';
-				if (JFile::exists($easyblog) && JComponentHelper::isEnabled('com_easysocial', true))
+				if (File::exists($easyblog) && ComponentHelper::isEnabled('com_easysocial', true))
 				{
 					$this->updateEauth( $user , $key );
 				}
@@ -102,7 +102,7 @@ class UsersApiResourceLogin extends ApiResource
 		else
 		{
 			$obj->code = 403;
-			$obj->message = JText::_('PLG_API_USERS_BAD_REQUEST_MESSAGE');
+			$obj->message = Text::_('PLG_API_USERS_BAD_REQUEST_MESSAGE');
 		}
 		return( $obj );
 	

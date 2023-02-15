@@ -7,8 +7,9 @@
 */
 defined('_JEXEC') or die( 'Restricted access' );
 
-//include(JURI::base());
-jimport('joomla.plugin.plugin');
+use Joomla\CMS\Factory;
+
+//include(Uri::base());
 
 class SocialadsApiResourceDetails extends ApiResource
 {
@@ -19,13 +20,13 @@ class SocialadsApiResourceDetails extends ApiResource
 
 	public function post()
 	{    	
-			$db = JFactory::getDBO();
+			$db = Factory::getDbo();
 	   		
 	   		require_once(dirname(__FILE__).DS.'helper.php');
 				
 			//get date from app
-			$startdate = JRequest::getVar('startdate');
-			$enddate = JRequest::getVar('enddate');
+			$startdate = Factory::getApplication()->input->get('startdate');
+			$enddate = Factory::getApplication()->input->get('enddate');
 			
 			$startdate .= ' 00:00:00';
 			$enddate .= ' 23:59:59';
@@ -34,11 +35,11 @@ class SocialadsApiResourceDetails extends ApiResource
 			$edate = $enddate;
 			
 			//get offset value					
-			$config =& JFactory::getConfig();
+			$config =Factory::getConfig();
             $offset = $config->getValue('config.offset');
             
-            $startdate= & JFactory::getDate($startdate,$offset);
-            $enddate= & JFactory::getDate($enddate,$offset);
+            $startdate= Factory::getDate($startdate,$offset);
+            $enddate= Factory::getDate($enddate,$offset);
             $startdate = $startdate->toFormat('%F %T');                                
             $enddate = $enddate->toFormat('%F %T');
  										

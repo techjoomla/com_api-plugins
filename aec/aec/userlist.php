@@ -7,26 +7,26 @@
 */
 
 defined('_JEXEC') or die;
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
 
 
 class AecApiResourceUserlist extends ApiResource
 {
 	public function get()
 	{
-		$limitstart = JRequest::getInt('limitstart',0);
-		$limit = JRequest::getInt('limit',20);	
-        $userid = JRequest::getInt('id',0);	 
-		$name = JRequest::getVar('name','');			
-		$username = JRequest::getVar('username','');
-		$email = JRequest::getVar('email','');
-		$plan_status = JRequest::getVar('plan_status','');	
-        $ordering = JRequest::getVar('ordering','registerDate');	 
-		$orderingdir = JRequest::getVar('orderingdir','ASC');			
+		$limitstart = Factory::getApplication()->input->get('limitstart',0);
+		$limit = Factory::getApplication()->input->get('limit',20);	
+        $userid = Factory::getApplication()->input->get('id',0);	 
+		$name = Factory::getApplication()->input->get('name','');			
+		$username = Factory::getApplication()->input->get('username','');
+		$email = Factory::getApplication()->input->get('email','');
+		$plan_status = Factory::getApplication()->input->get('plan_status','');	
+        $ordering = Factory::getApplication()->input->get('ordering','registerDate');	 
+		$orderingdir = Factory::getApplication()->input->get('orderingdir','ASC');			
 			
 
-		$db = &JFactory::getDBO();
+		$db = Factory::getDbo();
 		//total active users		
 		$query = "SELECT count(*) FROM #__acctexp_subscr AS a INNER JOIN #__users AS b ON a.userid = b.id ";
         /*if($plan_status != '')
@@ -139,7 +139,7 @@ class AecApiResourceUserlist extends ApiResource
 
   /*function qry()
  {
-    $db = &JFactory::getDBO();
+    $db = Factory::getDbo();
     $qry = "SELECT count(*) FROM #__acctexp_subscr AS a INNER JOIN #__users AS b ON a.userid = b.id WHERE ((a.status = 'Active' || a.status = 'Trial'))";
     $db->setQuery( $query );
 	$total = $db->loadResult(); 

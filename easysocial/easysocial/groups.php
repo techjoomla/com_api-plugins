@@ -10,9 +10,9 @@
  * and the com_api extension by Brian Edgerton (http://www.edgewebworks.com)
  */
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 // @TODO - must be include at bootsraping
 JLoader::register("EasySocialApiMappingHelper", JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php');
@@ -35,7 +35,7 @@ class EasysocialApiResourceGroups extends ApiResource
 	 */
 	public function get()
 	{
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$mygroups = $app->input->get('mygroups', false, 'BOOLEAN');
 		$inputArray = $app->input->getArray();
 
@@ -63,14 +63,14 @@ class EasysocialApiResourceGroups extends ApiResource
 	 */
 	public function post()
 	{
-		$app		=	JFactory::getApplication();
+		$app		=	Factory::getApplication();
 		$input		=	$app->input;
 		$filters	=	$input->post->getArray();
 		$user		=	ES::user();
 
 		$apiResponse = new stdclass;
 		$apiResponse->result = array();
-		$apiResponse->empty_message = JText::_('PLG_API_GROUPS_EMPTY_ALL');
+		$apiResponse->empty_message = Text::_('PLG_API_GROUPS_EMPTY_ALL');
 
 		$options['limit'] = $app->input->get('limit', 10, 'INT');
 
@@ -88,25 +88,25 @@ class EasysocialApiResourceGroups extends ApiResource
 			$options['userid'] = $user->id;
 			$options['types'] = 'participated';
 			$options['featured'] = '';
-			$apiResponse->empty_message = JText::_('PLG_API_GROUPS_EMPTY_CREATED');
+			$apiResponse->empty_message = Text::_('PLG_API_GROUPS_EMPTY_CREATED');
 		}
 		elseif (isset($filters['invited']))
 		{
 			$options['invited'] = $user->id;
 			$options['types'] = 'all';
-			$apiResponse->empty_message = JText::_('PLG_API_GROUPS_EMPTY_INVITED');
+			$apiResponse->empty_message = Text::_('PLG_API_GROUPS_EMPTY_INVITED');
 		}
 		elseif (isset($filters['pending']))
 		{
 			$options['uid'] = $user->id;
 			$options['state'] = SOCIAL_CLUSTER_DRAFT;
 			$options['types'] = 'user';
-			$apiResponse->empty_message = JText::_('PLG_API_CLUSTER_NO_PENDING_MODERATION_GROUP');
+			$apiResponse->empty_message = Text::_('PLG_API_CLUSTER_NO_PENDING_MODERATION_GROUP');
 		}
 		elseif (isset($filters['featured']))
 		{
 			$options['featured'] = true;
-			$apiResponse->empty_message = JText::_('PLG_API_GROUPS_EMPTY_FEATURED');
+			$apiResponse->empty_message = Text::_('PLG_API_GROUPS_EMPTY_FEATURED');
 		}
 		elseif (isset($filters['participated']) && $user->id)
 		{
@@ -148,7 +148,7 @@ class EasysocialApiResourceGroups extends ApiResource
 				$options['category'] = $categoryId;
 			}
 
-			$apiResponse->empty_message = JText::_('PLG_API_GROUPS_EMPTY_CATEGORY');
+			$apiResponse->empty_message = Text::_('PLG_API_GROUPS_EMPTY_CATEGORY');
 		}
 
 		$groups	=	$model->getGroups($options);

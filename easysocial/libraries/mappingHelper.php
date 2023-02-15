@@ -12,8 +12,11 @@
 
 defined('_JEXEC') or die('Restricted access');
 
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Filesystem\File;
+
 jimport('libraries.schema.group');
-jimport('joomla.filesystem.file');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/groups.php';
@@ -67,7 +70,7 @@ class EasySocialApiMappingHelper
 	public function mapItem($rows, $obj_type = '', $userid = 0, $type = '', $strip_tags = '', $text_length = 0, $skip = array())
 	{
 		// $this->log_user = $userid;
-		$this->log_user = JFactory::getUser()->id;
+		$this->log_user = Factory::getUser()->id;
 
 		switch ($obj_type)
 		{
@@ -139,7 +142,7 @@ class EasySocialApiMappingHelper
 	 */
 	public function photosSchema($rows, $userid)
 	{
-		$lang = JFactory::getLanguage();
+		$lang = Factory::getLanguage();
 		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, '', true);
 		$result = array();
 
@@ -159,8 +162,8 @@ class EasySocialApiMappingHelper
 				// For post comment photo id is required.
 				$item->uid             = $row->id;
 				$item->user_id         = $row->user_id;
-				$item->title           = JText::_($row->title);
-				$item->caption         = JText::_($row->caption);
+				$item->title           = Text::_($row->title);
+				$item->caption         = Text::_($row->caption);
 				$item->created         = $row->created;
 				$item->state           = $row->state;
 				$item->assigned_date   = $row->assigned_date;
@@ -195,7 +198,7 @@ class EasySocialApiMappingHelper
 	public function albumsSchema($rows, $userid)
 	{
 		// To load easysocial language constant
-		$lang = JFactory::getLanguage();
+		$lang = Factory::getLanguage();
 		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, '', true);
 		$result = array();
 
@@ -208,8 +211,8 @@ class EasySocialApiMappingHelper
 				$item->cover_id        = $row->cover_id;
 				$item->type            = $row->type;
 				$item->uid             = $row->uid;
-				$item->title           = JText::_($row->title);
-				$item->caption         = JText::_($row->caption);
+				$item->title           = Text::_($row->title);
+				$item->caption         = Text::_($row->caption);
 				$item->created         = $row->created;
 				$item->assigned_date   = $row->assigned_date;
 				$item->cover_featured  = $row->cover_featured;
@@ -240,7 +243,7 @@ class EasySocialApiMappingHelper
 				$item->total                         = $comcount;
 				$item->comments['total']             = $comcount;
 				$item->isowner = ($row->user_id == $userid) ? true : false;
-				$item->share_url = JURI::root() . '/index.php?option=com_easysocial&view=albums&id=' .
+				$item->share_url = Uri::root() . '/index.php?option=com_easysocial&view=albums&id=' .
 				$row->id . '&layout=item&uid=' . $row->uid . '&type=' . $row->type;
 				$result[]      = $item;
 			}
@@ -267,11 +270,11 @@ class EasySocialApiMappingHelper
 			return array();
 		}
 
-		$lang = JFactory::getLanguage();
+		$lang = Factory::getLanguage();
 		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, '', true);
 		$user = FD::user($userid);
 
-		$logUser	=	JFactory::getUser()->get('id');
+		$logUser	=	Factory::getUser()->get('id');
 		$lib		=	ES::privacy($logUser);
 
 		if (count($rows) > 0)
@@ -284,8 +287,8 @@ class EasySocialApiMappingHelper
 				$fobj = new FildsSimpleSchema;
 				$fobj->field_id    = $row->id;
 				$fobj->unique_key  = $row->unique_key;
-				$fobj->title       = JText::_($row->title);
-				$fobj->field_name  = JText::_($row->title);
+				$fobj->title       = Text::_($row->title);
+				$fobj->field_name  = Text::_($row->title);
 				$fobj->step        = $row->step_id;
 				$fobj->field_value = $fmod_obj->getCustomFieldsValue($row->id, $userid, $type);
 
@@ -403,7 +406,7 @@ class EasySocialApiMappingHelper
 	public function streamSchema($rows, $userid)
 	{
 		$result = array();
-		$user   = JFactory::getUser();
+		$user   = Factory::getUser();
 		$isRoot = $user->authorise('core.admin');
 
 		if (is_array($rows) && empty($rows))
@@ -426,7 +429,7 @@ class EasySocialApiMappingHelper
 
 				if ($row->type != 'links')
 				{
-					$item->title = str_replace('href="', 'href="' . JURI::root(), $item->title);
+					$item->title = str_replace('href="', 'href="' . Uri::root(), $item->title);
 				}
 
 				if ($row->type == 'files')
@@ -444,7 +447,7 @@ class EasySocialApiMappingHelper
 				$item->group      = $row->cluster_type;
 				$item->element_id = $row->contextId;
 
-				$item->content    = urldecode(str_replace('href="/index', 'href="' . JURI::root() . 'index', $row->content));
+				$item->content    = urldecode(str_replace('href="/index', 'href="' . Uri::root() . 'index', $row->content));
 
 				$search        = "data-text";
 				$insert        = "id='data-text'";
@@ -531,8 +534,8 @@ class EasySocialApiMappingHelper
 
 				if ($row->type != 'links')
 				{
-					$item->raw_content_url = str_replace('href="/', 'href="' . JURI::root(), $item->raw_content_url);
-					$item->content         = str_replace('href="/', 'href="' . JURI::root(), $item->content);
+					$item->raw_content_url = str_replace('href="/', 'href="' . Uri::root(), $item->raw_content_url);
+					$item->content         = str_replace('href="/', 'href="' . Uri::root(), $item->content);
 				}
 
 				// Set the publish date
@@ -547,7 +550,7 @@ class EasySocialApiMappingHelper
 
 				foreach ($row->actors as $actor)
 				{
-					$user_url[$actor->id] = JURI::root() . FRoute::profile(array('id' => $actor->id, 'layout' => 'item', 'sef' => false));
+					$user_url[$actor->id] = Uri::root() . FRoute::profile(array('id' => $actor->id, 'layout' => 'item', 'sef' => false));
 					$actors[]             = $this->createUserObj($actor->id);
 				}
 
@@ -556,7 +559,7 @@ class EasySocialApiMappingHelper
 
 				foreach ($row->with as $actor)
 				{
-					$withurl         = JURI::root() . FRoute::profile(array('id' => $actor->id, 'layout' => 'item', 'sef' => false));
+					$withurl         = Uri::root() . FRoute::profile(array('id' => $actor->id, 'layout' => 'item', 'sef' => false));
 					$with_user_url[] = "<a href='" . $withurl . "'>" . $this->createUserObj($actor->id)->display_name . "</a>";
 				}
 
@@ -618,7 +621,7 @@ class EasySocialApiMappingHelper
 																)
 															),
 															'display' => 'dialog',
-															'text' => JText::_('COM_EASYSOCIAL_STREAM_SOCIAL'),
+															'text' => Text::_('COM_EASYSOCIAL_STREAM_SOCIAL'),
 															'css' => 'fd-small'
 														)
 											);
@@ -815,13 +818,13 @@ class EasySocialApiMappingHelper
 	 */
 	public function getOffsetServer($date, $userid)
 	{
-		$config = JFactory::getConfig();
-		$user   = JFactory::getUser($userid);
+		$config = Factory::getConfig();
+		$user   = Factory::getUser($userid);
 		$offset = $user->getParam('timezone', $config->get('offset'));
 
 		if (!empty($date) && $date != '0000-00-00 00:00:00')
 		{
-			$udate = JFactory::getDate($date, $offset);
+			$udate = Factory::getDate($date, $offset);
 			$date  = $udate->format('Y-m-d H:i:s a');
 		}
 
@@ -841,7 +844,7 @@ class EasySocialApiMappingHelper
 	 */
 	public function createCommentsObj($row, $limitstart = 0, $limit = 10)
 	{
-		$this->log_user = JFactory::getUser()->id;
+		$this->log_user = Factory::getUser()->id;
 
 		if (!is_bool($row->uid))
 		{
@@ -1021,7 +1024,7 @@ class EasySocialApiMappingHelper
 	 */
 	public function eventsSchema($rows, $userid)
 	{
-		$lang = JFactory::getLanguage();
+		$lang = Factory::getLanguage();
 		$lang->load('com_easysocial', JPATH_ADMINISTRATOR, '', true);
 		$result = array();
 
@@ -1127,7 +1130,7 @@ class EasySocialApiMappingHelper
 				$NameLocationLabel        = $item->location;
 				$item->event_map_url_andr = "geo:" . $item->latitude . "," . $item->longitude . "?q=" . $NameLocationLabel;
 				$item->event_map_url_ios  = "http://maps.apple.com/?q=" . $NameLocationLabel . "&sll=" . $item->latitude . "," . $item->longitude;
-				$item->share_url          = JURI::root() . $eventobj->getPermalink(true, false, 'item', false);
+				$item->share_url          = Uri::root() . $eventobj->getPermalink(true, false, 'item', false);
 
 				// End
 				$item->isInvited          = false;
@@ -1141,23 +1144,23 @@ class EasySocialApiMappingHelper
 
 				if ($item->isAttending)
 				{
-					$action = JText::_('PLG_API_EASYSOCIAL_EVENT_ATTENDING');
+					$action = Text::_('PLG_API_EASYSOCIAL_EVENT_ATTENDING');
 				}
 				elseif ($item->isMaybe)
 				{
-					$action = JText::_('PLG_API_EASYSOCIAL_EVENT_MAYBE');
+					$action = Text::_('PLG_API_EASYSOCIAL_EVENT_MAYBE');
 				}
 				elseif ($item->isNotAttending)
 				{
-					$action = JText::_('PLG_API_EASYSOCIAL_EVENT_NOT_ATTENDING');
+					$action = Text::_('PLG_API_EASYSOCIAL_EVENT_NOT_ATTENDING');
 				}
 				else
 				{
 					$action = '';
 				}
 
-				$action = (!$item->isAttending) ? ((!$item->isMaybe) ? JText::_('PLG_API_EASYSOCIAL_EVENT_NOT_ATTENDING') :
-				JText::_('PLG_API_EASYSOCIAL_EVENT_MAYBE')) : JText::_('PLG_API_EASYSOCIAL_EVENT_ATTENDING');
+				$action = (!$item->isAttending) ? ((!$item->isMaybe) ? Text::_('PLG_API_EASYSOCIAL_EVENT_NOT_ATTENDING') :
+				Text::_('PLG_API_EASYSOCIAL_EVENT_MAYBE')) : Text::_('PLG_API_EASYSOCIAL_EVENT_ATTENDING');
 				$item->action = $action;
 				$result[] = $item;
 			}
@@ -1213,8 +1216,8 @@ class EasySocialApiMappingHelper
 						$fobj = new FildsSimpleSchema;
 						$fobj->field_id = $groupInfo->id;
 						$fobj->unique_key = $groupInfo->unique_key;
-						$fobj->title = JText::_($groupInfo->title);
-						$fobj->field_name = JText::_($groupInfo->title);
+						$fobj->title = Text::_($groupInfo->title);
+						$fobj->field_name = Text::_($groupInfo->title);
 						$fobj->step = $groupInfo->step_id;
 						$fobj->field_value = $groupInfo->output;
 
@@ -1252,7 +1255,7 @@ class EasySocialApiMappingHelper
 				$y                    = $grpobj->cover->y;
 				$item->cover_position = $x . '% ' . $y . '%';
 				$item->created_by   = $row->creator_uid;
-				$item->creator_name = JFactory::getUser($row->creator_uid)->username;
+				$item->creator_name = Factory::getUser($row->creator_uid)->username;
 				$item->params       = (!empty($row->params)) ? $row->params : false;
 				$item->more_info = $fieldsArray;
 
@@ -1261,12 +1264,12 @@ class EasySocialApiMappingHelper
 				/*foreach ($row->avatars As $ky => $avt)
 					{
 						$avt_key        = 'avatar_' . $ky;
-						$item->$avt_key = JURI::root() . 'media/com_easysocial/avatars/group/' . $row->id . '/' . $avt;
-						$fst = JFile::exists('media/com_easysocial/avatars/group/' . $row->id . '/' . $avt);
+						$item->$avt_key = Uri::root() . 'media/com_easysocial/avatars/group/' . $row->id . '/' . $avt;
+						$fst = File::exists('media/com_easysocial/avatars/group/' . $row->id . '/' . $avt);
 
 						if (!$fst)
 						{
-							$item->$avt_key = JURI::root() . 'media/com_easysocial/defaults/avatars/group/' . $ky . '.png';
+							$item->$avt_key = Uri::root() . 'media/com_easysocial/defaults/avatars/group/' . $ky . '.png';
 						}
 				}*/
 
@@ -1344,8 +1347,8 @@ class EasySocialApiMappingHelper
 						$fobj = new FildsSimpleSchema;
 						$fobj->field_id = $pageInfo->id;
 						$fobj->unique_key = $pageInfo->unique_key;
-						$fobj->title = JText::_($pageInfo->title);
-						$fobj->field_name = JText::_($pageInfo->title);
+						$fobj->title = Text::_($pageInfo->title);
+						$fobj->field_name = Text::_($pageInfo->title);
 						$fobj->step = $pageInfo->step_id;
 						$fobj->field_value = $pageInfo->output;
 
@@ -1384,7 +1387,7 @@ class EasySocialApiMappingHelper
 				$y                    = $pageobj->cover->y;
 				$item->cover_position = $x . '% ' . $y . '%';
 				$item->created_by   = $row->creator_uid;
-				$item->creator_name = JFactory::getUser($row->creator_uid)->username;
+				$item->creator_name = Factory::getUser($row->creator_uid)->username;
 				$item->params       = (!empty($row->params)) ? $row->params : false;
 				$item->more_info = $fieldsArray;
 
@@ -1393,12 +1396,12 @@ class EasySocialApiMappingHelper
 				/*foreach ($row->avatars As $ky => $avt)
 				{
 					$avt_key        = 'avatar_' . $ky;
-					$item->$avt_key = JURI::root() . 'media/com_easysocial/avatars/page/' . $row->id . '/' . $avt;
-					$fst = JFile::exists('media/com_easysocial/avatars/page/' . $row->id . '/' . $avt);
+					$item->$avt_key = Uri::root() . 'media/com_easysocial/avatars/page/' . $row->id . '/' . $avt;
+					$fst = File::exists('media/com_easysocial/avatars/page/' . $row->id . '/' . $avt);
 
 					if (!$fst)
 					{
-						$item->$avt_key = JURI::root() . 'media/com_easysocial/defaults/avatars/page/' . $ky . '.png';
+						$item->$avt_key = Uri::root() . 'media/com_easysocial/defaults/avatars/page/' . $ky . '.png';
 					}
 				}*/
 
@@ -1480,11 +1483,11 @@ class EasySocialApiMappingHelper
 		{
 			$std_obj                = new stdClass;
 			$std_obj->id            = $row->id;
-			$std_obj->title         = JText::_($row->title);
-			$std_obj->description   = JText::_($row->description);
+			$std_obj->title         = Text::_($row->title);
+			$std_obj->description   = Text::_($row->description);
 			$std_obj->alias         = $row->alias;
-			$std_obj->howto         = JText::_($row->howto);
-			$std_obj->avatar        = JURI::root() . $row->avatar;
+			$std_obj->howto         = Text::_($row->howto);
+			$std_obj->avatar        = Uri::root() . $row->avatar;
 			$std_obj->achieved_date = $row->achieved_date;
 			$std_obj->created       = $row->created;
 
@@ -1673,7 +1676,7 @@ class EasySocialApiMappingHelper
 	{
 		if ($id)
 		{
-			$log_user = JFactory::getUser()->id;
+			$log_user = Factory::getUser()->id;
 			$user      = FD::user($id);
 			$es_params = FD::config();
 			$actor     = new userSimpleSchema;
@@ -1843,7 +1846,7 @@ class EasySocialApiMappingHelper
 	public function videosSchema($rows, $userid)
 	{
 		$result = array();
-		$user   = JFactory::getUser();
+		$user   = Factory::getUser();
 		$isRoot = $user->authorise('core.admin');
 		$storage = FD::storage('amazon');
 		$uri = $storage->getPermalink();
@@ -1878,14 +1881,14 @@ class EasySocialApiMappingHelper
 			$item->size          = $row->size;
 			$item->params        = json_decode($row->params, true);
 			$item->storage       = $row->storage;
-			$item->path          = JURI::root() . $row->path;
+			$item->path          = Uri::root() . $row->path;
 			$item->original      = $row->original;
 			$item->file_title    = $row->file_title;
 			$item->source        = $row->source;
 
 			// $item->thumbnail = strstr($item->created_by->image->avatar_large, 'media', true) . $row->thumbnail;
-			$fst 				= JFile::exists($row->thumbnail);
-			$item->thumbnail	= ($fst) ? JURI::root() . $row->thumbnail : $uri . $row->thumbnail;
+			$fst 				= File::exists($row->thumbnail);
+			$item->thumbnail	= ($fst) ? Uri::root() . $row->thumbnail : $uri . $row->thumbnail;
 			$item->likes		= $video->getLikesCount();
 			$item->comments		= $video->getCommentsCount();
 			$video_id			= explode("?v=", $item->path);
@@ -1991,7 +1994,7 @@ class EasySocialApiMappingHelper
 					{
 						$avt_key	=	'avatar_' . $ky;
 
-						$fst = JFile::exists('media/com_easysocial/avatars/' . $cluster->type . '/' . $row->id . '/' . $avt);
+						$fst = File::exists('media/com_easysocial/avatars/' . $cluster->type . '/' . $row->id . '/' . $avt);
 
 						// Set default image
 						if (!$fst)
@@ -2012,12 +2015,12 @@ class EasySocialApiMappingHelper
 							}
 							else
 							{
-								$item->$avt_key = JURI::root() . 'media/com_easysocial/defaults/avatars/' . $cluster->type . '/' . $ky . '.png';
+								$item->$avt_key = Uri::root() . 'media/com_easysocial/defaults/avatars/' . $cluster->type . '/' . $ky . '.png';
 							}
 						}
 						else
 						{
-							$item->$avt_key = JURI::root() . 'media/com_easysocial/avatars/' . $cluster->type . '/' . $row->id . '/' . $avt;
+							$item->$avt_key = Uri::root() . 'media/com_easysocial/avatars/' . $cluster->type . '/' . $row->id . '/' . $avt;
 						}
 					}
 				}

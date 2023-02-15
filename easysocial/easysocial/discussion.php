@@ -7,9 +7,9 @@
  */
 
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/groups.php';
@@ -49,7 +49,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 	public function delete()
 	{
 		$result		=	new stdClass;
-		$app	=	JFactory::getApplication();
+		$app	=	Factory::getApplication();
 		$group_id	=	$app->input->get('id', 0, 'INT');
 		$appId		=	$app->input->get('discussion_id', 0, 'INT');
 		$discussion	=	ES::table('Discussion');
@@ -57,9 +57,9 @@ class EasysocialApiResourceDiscussion extends ApiResource
 		$my 		=	ES::user();
 		$group 		=	ES::group($group_id);
 
-		if (!$group->isAdmin() && $discussion->created_by != $this->plugin->get('user')->id)
+		if (!$group->isClient("administrator") && $discussion->created_by != $this->plugin->get('user')->id)
 		{
-			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_NOT_ALLOW_DELETE_DISCUSSION'));
+			ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_NOT_ALLOW_DELETE_DISCUSSION'));
 		}
 
 		// Delete the discussion
@@ -67,11 +67,11 @@ class EasysocialApiResourceDiscussion extends ApiResource
 
 		if ($res)
 		{
-			$result->status	=	JText::_('PLG_API_EASYSOCIAL_CONVERSATION_DELETED_MESSAGE');
+			$result->status	=	Text::_('PLG_API_EASYSOCIAL_CONVERSATION_DELETED_MESSAGE');
 		}
 		else
 		{
-			$result->status	=	JText::_('PLG_API_EASYSOCIAL_CONVERSATION_UNABLE_DELETED_MESSAGE');
+			$result->status	=	Text::_('PLG_API_EASYSOCIAL_CONVERSATION_UNABLE_DELETED_MESSAGE');
 		}
 
 		$this->plugin->setResponse($result);
@@ -85,7 +85,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 	private function getGroupDiscussion()
 	{
 		// Init variable
-		$mainframe		=	JFactory::getApplication();
+		$mainframe		=	Factory::getApplication();
 		$clusterId		=	$mainframe->input->get('id', 0, 'INT');
 		$type			=	$mainframe->input->get('type', 'group', 'string');
 		$appId			=	$mainframe->input->get('discussion_id', 0, 'INT');
@@ -100,7 +100,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 
 		if (!$clusterId)
 		{
-			$res->empty_message	=	JText::_('PLG_API_EASYSOCIAL_INVALID_ID');
+			$res->empty_message	=	Text::_('PLG_API_EASYSOCIAL_INVALID_ID');
 
 			$this->plugin->setResponse($res);
 		}
@@ -152,7 +152,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 			}
 			else
 			{
-				$res->empty_message	=	JText::_('PLG_API_EASYSOCIAL_NO_DISCUSSION_FOUNDS');
+				$res->empty_message	=	Text::_('PLG_API_EASYSOCIAL_NO_DISCUSSION_FOUNDS');
 			}
 
 			$this->plugin->setResponse($res);
@@ -168,7 +168,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 	private function createGroupDiscussion()
 	{
 		// Init variable
-		$mainframe		=	JFactory::getApplication();
+		$mainframe		=	Factory::getApplication();
 		$log_user		=	$this->plugin->get('user')->id;
 
 		// Load the discussion
@@ -187,7 +187,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 		// Check if the user is allowed to create a discussion
 		if (!$group->isMember())
 		{
-			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_CREATE_GD_NOT_ALLOWED_MESSAGE'));
+			ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_CREATE_GD_NOT_ALLOWED_MESSAGE'));
 		}
 
 		// Assign discussion properties
@@ -225,7 +225,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 
 		if (!$discussion->title)
 		{
-			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_EMPTY_DISCUSSION_TITLE_MESSAGE'));
+			ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_EMPTY_DISCUSSION_TITLE_MESSAGE'));
 		}
 
 		// Lock the discussion
@@ -233,7 +233,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 
 		if (!$state)
 		{
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_UNABLE_CREATE_DISCUSSION_MESSAGE'));
+			ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_UNABLE_CREATE_DISCUSSION_MESSAGE'));
 		}
 
 		// Process any files that needs to be created.
@@ -301,7 +301,7 @@ class EasysocialApiResourceDiscussion extends ApiResource
 
 		$res->result->id			=	$discussion->id;
 		$res->result->status		=	1;
-		$res->result->message	=	JText::_('PLG_API_EASYSOCIAL_GROUP_DISCUSSION_CREATED_MESSAGE');
+		$res->result->message	=	Text::_('PLG_API_EASYSOCIAL_GROUP_DISCUSSION_CREATED_MESSAGE');
 
 		$this->plugin->setResponse($res);
 	}

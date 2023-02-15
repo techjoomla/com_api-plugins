@@ -11,6 +11,9 @@
  */
 
 defined('_JEXEC') or die('Unauthorized Access');
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Http\Http;
+use Joomla\Registry\Registry;
 
 // We want to import our app library
 Foundry::import('admin:/includes/apps/apps');
@@ -144,7 +147,7 @@ class SocialUserAppPushnotify extends SocialAppItem
 		$user			=	FD::user();
 		$actor_name		=	$user->username;
 
-		$tit			=	JText::_($msg_data['title']);
+		$tit			=	Text::_($msg_data['title']);
 		$tit			=	str_replace('{actor}', $actor_name, $tit);
 
 		foreach ($urows as $notfn)
@@ -187,14 +190,13 @@ class SocialUserAppPushnotify extends SocialAppItem
 							);
 
 			// Making call to GCM  API using POST.
-			jimport('joomla.client.http');
 
 			// Using JHttp for API call
-			$http			=	new JHttp;
-			$options		=	new JRegistry;
+			$http			=	new Http;
+			$options		=	new Registry;
 
 			// $transport	=	new JHttpTransportStream($options);
-			$http			=	new JHttp($options);
+			$http			=	new Http($options);
 			$gcmres			=	$http->post($url, json_encode($fields), $headers);
 		}
 	}
@@ -220,7 +222,7 @@ class SocialUserAppPushnotify extends SocialAppItem
 		$emailOptions	=	(is_object($emailOptions))?(array) $emailOptions:$emailOptions;
 		$systemOptions	=	(is_object($systemOptions))?(array) $systemOptions:$systemOptions;
 		$data['title']	=	$emailOptions['title'];
-		$data['title']	=	JText::_($data['title']);
+		$data['title']	=	Text::_($data['title']);
 		$data['tusers']	=	$this->createParticipents($participants);
 
 		switch ($element)

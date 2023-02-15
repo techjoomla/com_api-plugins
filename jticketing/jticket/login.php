@@ -8,13 +8,14 @@
  */
 
 defined('_JEXEC') or die('Restricted access');
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
-jimport('joomla.application.component.controller');
-jimport('joomla.application.component.model');
-jimport('joomla.user.helper');
-jimport('joomla.user.user');
-JModelLegacy::addIncludePath(JPATH_SITE . DS . 'components' . DS . 'com_api' . DS . 'models');
+
+use Joomla\CMS\MVC\Model\BaseDatabaseModel;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\User\User;
+use Joomla\CMS\Session\Session;
+
+BaseDatabaseModel::addIncludePath(JPATH_SITE . DS . 'components' . DS . 'com_api' . DS . 'models');
 require_once JPATH_SITE . DS . 'components' . DS . 'com_api' . DS . 'libraries' . DS . 'authentication' . DS . 'login.php';
 require_once JPATH_SITE . DS . 'components' . DS . 'com_api' . DS . 'models' . DS . 'key.php';
 require_once JPATH_SITE . DS . 'components' . DS . 'com_api' . DS . 'models' . DS . 'keys.php';
@@ -37,7 +38,7 @@ class JticketApiResourceLogin extends ApiResource
 	 */
 	public function get()
 	{
-		$lang      = JFactory::getLanguage();
+		$lang      = Factory::getLanguage();
 		$extension = 'com_jticketing';
 		$base_dir  = JPATH_SITE;
 		$lang->load($extension, $base_dir);
@@ -46,7 +47,7 @@ class JticketApiResourceLogin extends ApiResource
 
 		if (empty($success))
 		{
-			$result = JText::_("COM_JTICKETING_INVALID_USER_PASSWORD");
+			$result = Text::_("COM_JTICKETING_INVALID_USER_PASSWORD");
 		}
 
 		unset($result->success);
@@ -90,13 +91,13 @@ class JticketApiResourceLogin extends ApiResource
 	 */
 	public function keygen()
 	{
-		$umodel = new JUser;
+		$umodel = new User;
 		$user   = $umodel->getInstance();
-		$group  = JRequest::getVar('group');
+		$group  = Factory::getApplication()->input->get('group');
 
 		if (!$user->id)
 		{
-			$user = JFactory::getUser($this->getUserId(JRequest::getVar("username")));
+			$user = Factory::getUser($this->getUserId(Factory::getApplication()->input->get("username")));
 		}
 
 		$kmodel    = new ApiModelKey;
@@ -124,7 +125,7 @@ class JticketApiResourceLogin extends ApiResource
 				'c' => 'key',
 				'ret' => 'index.php?option=com_api&view=keys',
 				'option' => 'com_api',
-				JSession::getFormToken() => 1
+				Session::getFormToken() => 1
 			);
 			$result = $kmodel->save($data);
 			$key    = $result->hash;
@@ -138,12 +139,12 @@ class JticketApiResourceLogin extends ApiResource
 			$obj->success = 1;
 			$obj->userid  = $user->id;
 			$obj->key     = $key;
-			$obj->url     = JURI::base() . 'index.php';
+			$obj->url     = Uri::base() . 'index.php';
 		}
 		else
 		{
 			$obj->success = 0;
-			$obj->data    = JText::_("COM_JTICKETING_INVALID_USER_PASSWORD");
+			$obj->data    = Text::_("COM_JTICKETING_INVALID_USER_PASSWORD");
 		}
 
 		return ($obj);
@@ -160,7 +161,7 @@ class JticketApiResourceLogin extends ApiResource
 	 */
 	public function getUserId($username)
 	{
-		$db    = JFactory::getDBO();
+		$db    = Factory::getDbo();
 		$query = "SELECT u.id FROM #__users AS u WHERE u.username = '{$username}'";
 		$db->setQuery($query);
 

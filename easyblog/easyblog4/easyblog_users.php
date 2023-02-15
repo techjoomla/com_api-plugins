@@ -7,19 +7,14 @@
 */
 
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\MVC\Model\BaseDatabaseModel;
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
-jimport('joomla.application.component.controller');
-jimport('joomla.application.component.model');
-jimport('joomla.user.helper');
-jimport('joomla.user.user');
-jimport('joomla.application.component.helper');
 jimport( 'simpleschema.easyblog.blog.post' );
 jimport( 'simpleschema.easyblog.category' );
 jimport( 'simpleschema.easyblog.person' );
 
-JModelLegacy::addIncludePath(JPATH_SITE.'components/com_api/models');
+BaseDatabaseModel::addIncludePath(JPATH_SITE.'components/com_api/models');
 require_once JPATH_SITE.'/components/com_easyblog/models/users.php';
 require_once JPATH_SITE.'/components/com_easyblog/models/blogger.php';
 require_once JPATH_SITE.'/components/com_easyblog/helpers/helper.php';
@@ -37,7 +32,7 @@ class EasyblogApiResourceEasyblog_users extends ApiResource
 	}
 	public function getEasyBlog_user()
 	{
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$limitstart = $app->input->get('limitstart',0,'INT');
 		$limit =  $app->input->get('limit',0,'INT');		
 		$search =  $app->input->get('search','','STRING');		

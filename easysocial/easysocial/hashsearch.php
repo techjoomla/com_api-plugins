@@ -12,8 +12,7 @@
 
 defined('_JEXEC') or die('Restricted access');
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
+use Joomla\CMS\Factory;
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/hashtags.php';
 
@@ -46,7 +45,7 @@ class EasysocialApiResourceHashsearch extends ApiResource
 	public function get_hash_list()
 	{
 		// Search for hashtag
-		$app	=	JFactory::getApplication();
+		$app	=	Factory::getApplication();
 
 		// Accepting input
 		$word	=	$app->input->get('type', null, 'STRING');

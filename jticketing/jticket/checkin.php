@@ -8,7 +8,10 @@
  */
 
 defined('_JEXEC') or die;
-jimport('joomla.plugin.plugin');
+
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
 /**
  * Class for checkin to tickets for mobile APP
@@ -40,14 +43,13 @@ class JticketApiResourceCheckin extends ApiResource
 	 */
 	public function post()
 	{
-		jimport('joomla.application.component.helper');
-		$com_params               = JComponentHelper::getParams('com_jticketing');
+		$com_params               = ComponentHelper::getParams('com_jticketing');
 		$jticketingmainhelper     = new jticketingmainhelper;
-		$lang                     = JFactory::getLanguage();
+		$lang                     = Factory::getLanguage();
 		$extension                = 'com_jticketing';
 		$base_dir                 = JPATH_SITE;
 		$lang->load($extension, $base_dir);
-		$input              = JFactory::getApplication()->input;
+		$input              = Factory::getApplication()->input;
 		$ticketidstr_arr        = $input->get('ticketid', array(), 'ARRAY');
 		$eventid            = $input->get('eventid', '0', 'INT');
 		$eventintegrationid = $jticketingmainhelper->getEventrefid($eventid);
@@ -60,7 +62,7 @@ class JticketApiResourceCheckin extends ApiResource
 			if (empty($ticketidstr))
 			{
 				$obj->success = 0;
-				$obj->message = JText::_("COM_JTICKETING_INVALID_TICKET");
+				$obj->message = Text::_("COM_JTICKETING_INVALID_TICKET");
 				$this->plugin->setResponse($obj);
 
 				return;
@@ -78,13 +80,13 @@ class JticketApiResourceCheckin extends ApiResource
 			}
 
 			$result           = $jticketingmainhelper->GetActualTicketidAPI($oid, $orderitemsid, '');
-			$originalticketid = JText::_("TICKET_PREFIX") . $ticketidstr;
+			$originalticketid = Text::_("TICKET_PREFIX") . $ticketidstr;
 
 			if (empty($result))
 			{
 				$obj->ticket_id = $ticketidstr;
 				$obj->success = 0;
-				$obj->message = JText::_("COM_JTICKETING_INVALID_TICKET");
+				$obj->message = Text::_("COM_JTICKETING_INVALID_TICKET");
 				$result_arr[$ky] = $obj;
 				continue;
 			}
@@ -109,7 +111,7 @@ class JticketApiResourceCheckin extends ApiResource
 			if (empty($result) || ($result[0]->eventid != $eventintegrationid))
 			{
 				$obj->success = 0;
-				$obj->message = JText::_("COM_JTICKETING_INVALID_TICKET_OTHER_EVENT");
+				$obj->message = Text::_("COM_JTICKETING_INVALID_TICKET_OTHER_EVENT");
 				$result_arr[$ky] = $obj;
 				continue;
 			}
@@ -149,7 +151,7 @@ class JticketApiResourceCheckin extends ApiResource
 		$jticketingmainhelper = new jticketingmainhelper;
 		$obj  = new stdClass;
 		$send_email_after_checkin = 0;
-		$com_params               = JComponentHelper::getParams('com_jticketing');
+		$com_params               = ComponentHelper::getParams('com_jticketing');
 		$send_email_after_checkin = $com_params->get('send_email_after_checkin');
 
 		$checkindone = $jticketingmainhelper->GetCheckinStatusAPI($orderitemsid, $eventid);
@@ -160,11 +162,11 @@ class JticketApiResourceCheckin extends ApiResource
 
 				if ($attendernm)
 				{
-					$obj->message = sprintf(JText::_('COM_JTICKETING_CHECKIN_FAIL_DUPLICATE'), $attendernm);
+					$obj->message = sprintf(Text::_('COM_JTICKETING_CHECKIN_FAIL_DUPLICATE'), $attendernm);
 				}
 				else
 				{
-					$obj->message = JText::_('COM_JTICKETING_CHECKIN_FAIL_DUPLICATE');
+					$obj->message = Text::_('COM_JTICKETING_CHECKIN_FAIL_DUPLICATE');
 				}
 			}
 			else
@@ -187,12 +189,12 @@ class JticketApiResourceCheckin extends ApiResource
 					$obj->success    = 1;
 
 					$ticketTypeData  = $jticketingmainhelper->GetTicketTypes('', $result[0]->type_id);
-					$app             = JFactory::getApplication();
+					$app             = Factory::getApplication();
 					$mailfrom        = $app->getCfg('mailfrom');
 					$fromname        = $app->getCfg('fromname');
 					$sitename        = $app->getCfg('sitename');
-					$message         = JText::_("CHECKIN_MESSAGE");
-					$message_subject = JText::_("CHECKIN_SUBJECT");
+					$message         = Text::_("CHECKIN_MESSAGE");
+					$message_subject = Text::_("CHECKIN_SUBJECT");
 					$eventnm         = $jticketingmainhelper->getEventTitle($oid);
 					$message_subject = stripslashes($message_subject);
 					$message_subject = str_replace("[EVENTNAME]", $eventnm, $message_subject);
@@ -204,19 +206,19 @@ class JticketApiResourceCheckin extends ApiResource
 
 					if ($send_email_after_checkin)
 					{
-						$result = JFactory::getMailer()->sendMail($fromname, $mailfrom, $result[0]->email, $message_subject, $message_body, $html = 1, null, null, '');
+						$result = Factory::getMailer()->sendMail($fromname, $mailfrom, $result[0]->email, $message_subject, $message_body, $html = 1, null, null, '');
 					}
 				}
 
 				if ($attendernm and $ticketTypeData[0]->title and $originalticketid)
 				{
 					$obj->ticket_id = $originalticketid;
-					$obj->message = sprintf(JText::_('COM_JTICKETING_CHECKIN_SUCCESS'), $attendernm, $ticketTypeData[0]->title, $originalticketid);
+					$obj->message = sprintf(Text::_('COM_JTICKETING_CHECKIN_SUCCESS'), $attendernm, $ticketTypeData[0]->title, $originalticketid);
 				}
 				else
 				{
 					$obj->ticket_id = $originalticketid;
-					$obj->message = JText::_('COM_JTICKETING_CHECKIN_SUCCESS');
+					$obj->message = Text::_('COM_JTICKETING_CHECKIN_SUCCESS');
 				}
 			}
 

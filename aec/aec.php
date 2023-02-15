@@ -8,7 +8,6 @@
 
 defined('_JEXEC') or die( 'Restricted access' );
 
-jimport('joomla.plugin.plugin');
 
 class plgAPIAec extends ApiPlugin
 {

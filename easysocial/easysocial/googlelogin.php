@@ -11,13 +11,15 @@
  */
 
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Session\Session;
+use Joomla\CMS\User\UserHelper;
+use Joomla\CMS\Filesystem\File;
+use Joomla\CMS\Uri\Uri;
+use Joomla\CMS\Router\Route;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
-jimport('joomla.application.component.controller');
-jimport('joomla.application.component.model');
-jimport('joomla.user.helper');
-jimport('joomla.user.user');
 
 require_once JPATH_SITE . '/components/com_api/libraries/authentication/user.php';
 require_once JPATH_SITE . '/components/com_api/libraries/authentication/login.php';
@@ -46,7 +48,7 @@ class EasysocialApiResourceGooglelogin extends ApiResource
 	 */
 	public function get()
 	{
-		$this->plugin->setResponse(JText::_('PLG_API_EASYSOCIAL_UNSUPPORTED_METHOD_MESSAGE'));
+		$this->plugin->setResponse(Text::_('PLG_API_EASYSOCIAL_UNSUPPORTED_METHOD_MESSAGE'));
 	}
 
 	/**	  
@@ -56,13 +58,13 @@ class EasysocialApiResourceGooglelogin extends ApiResource
 	 */
 	public function post()
 	{
-		$app               = JFactory::getApplication();
+		$app               = Factory::getApplication();
 		$this->accessToken = $app->input->get('access_token', '', 'STRING');
 		$this->provider    = $app->input->get('provider', 'google', 'STRING');
 		$this->confirmed   = $app->input->get('confirmed', '0', 'INT');
 		$obj               = new stdClass;
 
-		$this->is_use_jfb = JComponentHelper::isEnabled('com_jfbconnect', true);
+		$this->is_use_jfb = ComponentHelper::isEnabled('com_jfbconnect', true);
 
 		if ($this->accessToken)
 		{
@@ -72,7 +74,7 @@ class EasysocialApiResourceGooglelogin extends ApiResource
 			if ($this->confirmed == 0 && !isset($objFbProfileData->birthday) && !($userId > 0))
 			{
 				$obj->code    = 200;
-				$obj->warning = JText::_('PLG_API_FB_CON_DATE_NOT_FOUND');
+				$obj->warning = Text::_('PLG_API_FB_CON_DATE_NOT_FOUND');
 				$this->plugin->setResponse($obj);
 
 				return false;
@@ -95,7 +97,7 @@ class EasysocialApiResourceGooglelogin extends ApiResource
 		}
 		else
 		{
-			$this->badRequest(JText::_('PLG_API_EASYSOCIAL_BAD_REQUEST'));
+			$this->badRequest(Text::_('PLG_API_EASYSOCIAL_BAD_REQUEST'));
 		}
 	}
 
@@ -186,7 +188,7 @@ class EasysocialApiResourceGooglelogin extends ApiResource
 	 */
 	public function jfbGetUserFromMap($objFbProfileData)
 	{
-		$db     = JFactory::getDBO();
+		$db     = Factory::getDbo();
 		$query  = $db->getQuery(true);
 		$userId = 0;
 
@@ -245,7 +247,7 @@ class EasysocialApiResourceGooglelogin extends ApiResource
 	 */
 	public function jfbCreateUser($jUserId, $objFbProfileData)
 	{
-		$db    = JFactory::getDbo();
+		$db    = Factory::getDbo();
 		$query = $db->getQuery(true);
 
 		// Manipulate paramteres to save
@@ -354,7 +356,7 @@ class EasysocialApiResourceGooglelogin extends ApiResource
 				'c' => 'key',
 				'ret' => 'index.php?option=com_api&view=keys',
 				'option' => 'com_api',
-				JSession::getFormToken() => 1
+				Session::getFormToken() => 1
 			);
 			$result = $kmodel->save($data);
 			$key    = $result->hash;
@@ -368,7 +370,7 @@ class EasysocialApiResourceGooglelogin extends ApiResource
 		}
 		else
 		{
-			$this->badRequest(JText::_('PLG_API_EASYSOCIAL_BAD_REQUEST'));
+			$this->badRequest(Text::_('PLG_API_EASYSOCIAL_BAD_REQUEST'));
 		}
 
 		return ($obj);
@@ -385,7 +387,7 @@ class EasysocialApiResourceGooglelogin extends ApiResource
 	 */
 	public function checkUserNameIsExist($username)
 	{
-		$db    = JFactory::getDBO();
+		$db    = Factory::getDbo();
 		$query = $db->getQuery(true);
 		$query->select(' id ');
 		$query->from('#__users');
@@ -418,18 +420,17 @@ class EasysocialApiResourceGooglelogin extends ApiResource
 		$userid         = null;
 		$data           = array();
 
-		$app                = JFactory::getApplication();
+		$app                = Factory::getApplication();
 		$data['username']   = $username;
-		$data['password']   = JUserHelper::genRandomPassword(8);
+		$data['password']   = UserHelper::genRandomPassword(8);
 		$data['name']       = $name;
 		$data['email']      = $email;
 		$data['enabled']    = 0;
 		$data['activation'] = 0;
 
 		global $message;
-		jimport('joomla.user.helper');
-		$authorize = JFactory::getACL();
-		$user      = clone JFactory::getUser();
+		$authorize = Factory::getACL();
+		$user      = clone Factory::getUser();
 		$user->set('username', $data['username']);
 		$user->set('password', $data['password']);
 		$user->set('name', $data['name']);
@@ -438,8 +439,8 @@ class EasysocialApiResourceGooglelogin extends ApiResource
 		$user->set('activation', $data['activation']);
 
 		// Password encryption
-		$salt           = JUserHelper::genRandomPassword(32);
-		$crypt          = JUserHelper::getCryptedPassword($user->password, $salt);
+		$salt           = UserHelper::genRandomPassword(32);
+		$crypt          = UserHelper::getCryptedPassword($user->password, $salt);
 		$user->password = "$crypt:$salt";
 
 		// User group/type
@@ -448,7 +449,7 @@ class EasysocialApiResourceGooglelogin extends ApiResource
 
 		if (JVERSION >= '1.6.0')
 		{
-			$userConfig = JComponentHelper::getParams('com_users');
+			$userConfig = ComponentHelper::getParams('com_users');
 
 			// Default to Registered.
 			$defaultUserGroup = $userConfig->get('new_usertype', 2);
@@ -459,7 +460,7 @@ class EasysocialApiResourceGooglelogin extends ApiResource
 			$user->set('gid', $authorize->get_group_id('', 'Registered', 'ARO'));
 		}
 
-		$date = JFactory::getDate();
+		$date = Factory::getDate();
 		$user->set('registerDate', $date->toSql());
 
 		// True on success, false otherwise
@@ -489,18 +490,18 @@ class EasysocialApiResourceGooglelogin extends ApiResource
 				$easysocial      = JPATH_ADMINISTRATOR . '/components/com_easysocial/easysocial.php';
 
 				// EB version
-				if (JFile::exists($easysocial))
+				if (File::exists($easysocial))
 				{
 					$pobj    = $this->createEsprofile($user->id, $esocialProfData);
-					$message = JText::_('PLG_API_USERS_ACCOUNT_CREATED_SUCCESSFULLY_MESSAGE');
+					$message = Text::_('PLG_API_USERS_ACCOUNT_CREATED_SUCCESSFULLY_MESSAGE');
 				}
 				else
 				{
-					$message = JText::_('PLG_API_USERS_ACCOUNT_CREATED_SUCCESSFULLY_MESSAGE');
+					$message = Text::_('PLG_API_USERS_ACCOUNT_CREATED_SUCCESSFULLY_MESSAGE');
 				}
 				// Assign badge for the person.
 				$badge = FD::badges();
-				$badge->log('com_easysocial', 'registration.create', $user->id, JText::_('COM_EASYSOCIAL_REGISTRATION_BADGE_REGISTERED'));
+				$badge->log('com_easysocial', 'registration.create', $user->id, Text::_('COM_EASYSOCIAL_REGISTRATION_BADGE_REGISTERED'));
 			}
 		}
 	}
@@ -519,9 +520,9 @@ class EasysocialApiResourceGooglelogin extends ApiResource
 	{
 		$obj = new stdClass;
 
-		if (JComponentHelper::isEnabled('com_easysocial', true))
+		if (ComponentHelper::isEnabled('com_easysocial', true))
 		{
-			$app   = JFactory::getApplication();
+			$app   = Factory::getApplication();
 			$epost = $fields;
 
 			require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
@@ -624,7 +625,7 @@ class EasysocialApiResourceGooglelogin extends ApiResource
 	public function create_field_arr($fields, $post)
 	{
 		$fld_data = array();
-		$app      = JFactory::getApplication();
+		$app      = Factory::getApplication();
 
 		require_once JPATH_SITE . '/plugins/api/easysocial/libraries/uploadHelper.php';
 
@@ -693,7 +694,7 @@ class EasysocialApiResourceGooglelogin extends ApiResource
 
 					if (isset($post['BIRTHDAY']))
 					{
-						$config          = JFactory::getConfig();
+						$config          = Factory::getConfig();
 						$bod['date']     = $post['BIRTHDAY'];
 						$bod['timezone'] = $config->get('offset');
 					}
@@ -738,32 +739,32 @@ class EasysocialApiResourceGooglelogin extends ApiResource
 	 */
 	public function sendRegisterEmail($base_dt)
 	{
-		$config       = JFactory::getConfig();
-		$params       = JComponentHelper::getParams('com_users');
+		$config       = Factory::getConfig();
+		$params       = ComponentHelper::getParams('com_users');
 		$sendpassword = $params->get('sendpassword', 1);
 
-		$lang = JFactory::getLanguage();
+		$lang = Factory::getLanguage();
 		$lang->load('com_users', JPATH_SITE, '', true);
 
 		$data['fromname']   = $config->get('fromname');
 		$data['mailfrom']   = $config->get('mailfrom');
 		$data['sitename']   = $config->get('sitename');
-		$data['siteurl']    = JUri::root();
+		$data['siteurl']    = Uri::root();
 		$data['activation'] = $base_dt['activation'];
 
 		// Handle account activation/confirmation emails.
 		if ($data['activation'] == 0)
 		{
 			// Set the link to confirm the user email.
-			$uri              = JUri::getInstance();
+			$uri              = Uri::getInstance();
 			$base             = $uri->toString(array('scheme', 'user', 'pass', 'host', 'port'));
-			$data['activate'] = $base . JRoute::_('index.php?option=com_users&task=registration.activate&token=' . $data['activation'], false);
+			$data['activate'] = $base . Route::_('index.php?option=com_users&task=registration.activate&token=' . $data['activation'], false);
 
-			$emailSubject = JText::sprintf('COM_USERS_EMAIL_ACCOUNT_DETAILS', $base_dt['name'], $data['sitename']);
+			$emailSubject = Text::sprintf('COM_USERS_EMAIL_ACCOUNT_DETAILS', $base_dt['name'], $data['sitename']);
 
 			if ($sendpassword)
 			{
-				$emailBody = JText::sprintf(
+				$emailBody = Text::sprintf(
 											'Hello %s,\n\nThank you for registering at %s. Your account is created and activated.
 											\nYou can login to %s using the following username and password:\n\nUsername: %s\nPassword: %s', $base_dt['name'], $data['sitename'],
 											$base_dt['app'], $base_dt['username'], $base_dt['password']
@@ -773,14 +774,14 @@ class EasysocialApiResourceGooglelogin extends ApiResource
 		elseif ($data['activation'] == 1)
 		{
 			// Set the link to activate the user account.
-			$uri              = JUri::getInstance();
+			$uri              = Uri::getInstance();
 			$base             = $uri->toString(array('scheme', 'user', 'pass', 'host', 'port'));
-			$data['activate'] = $base . JRoute::_('index.php?option=com_users&task=registration.activate&token=' . $data['activation'], false);
-			$emailSubject = JText::sprintf('COM_USERS_EMAIL_ACCOUNT_DETAILS', $base_dt['name'], $data['sitename']);
+			$data['activate'] = $base . Route::_('index.php?option=com_users&task=registration.activate&token=' . $data['activation'], false);
+			$emailSubject = Text::sprintf('COM_USERS_EMAIL_ACCOUNT_DETAILS', $base_dt['name'], $data['sitename']);
 
 			if ($sendpassword)
 			{
-				$emailBody = JText::sprintf(
+				$emailBody = Text::sprintf(
 											'COM_USERS_EMAIL_REGISTERED_WITH_ADMIN_ACTIVATION_BODY', $base_dt['name'], $data['sitename'],
 											$data['activate'], $base_dt['app'], $base_dt['username'], $base_dt['password']
 											);
@@ -788,6 +789,6 @@ class EasysocialApiResourceGooglelogin extends ApiResource
 		}
 		// Send the registration email.
 
-		return $return = JFactory::getMailer()->sendMail($data['mailfrom'], $data['fromname'], $base_dt['email'], $emailSubject, $emailBody);
+		return $return = Factory::getMailer()->sendMail($data['mailfrom'], $data['fromname'], $base_dt['email'], $emailSubject, $emailBody);
 	}
 }

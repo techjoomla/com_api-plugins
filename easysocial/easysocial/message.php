@@ -11,9 +11,9 @@
  */
 
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/groups.php';
@@ -62,7 +62,7 @@ class EasysocialApiResourceMessage extends ApiResource
 	 */
 	private function newMessage()
 	{
-		$app			=	JFactory::getApplication();
+		$app			=	Factory::getApplication();
 		$recipients		=	$app->input->get('recipients', null, 'ARRAY');
 		$msg			=	$app->input->get('message', null, 'RAW');
 
@@ -79,18 +79,18 @@ class EasysocialApiResourceMessage extends ApiResource
 		// Check if the user really has access to create groups
 		if (! $canCreate->getAccess()->allowed('conversations.create') && ! $canCreate->isSiteAdmin())
 		{
-			ApiError::raiseError(403, JText::_('COM_EASYSOCIAL_CONVERSATIONS_ERROR_NOT_ALLOWED'));
+			ApiError::raiseError(403, Text::_('COM_EASYSOCIAL_CONVERSATIONS_ERROR_NOT_ALLOWED'));
 		}
 
 		if (count($recipients) < 1)
 		{
-			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_EMPTY_MESSAGE_MESSAGE'));
+			ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_EMPTY_MESSAGE_MESSAGE'));
 		}
 
 		// Message should not be empty.
 		if (empty($msg))
 		{
-			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_EMPTY_MESSAGE_MESSAGE'));
+			ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_EMPTY_MESSAGE_MESSAGE'));
 		}
 
 		if ($conversion_id == 0)
@@ -110,12 +110,12 @@ class EasysocialApiResourceMessage extends ApiResource
 		if ($state)
 		{
 			$res->result->status = 1;
-			$res->result->message = JText::_('PLG_API_EASYSOCIAL_MESSAGE_SENT_MESSAGE');
+			$res->result->message = Text::_('PLG_API_EASYSOCIAL_MESSAGE_SENT_MESSAGE');
 		}
 		else
 		{
 			// Create result obj
-			ApiError::raiseError(400, JText::_('PLG_API_EASYSOCIAL_UNABLE_SEND_MESSAGE'));
+			ApiError::raiseError(400, Text::_('PLG_API_EASYSOCIAL_UNABLE_SEND_MESSAGE'));
 		}
 
 		$this->plugin->setResponse($res);
@@ -159,20 +159,20 @@ class EasysocialApiResourceMessage extends ApiResource
 	 */
 	public function delete()
 	{
-		$app			=	JFactory::getApplication();
+		$app			=	Factory::getApplication();
 		$conversion_id	=	$app->input->get('conversation_id', 0, 'INT');
 
 		$res				=	new stdclass;
 
 		if (!$conversion_id)
 		{
-			ApiError::raiseError(403, JText::_('PLG_API_EASYSOCIAL_INVALID_CONVERSATION_MESSAGE'));
+			ApiError::raiseError(403, Text::_('PLG_API_EASYSOCIAL_INVALID_CONVERSATION_MESSAGE'));
 		}
 
 		// Try to delete the group
 		$conv_model = ES::model('Conversations');
 		$res->result->status = $conv_model->delete($conversion_id, $this->plugin->get('user')->id);
-		$res->result->message = JText::_('PLG_API_EASYSOCIAL_CONVERSATION_DELETED_MESSAGE');
+		$res->result->message = Text::_('PLG_API_EASYSOCIAL_CONVERSATION_DELETED_MESSAGE');
 
 		$this->plugin->setResponse($res);
 	}
@@ -188,8 +188,8 @@ class EasysocialApiResourceMessage extends ApiResource
 	private function getConversations()
 	{
 		// Init variable
-		$app				=	JFactory::getApplication();
-		$log_user			=	JFactory::getUser($this->plugin->get('user')->id);
+		$app				=	Factory::getApplication();
+		$log_user			=	Factory::getUser($this->plugin->get('user')->id);
 		$conversation_id	=	$app->input->get('conversation_id', 0, 'INT');
 		$limitstart			=	$app->input->get('limitstart', 0, 'INT');
 		$limit				=	$app->input->get('limit', 500, 'INT');
@@ -238,7 +238,7 @@ class EasysocialApiResourceMessage extends ApiResource
 			}
 			else
 			{
-				$res->empty_message = JText::_('COM_EASYSOCIAL_CONVERSATION_EMPTY_LIST');
+				$res->empty_message = Text::_('COM_EASYSOCIAL_CONVERSATION_EMPTY_LIST');
 			}
 		}
 

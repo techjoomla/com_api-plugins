@@ -8,6 +8,11 @@
 */
 
 defined('_JEXEC') or die('Restricted access');
+
+use Joomla\CMS\Factory;
+use Joomla\CMS\Filesystem\File;
+use Joomla\CMS\Language\Text;
+
 //jimport( 'simpleschema.easyblog.blog.post' );
 require_once JPATH_SITE.'/plugins/api/articles/articles/blogs/blog/post.php';
 require_once JPATH_SITE.'/plugins/api/articles/articles/blogs/category.php';
@@ -21,7 +26,7 @@ class BlogappSimpleSchema
 	public function mapPost($blog, $strip_tags='', $text_length=0, $skip=array())
 	{
 
-		$creator = JFactory::getUser( $blog->created_by );
+		$creator = Factory::getUser( $blog->created_by );
 		
 		$item = new PostSimpleSchema;
 	
@@ -49,8 +54,8 @@ class BlogappSimpleSchema
 		$img_obj = json_decode($blog->images);
 		if(isset($img_obj->image_intro))
 		{
-			$item->image = (string)JURI::root().$img_obj->image_intro;
-			//$item->image->full_image_url = JURI::root().$img_obj->image_fulltext;
+			$item->image = (string)Uri::root().$img_obj->image_intro;
+			//$item->image->full_image_url = Uri::root().$img_obj->image_fulltext;
 		}
 		else
 		{
@@ -58,14 +63,14 @@ class BlogappSimpleSchema
 			$media_obj = new TZ_PortfolioModelMedia();
 			$med = $media_obj->getMedia($blog->id);
 
-			//$item->image->url = (string)JURI::root().$med[count($med) - count($med)]->images;
-			//$item->image->full_image_url = (string)JURI::root().$med[count($med) - count($med)]->images;
-			$item->image = JURI::root().str_replace('.'.JFile::getExt($med[0] -> images),'_'
-                                          .'S'.'.'.JFile::getExt($med[0] -> images),$med[0] -> images);
-			/*$item->image->full_image_url = JURI::root().str_replace('.'.JFile::getExt($med[0] -> images),'_'
-                                          .'L'.'.'.JFile::getExt($med[0] -> images),$med[0] -> images);*/
+			//$item->image->url = (string)Uri::root().$med[count($med) - count($med)]->images;
+			//$item->image->full_image_url = (string)Uri::root().$med[count($med) - count($med)]->images;
+			$item->image = Uri::root().str_replace('.'.File::getExt($med[0] -> images),'_'
+                                          .'S'.'.'.File::getExt($med[0] -> images),$med[0] -> images);
+			/*$item->image->full_image_url = Uri::root().str_replace('.'.File::getExt($med[0] -> images),'_'
+                                          .'L'.'.'.File::getExt($med[0] -> images),$med[0] -> images);*/
 		}
-		$item->created_date = JHTML::_('date', $blog->created, JText::_('DATE_FORMAT_LC2'));
+		$item->created_date = HTMLHelper::_('date', $blog->created, Text::_('DATE_FORMAT_LC2'));
 
 		$item->author->name = $creator->username;
 		$item->author->photo = null;
@@ -73,7 +78,7 @@ class BlogappSimpleSchema
 		$item->categoryid = $blog->catid;
 		$item->category = $blog->category_title;
 		
-		$item->url = JURI::root() . trim('index.php?option=com_content&view=article&id=' . $item->postid .':'.$blog->alias );
+		$item->url = Uri::root() . trim('index.php?option=com_content&view=article&id=' . $item->postid .':'.$blog->alias );
 		
 		//load content module and position
 		$c_obj = new BlogappContentHelper();
@@ -84,22 +89,22 @@ class BlogappSimpleSchema
 			
 			if (strpos($item->text,'href="index'))
 			{
-				$item->introtext = str_replace('href="index','href="'.JURI::root().'index',$item->introtext);
-			    $item->text = str_replace('href="index','href="'.JURI::root().'index',$item->text);
-				//$item->text = str_replace('src="','src="'.JURI::root(),$item->text);	
+				$item->introtext = str_replace('href="index','href="'.Uri::root().'index',$item->introtext);
+			    $item->text = str_replace('href="index','href="'.Uri::root().'index',$item->text);
+				//$item->text = str_replace('src="','src="'.Uri::root(),$item->text);	
 			}
 			
 			if (strpos($item->text,'href="images'))
 			{
-				$item->introtext = str_replace('href="images','href="'.JURI::root().'images',$item->introtext);
-			    $item->text = str_replace('href="images','href="'.JURI::root().'images',$item->text);
-				//$item->text = str_replace('src="','src="'.JURI::root(),$item->text);	
+				$item->introtext = str_replace('href="images','href="'.Uri::root().'images',$item->introtext);
+			    $item->text = str_replace('href="images','href="'.Uri::root().'images',$item->text);
+				//$item->text = str_replace('src="','src="'.Uri::root(),$item->text);	
 			}
 
 			if ( strpos($item->text,'src="images') || strpos($item->introtext,'src="images') )
 			{		    
-			    $item->introtext = str_replace('src="','src="'.JURI::root(),$item->introtext);
-				$item->text = str_replace('src="','src="'.JURI::root(),$item->text);	
+			    $item->introtext = str_replace('src="','src="'.Uri::root(),$item->introtext);
+				$item->text = str_replace('src="','src="'.Uri::root(),$item->text);	
 			}
 
 			if ( strpos($item->text,'src="/'))
@@ -159,5 +164,3 @@ class BlogappSimpleSchema
 	}
 		
 }
-
-

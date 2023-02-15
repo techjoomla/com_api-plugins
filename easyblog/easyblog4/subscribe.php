@@ -9,14 +9,9 @@
  */
 
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
-jimport('joomla.application.component.controller');
-jimport('joomla.application.component.model');
-jimport('joomla.user.helper');
-jimport('joomla.user.user');
-jimport('joomla.application.component.helper');
 jimport( 'simpleschema.easyblog.blog.post' );
 jimport( 'simpleschema.easyblog.category' );
 jimport( 'simpleschema.easyblog.person' );
@@ -45,7 +40,7 @@ class EasyblogApiResourceSubscribe extends ApiResource
 	//common function for getting subscribers by forking other functions by their type.  	
 	public function getSubscribers()
 	{
-		$app = JFactory::getApplication();	
+		$app = Factory::getApplication();	
 		$type = $app->input->get('type','','STRING');		
 		switch($type)
 		{
@@ -74,7 +69,7 @@ class EasyblogApiResourceSubscribe extends ApiResource
 	//getting particular blog subscribers
 	public function getBlogsubscribers()
 	{
-		 $app = JFactory::getApplication();		
+		 $app = Factory::getApplication();		
 		$blogid = $app->input->get('blogid',0,'INT');		
 		$db		= EasyBlogHelper::db();
 		$where	= array();		
@@ -95,7 +90,7 @@ class EasyblogApiResourceSubscribe extends ApiResource
 	//getting particular category subscribers
 	public function getCatsubscribes()
 	{
-		$app = JFactory::getApplication();		
+		$app = Factory::getApplication();		
 		$catid = $app->input->get('catid',0,'INT');	
 		$db		= EasyBlogHelper::db();
 		$where	= array();		
@@ -113,7 +108,7 @@ class EasyblogApiResourceSubscribe extends ApiResource
 	//common function for adding subscribers by forking other functions by their type. 
 	public function addSubscription()
 	{	
-		$app = JFactory::getApplication();	
+		$app = Factory::getApplication();	
 		$type = $app->input->get('type','','STRING');		
 		switch($type)
 		{
@@ -131,7 +126,7 @@ class EasyblogApiResourceSubscribe extends ApiResource
 	//function for add user to as site subscriber	
 	public function addToSitesubscribe()
 	{
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$email = $app->input->get('email','','STRING');
 		$userid = $app->input->get('userid','','STRING');
 		$name = $app->input->get('name','','STRING');
@@ -148,7 +143,7 @@ class EasyblogApiResourceSubscribe extends ApiResource
 	//function for add user to as blog subscriber	
 	public function addToBlogsubscribe()
 	{
-		$app 	= JFactory::getApplication();
+		$app 	= Factory::getApplication();
 		$email  = $app->input->get('email','','STRING');
 		$userid = $app->input->get('userid','','STRING');
 		$name   = $app->input->get('name','','STRING');
@@ -160,13 +155,13 @@ class EasyblogApiResourceSubscribe extends ApiResource
 		{
 			$result = $bmodel->addBlogSubscription($blogid,$email,$userid,$name);
 			$res->status = 1;	
-			$res->message=JText::_( 'PLG_API_EASYBLOG_SUBSCRIPTION_SUCCESS' );		
+			$res->message=Text::_( 'PLG_API_EASYBLOG_SUBSCRIPTION_SUCCESS' );		
 		
 		}
 		else
 		{
 			$res->status = 0;	
-			$res->message=JText::_( 'PLG_API_EASYBLOG_ALREADY_SUBSCRIBED' );
+			$res->message=Text::_( 'PLG_API_EASYBLOG_ALREADY_SUBSCRIBED' );
 			return $res;			 
 		}		
 		return $res;	
@@ -175,7 +170,7 @@ class EasyblogApiResourceSubscribe extends ApiResource
 	//function for add user to as category subscriber	
 	public function addToCategorysubscribe()
 	{
-		$app 	= JFactory::getApplication();
+		$app 	= Factory::getApplication();
 		$email  = $app->input->get('email','','STRING');
 		$userid = $app->input->get('userid','','STRING');
 		$name   = $app->input->get('name','','STRING');

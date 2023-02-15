@@ -8,24 +8,24 @@
 
 defined('_JEXEC') or die( 'Restricted access' );
 
-jimport('joomla.plugin.plugin');
+use Joomla\CMS\Factory;
 
 class RedshopApiResourceDetails extends ApiResource
 {
 	public function get()
 	{
-        	$startdate	= JRequest::getVar('startdate');
+        	$startdate	= Factory::getApplication()->input->get('startdate');
         	$startdate .= '00:00:00';
-			$enddate	= JRequest::getVar('enddate');
+			$enddate	= Factory::getApplication()->input->get('enddate');
         	$enddate .= ' 23:59:59';
-			$config =& JFactory::getConfig();
+			$config =Factory::getConfig();
             $offset = $config->getValue('config.offset');
-            $startdate= & JFactory::getDate($startdate,$offset);
-            $enddate= & JFactory::getDate($enddate,$offset);
+            $startdate= Factory::getDate($startdate,$offset);
+            $enddate= Factory::getDate($enddate,$offset);
            	$startdate = $startdate->toFormat('%F %T');  
             $enddate = $enddate->toFormat('%F %T');
 					
-		$db = JFactory::getDBO();
+		$db = Factory::getDbo();
 		$query = "SELECT a.order_item_sku AS product_sku,b.product_name,SUM(a.product_quantity)AS quantity,
 					   SUM(a.product_final_price) AS product_sales
 					   FROM #__redshop_order_item AS a,#__redshop_product AS b WHERE a.product_id=b.product_id
@@ -62,13 +62,13 @@ class RedshopApiResourceDetails extends ApiResource
 
 	public function post()
 	{
-			$db = JFactory::getDBO();
+			$db = Factory::getDbo();
 	   		
 	   		require_once(dirname(__FILE__).DS.'helper.php');
 				
 			//get date from app
-			$startdate = JRequest::getVar('startdate');
-			$enddate = JRequest::getVar('enddate');
+			$startdate = Factory::getApplication()->input->get('startdate');
+			$enddate = Factory::getApplication()->input->get('enddate');
 			
 			$startdate .= ' 00:00:00';
 			$enddate .= ' 23:59:59';
@@ -77,11 +77,11 @@ class RedshopApiResourceDetails extends ApiResource
 			$edate = $enddate;
 			
 			//get offset value					
-			$config =& JFactory::getConfig();
+			$config =Factory::getConfig();
             $offset = $config->getValue('config.offset');
             
-            $startdate= & JFactory::getDate($startdate,$offset);
-            $enddate= & JFactory::getDate($enddate,$offset);
+            $startdate= Factory::getDate($startdate,$offset);
+            $enddate= Factory::getDate($enddate,$offset);
             $startdate = $startdate->toFormat('%F %T');                                
             $enddate = $enddate->toFormat('%F %T');
 		//query for product details
@@ -121,8 +121,8 @@ class RedshopApiResourceDetails extends ApiResource
 
 	public function put()
 	{	
-		$app = JFactory::getApplication();
-		$data = JRequest::getVar('jform', array(), 'post', 'array');
+		$app = Factory::getApplication();
+		$data = Factory::getApplication()->input->get('jform', array(), 'post', 'array');
 		$context = 'com_content.edit.article';
 
 		// Fake parameters
@@ -130,7 +130,7 @@ class RedshopApiResourceDetails extends ApiResource
 		array_push($values, (int) $data['id']);
 		$values = array_unique($values);
 		$app->setUserState($context.'.id', $values);
-		if ( !JRequest::getInt( 'id' ) ) {
+		if ( !Factory::getApplication()->input->get( 'id' ) ) {
 			$_POST['id'] = $data['id'];
 			$_REQUEST['id'] = $data['id'];
 		}

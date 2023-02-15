@@ -11,9 +11,9 @@
  */
 
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/foundry.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/models/groups.php';
@@ -49,7 +49,7 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 	public function post()
 	{
 		$this->plugin->err_code = 405;
-		$this->plugin->err_message = JText::_('PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE');
+		$this->plugin->err_message = Text::_('PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE');
 		$this->plugin->setResponse(null);
 	}
 
@@ -63,12 +63,12 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 	public function getStream()
 	{
 		// Init variable
-		$app		=	JFactory::getApplication();
+		$app		=	Factory::getApplication();
 
 		// Code for get non sef urls
-		$jrouter		=	JFactory::getApplication()->getRouter();
+		$jrouter		=	Factory::getApplication()->getRouter();
 		$jrouter->setMode(JROUTER_MODE_RAW);
-		$log_user		=	JFactory::getUser($this->plugin->get('user')->id);
+		$log_user		=	Factory::getUser($this->plugin->get('user')->id);
 		$group_id		=	$app->input->get('group_id', 0, 'INT');
 		$event_id		=	$app->input->get('event_id', 0, 'INT');
 		$page_id		=	$app->input->get('page_id', 0, 'INT');
@@ -81,7 +81,7 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 
 		// Get tag
 		$tag			=	$app->input->get('tag', '', 'STRING');
-		$config			=	JFactory::getConfig();
+		$config			=	Factory::getConfig();
 		$sef			=	$config->set('sef', 0);
 
 		$res = new stdClass;
@@ -156,7 +156,7 @@ class EasysocialApiResourceNewsfeed extends ApiResource
 		if (!count($result) || !is_array($result))
 		{
 			$res->result = array();
-			$res->empty_message	=	JText::_('COM_EASYSOCIAL_STREAM_NO_STREAM_ITEM');
+			$res->empty_message	=	Text::_('COM_EASYSOCIAL_STREAM_NO_STREAM_ITEM');
 			$this->plugin->setResponse($res);
 		}
 		else

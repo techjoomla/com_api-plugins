@@ -10,6 +10,9 @@
 
 // No direct access.
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\MVC\Model\BaseDatabaseModel;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Filter\InputFilter;
 
 // Load category list model from admin
 JLoader::register('CategoriesModelCategories', JPATH_ROOT . '/administrator/components/com_categories/models/categories.php');
@@ -42,10 +45,10 @@ class CategoriesApiResourceCategories extends ApiResource
 	public function getCategoriesList()
 	{
 		// Get an instance of the generic articles model
-		$model = JModelLegacy::getInstance('Categories', 'CategoriesModel', array('ignore_request' => true));
+		$model = BaseDatabaseModel::getInstance('Categories', 'CategoriesModel', array('ignore_request' => true));
 
 		// Set application parameters in model
-		$app   = JFactory::getApplication();
+		$app   = Factory::getApplication();
 		$input = $app->input;
 
 		// Get inputs params
@@ -55,7 +58,7 @@ class CategoriesApiResourceCategories extends ApiResource
 
 		// Get filters
 		$filters      = $input->get->get('filters', '', 'array');
-		$jInputFilter = JFilterInput::getInstance();
+		$jInputFilter = InputFilter::getInstance();
 
 		// Cleanup and set default values
 		$access    = isset($filters['access'])   ? $jInputFilter->clean($filters['access'], 'cmd') : '';

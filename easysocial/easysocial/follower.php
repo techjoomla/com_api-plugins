@@ -11,9 +11,9 @@
  */
 
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
 require_once JPATH_ADMINISTRATOR . '/components/com_easysocial/includes/model.php';
@@ -58,7 +58,7 @@ class EasysocialApiResourceFollower extends ApiResource
 	 */
 	public function follow()
 	{
-		$app         = JFactory::getApplication();
+		$app         = Factory::getApplication();
 		$target_user = $app->input->get('target_user', 0, 'INT');
 		$type        = $app->input->get('type', 'user', 'STRING');
 		$group       = $app->input->get('group', SOCIAL_APPS_GROUP_USER, 'word');
@@ -70,7 +70,7 @@ class EasysocialApiResourceFollower extends ApiResource
 		if ($target_user == $log_user)
 		{
 			$res->result->status = 0;
-			$res->result->message = JText::_('PLG_API_EASYSOCIAL_CANT_FOLLOW_YOURSELF_MESSAGE');
+			$res->result->message = Text::_('PLG_API_EASYSOCIAL_CANT_FOLLOW_YOURSELF_MESSAGE');
 
 			$this->plugin->setResponse($res);
 		}
@@ -101,14 +101,14 @@ class EasysocialApiResourceFollower extends ApiResource
 			{
 				//  $state = $this->addbadges( $target,$log_user,$subscription->id );
 				$res->result->status = 1;
-				$res->result->message = JText::_('PLG_API_EASYSOCIAL_FOLLOWING_MESSAGE') . $target->username;
+				$res->result->message = Text::_('PLG_API_EASYSOCIAL_FOLLOWING_MESSAGE') . $target->username;
 
 				$this->plugin->setResponse($res);
 			}
 			else
 			{
 				$res->result->status = 0;
-				$res->result->message = JText::_('PLG_API_EASYSOCIAL_UNABLE_TO_FOLLOW_MESSAGE') . $target->username;
+				$res->result->message = Text::_('PLG_API_EASYSOCIAL_UNABLE_TO_FOLLOW_MESSAGE') . $target->username;
 
 				$this->plugin->setResponse($res);
 			}
@@ -131,14 +131,14 @@ class EasysocialApiResourceFollower extends ApiResource
 				 * $points->assign( 'profile.unfollowed', 'com_easysocial', $user->id );
 				 */
 				$res->result->status = 1;
-				$res->result->message = JText::_('PLG_API_EASYSOCIAL_SUCCESSFULLY_UNFOLLW_MESSAGE') . $target->username;
+				$res->result->message = Text::_('PLG_API_EASYSOCIAL_SUCCESSFULLY_UNFOLLW_MESSAGE') . $target->username;
 
 				$this->plugin->setResponse($res);
 			}
 			else
 			{
 				$res->result->status = 0;
-				$res->result->message = JText::_('PLG_API_EASYSOCIAL_UNABLE_TO_UNFOLLW_MESSAGE') . $target->username;
+				$res->result->message = Text::_('PLG_API_EASYSOCIAL_UNABLE_TO_UNFOLLW_MESSAGE') . $target->username;
 
 				$this->plugin->setResponse($res);
 			}
@@ -162,10 +162,10 @@ class EasysocialApiResourceFollower extends ApiResource
 
 		//  @badge: followers.follow
 		$badge = FD::badges();
-		$badge->log('com_easysocial', 'followers.follow', $my->id, JText::_('COM_EASYSOCIAL_FOLLOWERS_BADGE_FOLLOWING_USER'));
+		$badge->log('com_easysocial', 'followers.follow', $my->id, Text::_('COM_EASYSOCIAL_FOLLOWERS_BADGE_FOLLOWING_USER'));
 
 		//  @badge: followers.followed
-		$badge->log('com_easysocial', 'followers.followed', $user->id, JText::_('COM_EASYSOCIAL_FOLLOWERS_BADGE_FOLLOWED'));
+		$badge->log('com_easysocial', 'followers.followed', $user->id, Text::_('COM_EASYSOCIAL_FOLLOWERS_BADGE_FOLLOWED'));
 
 		//  @points: profile.follow
 		//  Assign points when user follows another person
@@ -229,7 +229,7 @@ class EasysocialApiResourceFollower extends ApiResource
 	 */
 	public function delete()
 	{
-		$app         = JFactory::getApplication();
+		$app         = Factory::getApplication();
 		$target_user = $app->input->get('target_userid', 0, 'INT');
 		$log_user    = $this->plugin->get('user')->id;
 
@@ -244,12 +244,12 @@ class EasysocialApiResourceFollower extends ApiResource
 		if ($res->result == true)
 		{
 			$res->status  = 1;
-			$res->message = JText::_('PLG_API_EASYSOCIAL_USER_REMOVE_MESSAGE');
+			$res->message = Text::_('PLG_API_EASYSOCIAL_USER_REMOVE_MESSAGE');
 		}
 		else
 		{
 			$res->status  = 0;
-			$res->message = JText::_('PLG_API_EASYSOCIAL_UNABLE_TO_REMOVE_USER_MESSAGE');
+			$res->message = Text::_('PLG_API_EASYSOCIAL_UNABLE_TO_REMOVE_USER_MESSAGE');
 		}
 
 		$this->plugin->setResponse($res);
@@ -265,7 +265,7 @@ class EasysocialApiResourceFollower extends ApiResource
 	public function getFollowers()
 	{
 		//  Init variable
-		$app                   = JFactory::getApplication();
+		$app                   = Factory::getApplication();
 		$user                  = $this->plugin->get('user')->id;
 		$target_user           = $app->input->get('target_user', 0, 'INT');
 		$type                  = $app->input->get('type', 'follower', 'STRING');
@@ -310,7 +310,7 @@ class EasysocialApiResourceFollower extends ApiResource
 
 		if (count($fllowers_list) < 1)
 		{
-			$res->empty_message = JText::_('COM_EASYSOCIAL_NO_FOLLOWERS_YET');
+			$res->empty_message = Text::_('COM_EASYSOCIAL_NO_FOLLOWERS_YET');
 
 			$this->plugin->setResponse($res);
 		}

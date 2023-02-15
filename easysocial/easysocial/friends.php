@@ -11,9 +11,9 @@
  */
 
 defined('_JEXEC') or die('Restricted access');
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Factory;
 
-jimport('joomla.plugin.plugin');
-jimport('joomla.html.html');
 
 require_once JPATH_SITE . '/plugins/api/easysocial/libraries/mappingHelper.php';
 /**
@@ -45,7 +45,7 @@ class EasysocialApiResourceFriends extends ApiResource
 	public function post()
 	{
 		$this->plugin->err_code = 405;
-		$this->plugin->err_message = JText::_('PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE');
+		$this->plugin->err_message = Text::_('PLG_API_EASYSOCIAL_USE_GET_METHOD_MESSAGE');
 		$this->plugin->setResponse(null);
 	}
 
@@ -62,8 +62,8 @@ class EasysocialApiResourceFriends extends ApiResource
 		$default	=	$avt_model->getDefaultAvatars(0, $type = SOCIAL_TYPE_PROFILES);
 
 		// Init variable
-		$app		=	JFactory::getApplication();
-		$user		=	JFactory::getUser($this->plugin->get('user')->id);
+		$app		=	Factory::getApplication();
+		$user		=	Factory::getUser($this->plugin->get('user')->id);
 		$userid		=	$app->input->get('target_user', 0, 'INT');
 		$filter 	= $app->input->get('filter', 'all', 'STRING');
 		$search		=	$app->input->get('search', '', 'STRING');
@@ -100,7 +100,7 @@ class EasysocialApiResourceFriends extends ApiResource
 
 // 						Get the total pending friends.
 							$options['state']	=	SOCIAL_FRIENDS_STATE_PENDING;
-							$mssg				=	JText::_('PLG_API_EASYSOCIAL_NO_PENDING_REQUESTS');
+							$mssg				=	Text::_('PLG_API_EASYSOCIAL_NO_PENDING_REQUESTS');
 			break;
 			case 'all':
 
@@ -108,11 +108,11 @@ class EasysocialApiResourceFriends extends ApiResource
 						if ($target_user == 0)
 						{
 							// $options['state']	=	SOCIAL_FRIENDS_STATE_FRIENDS;
-							$mssg				=	JText::_('PLG_API_EASYSOCIAL_NO_FRIENDS');
+							$mssg				=	Text::_('PLG_API_EASYSOCIAL_NO_FRIENDS');
 						}
 						else
 						{
-							$mssg = JText::_('PLG_API_EASYSOCIAL_NO_FRIENDS_YET');
+							$mssg = Text::_('PLG_API_EASYSOCIAL_NO_FRIENDS_YET');
 						}
 			break;
 			case 'request':
@@ -120,7 +120,7 @@ class EasysocialApiResourceFriends extends ApiResource
 // 						Getting sent requested friends.
 							$options[ 'state' ]		=	SOCIAL_FRIENDS_STATE_PENDING;
 							$options[ 'isRequest' ]	=	true;
-							$mssg					=	JText::_('PLG_API_EASYSOCIAL_NOT_SENT_REQUEST');
+							$mssg					=	Text::_('PLG_API_EASYSOCIAL_NOT_SENT_REQUEST');
 			break;
 			case 'suggest':
 
@@ -136,14 +136,14 @@ class EasysocialApiResourceFriends extends ApiResource
 
 							if (empty($ttl_list))
 							{
-								$mssg = JText::_('PLG_API_EASYSOCIAL_NO_SUGGESTIONS');
+								$mssg = Text::_('PLG_API_EASYSOCIAL_NO_SUGGESTIONS');
 							}
 			break;
 			case 'invites':
 
 // 						Getting invited friends
 							$invites['data']	=	$frnd_mod->getInvitedUsers($userid);
-							$mssg				=	JText::_('PLG_API_EASYSOCIAL_NO_INVITATION');
+							$mssg				=	Text::_('PLG_API_EASYSOCIAL_NO_INVITATION');
 
 							if (empty($invites['data']))
 							{
@@ -159,11 +159,11 @@ class EasysocialApiResourceFriends extends ApiResource
 
 					if ($target_user == 0)
 					{
-						$mssg = JText::_('PLG_API_EASYSOCIAL_NO_FRIENDS');
+						$mssg = Text::_('PLG_API_EASYSOCIAL_NO_FRIENDS');
 					}
 					else
 					{
-						$mssg = JText::_('PLG_API_EASYSOCIAL_NO_FRIENDS_YET');
+						$mssg = Text::_('PLG_API_EASYSOCIAL_NO_FRIENDS_YET');
 					}
 		}
 

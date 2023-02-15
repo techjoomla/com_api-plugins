@@ -7,7 +7,8 @@
 */
  
 defined('_JEXEC') or die( 'Restricted access' );
-jimport('joomla.user.user');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
 class AkeebasubsApiResourceSubscriptions extends ApiResource
 {
@@ -30,7 +31,7 @@ class AkeebasubsApiResourceSubscriptions extends ApiResource
 	
 	public function get() {
 		
-			$input = JFactory::getApplication()->input;
+			$input = Factory::getApplication()->input;
 			$user = $this->plugin->getUser();
 			$filters = array(
 											'search'=>'',
@@ -61,14 +62,14 @@ class AkeebasubsApiResourceSubscriptions extends ApiResource
 											);
 
 			if (!$user) {
-				$this->plugin->setResponse( $this->getErrorResponse(404, JText::_('JERROR_ALERTNOAUTHOR')) );
+				$this->plugin->setResponse( $this->getErrorResponse(404, Text::_('JERROR_ALERTNOAUTHOR')) );
 				return;
 			}
 
 			$authorised = $user->authorise('core.manage', 'com_akeebasubs');
 			
 			if (!$authorised) {
-				$this->plugin->setResponse( $this->getErrorResponse(404, JText::_('JERROR_ALERTNOAUTHOR')) );
+				$this->plugin->setResponse( $this->getErrorResponse(404, Text::_('JERROR_ALERTNOAUTHOR')) );
 				return;
 			}
 			

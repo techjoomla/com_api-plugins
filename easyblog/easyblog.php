@@ -7,8 +7,10 @@
 */
 
 defined('_JEXEC') or die( 'Restricted access' );
+use Joomla\CMS\Factory;
+use Joomla\CMS\Filesystem\File;
+use Joomla\CMS\Component\ComponentHelper;
 
-jimport('joomla.plugin.plugin');
 
 class plgAPIEasyblog extends ApiPlugin
 {
@@ -17,11 +19,11 @@ class plgAPIEasyblog extends ApiPlugin
 		parent::__construct($subject, $config = array());
 		
 				/*load language file for plugin frontend*/ 
-		$lang = JFactory::getLanguage(); 
+		$lang = Factory::getLanguage(); 
 		$lang->load('plg_api_easyblog', JPATH_ADMINISTRATOR,'',true);
 
 		$easyblog = JPATH_ROOT . '/administrator/components/com_easyblog/easyblog.php';
-		if (!JFile::exists($easyblog) || !JComponentHelper::isEnabled('com_easyblog', true)) {
+		if (!File::exists($easyblog) || !ComponentHelper::isEnabled('com_easyblog', true)) {
 			ApiError::raiseError(404, 'Easyblog not installed');
 			return;
 		}
@@ -29,10 +31,10 @@ class plgAPIEasyblog extends ApiPlugin
 		//load helper file
 		require_once JPATH_SITE.'/plugins/api/easyblog/helper/simpleschema.php';
 		// Load Easyblog language & bootstrap files
-		$language = JFactory::getLanguage();
+		$language = Factory::getLanguage();
 		$language->load('com_easyblog');
 		
-		$xml = JFactory::getXML(JPATH_ADMINISTRATOR .'/components/com_easyblog/easyblog.xml');
+		$xml = simplexml_load_file(JPATH_ADMINISTRATOR .'/components/com_easyblog/easyblog.xml');
 		$version = (string)$xml->version;
 
 		if($version<5)

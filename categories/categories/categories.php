@@ -11,12 +11,19 @@
 // No direct access.
 defined('_JEXEC') or die('Restricted access');
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
-use Joomla\CMS\Factory;
-use Joomla\CMS\Filter\InputFilter;
+use Joomla\CMS\Factory; 
+use Joomla\CMS\Table\Table;
+use Joomla\CMS\Filter\InputFilter; 
 
-// Load category list model from admin
-JLoader::register('CategoriesModelCategories', JPATH_ROOT . '/administrator/components/com_categories/models/categories.php');
-
+if (JVERSION < '4.0.0')
+{
+	Table::addIncludePath(JPATH_ROOT . '/administrator/components/com_categories/tables');
+	BaseDatabaseModel::addIncludePath(JPATH_ADMINISTRATOR . '/components/com_categories/models/');		
+}
+else
+{
+	BaseDatabaseModel::addIncludePath(JPATH_ADMINISTRATOR . '/components/com_categories/src/Model/');			
+}
 /**
  * Categories API resource class
  *
@@ -44,12 +51,11 @@ class CategoriesApiResourceCategories extends ApiResource
 	 */
 	public function getCategoriesList()
 	{
-		// Get an instance of the generic articles model
-		$model = BaseDatabaseModel::getInstance('Categories', 'CategoriesModel', array('ignore_request' => true));
-
 		// Set application parameters in model
 		$app   = Factory::getApplication();
 		$input = $app->input;
+		
+		$model = BaseDatabaseModel::getInstance('Categories', 'CategoriesModel');
 
 		// Get inputs params
 		$limit      = $input->get->get('limit', 20, 'int');
@@ -83,6 +89,20 @@ class CategoriesApiResourceCategories extends ApiResource
 		$model->setState('filter.component', $parts[0]);
 		$model->setState('filter.section', (count($parts) > 1) ? $parts[1] : null);
 
-		return $model->getItems();
+		$rows = $model->getItems();
+		$obj = new stdclass;
+		if (count($rows) > 0)
+		{			
+			$obj->success = true;
+			$obj->data = $rows;
+
+			return $obj;
+		}
+		else
+		{
+			$obj->success = false;
+			$obj->message = 'System does not have categories';
+		}
+		return $obj;
 	}
 }

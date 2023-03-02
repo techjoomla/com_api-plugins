@@ -6,20 +6,19 @@
  * @link       http://www.techjoomla.com
  */
 defined('_JEXEC') or die( 'Restricted access' );
-
 use Joomla\CMS\Factory;
 use Joomla\CMS\Table\Table;
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
+use Joomla\CMS\Uri\Uri;
 
 if (JVERSION < '4.0.0')
 {
-	require_once JPATH_SITE . '/components/com_content/models/articles.php';
-	require_once JPATH_SITE . '/components/com_content/models/article.php';
+	BaseDatabaseModel::addIncludePath(JPATH_SITE . '/components/com_content/models/');			
 }
 else
 {
-	require_once JPATH_SITE . '/components/com_content/src/Model/ArticlesModel.php';
-	require_once JPATH_SITE . '/components/com_content/src/Model/ArticleModel.php';
+	BaseDatabaseModel::addIncludePath(JPATH_SITE . '/components/com_content/src/Model/');			
+	
 }
 
 /**
@@ -133,12 +132,11 @@ class ArticlesApiResourceArticle extends ApiResource
 		}
 
 		$rows = $art_obj->getItems();
-
 		$num_articles = $art_obj->getTotal();
-		$data[] = new stdClass;
-
+		
 		foreach ($rows as $subKey => $subArray)
 		{
+			$data[] = new stdClass;
 			$data[$subKey]->id = $subArray->id;
 			$data[$subKey]->title = $subArray->title;
 			$data[$subKey]->alias = $subArray->alias;
@@ -157,7 +155,7 @@ class ArticlesApiResourceArticle extends ApiResource
 
 				foreach ($images as $key => $value)
 				{
-					if ($value)
+					if ($value)  
 					{
 						$images->$key = Uri::base() . $value;
 					}
@@ -176,27 +174,23 @@ class ArticlesApiResourceArticle extends ApiResource
 				$data[$subKey]->created_by = array('id' => $subArray->created_by, 'name' => $subArray->author);
 			}
 
-			$data[$subKey]->tags = $subArray->tags;
+			$data[$subKey]->tags = $subArray->tags;		
 		}
-
 		$obj = new stdclass;
 		$result = new stdClass;
 
-		if (count($data) > 0)
+		if ($num_articles > 0)
 		{
 			$result->results = $data;
 			$result->total = $num_articles;
 			$obj->success = true;
 			$obj->data = $result;
-
-			return $obj;
 		}
 		else
 		{
 			$obj->success = false;
 			$obj->message = 'System does not have articles';
-		}
-
+		}		
 		return $obj;
 	}
 
@@ -229,6 +223,7 @@ class ArticlesApiResourceArticle extends ApiResource
 		$obj = new stdclass;
 
 		$app = Factory::getApplication();
+
 		$article_id = $app->input->get('id', 0, 'INT');
 
 		if (empty($app->input->get('title', '', 'STRING')))
@@ -257,7 +252,7 @@ class ArticlesApiResourceArticle extends ApiResource
 
 		if ($article_id)
 		{
-			$article = Table::getInstance('Content', 'Table', array());
+			$article = Table::getInstance('content');
 			$article->load($article_id);
 			$data = array(
 			'title' => $app->input->get('title', '', 'STRING'),

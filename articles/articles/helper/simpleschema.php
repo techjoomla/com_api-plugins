@@ -12,6 +12,8 @@ defined('_JEXEC') or die('Restricted access');
 use Joomla\CMS\Factory;
 use Joomla\CMS\Filesystem\File;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Uri\Uri;
+use Joomla\CMS\HTML\HTMLHelper;
 
 //jimport( 'simpleschema.easyblog.blog.post' );
 require_once JPATH_SITE.'/plugins/api/articles/articles/blogs/blog/post.php';
@@ -60,13 +62,13 @@ class BlogappSimpleSchema
 		else
 		{
 			//get media from custom component
-			$media_obj = new TZ_PortfolioModelMedia();
-			$med = $media_obj->getMedia($blog->id);
+			// $media_obj = new TZ_PortfolioModelMedia();
+			// $med = $media_obj->getMedia($blog->id);
 
 			//$item->image->url = (string)Uri::root().$med[count($med) - count($med)]->images;
 			//$item->image->full_image_url = (string)Uri::root().$med[count($med) - count($med)]->images;
-			$item->image = Uri::root().str_replace('.'.File::getExt($med[0] -> images),'_'
-                                          .'S'.'.'.File::getExt($med[0] -> images),$med[0] -> images);
+			// $item->image = Uri::root().str_replace('.'.File::getExt($med[0] -> images),'_'
+            //                               .'S'.'.'.File::getExt($med[0] -> images),$med[0] -> images);
 			/*$item->image->full_image_url = Uri::root().str_replace('.'.File::getExt($med[0] -> images),'_'
                                           .'L'.'.'.File::getExt($med[0] -> images),$med[0] -> images);*/
 		}

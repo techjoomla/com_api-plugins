@@ -14,7 +14,15 @@ use Joomla\CMS\Table\Table;
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 use Joomla\CMS\Factory;
 
-JLoader::register('CategoriesModelCategory', JPATH_ROOT . '/administrator/components/com_categories/models/category.php');
+if (JVERSION < '4.0.0')
+{
+	Table::addIncludePath(JPATH_ROOT . '/administrator/components/com_categories/tables');
+	BaseDatabaseModel::addIncludePath(JPATH_ADMINISTRATOR . '/components/com_categories/models/');		
+}
+else
+{
+	BaseDatabaseModel::addIncludePath(JPATH_ADMINISTRATOR . '/components/com_categories/src/Model/');			
+}
 
 /**
  * Category API resource class
@@ -52,23 +60,20 @@ class CategoriesApiResourceCategory extends ApiResource
 	 * @since   1.6.0
 	 */
 	public function getCategory()
-	{
-		// 1. Important to include category table first
-		Table::addIncludePath(JPATH_ROOT . '/administrator/components/com_categories/tables');
-
-		// 2. Then, get an instance of the generic articles model
-		$model = BaseDatabaseModel::getInstance('Category', 'CategoriesModel', array('ignore_request' => true));
-
+	{		
 		// Set application parameters in model
 		$app   = Factory::getApplication();
 		$input = $app->input;
-
+		
+		// get an instance of the category model
+		$model = BaseDatabaseModel::getInstance('Category', 'CategoriesModel');
+		
 		// Important to get from input directly and not from $input->get->get()
 		$id = $input->get('id', 0, 'int');
 
 		if (!$id)
 		{
-			// Not Found Error sets HTTP 404
+			// Not Found Error sets HTTP 404						
 			ApiError::raiseError(404, "Record not found", 'APINotFoundException');
 		}
 

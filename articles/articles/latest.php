@@ -24,16 +24,13 @@ jimport( 'joomla.database.table.user' );
 
 if (JVERSION < '4.0.0')
 {
-	require_once( JPATH_SITE.'/components/com_content/models/article.php');
-	require_once( JPATH_SITE.'/components/com_content/models/category.php');
-	require_once( JPATH_SITE.'/components/com_content/models/article.php');
+	BaseDatabaseModel::addIncludePath(JPATH_SITE . '/components/com_content/models/');		
 	require_once( JPATH_SITE.'/components/com_content/helpers/query.php');
 	require_once JPATH_SITE . '/components/com_content/helpers/route.php';
 }
 else
 {
-	require_once JPATH_SITE . '/components/com_content/src/Model/ArticleModel.php';
-	require_once JPATH_SITE . '/components/com_content/src/Model/CategoryModel.php';
+	BaseDatabaseModel::addIncludePath(JPATH_SITE . '/components/com_content/src/Model/');			
 	require_once JPATH_SITE . '/components/com_content/src/Helper/QueryHelper.php';
 	require_once JPATH_SITE . '/components/com_content/src/Service/Router.php';
 }

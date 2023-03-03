@@ -14,6 +14,7 @@ use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 use Joomla\CMS\Factory; 
 use Joomla\CMS\Table\Table;
 use Joomla\CMS\Filter\InputFilter; 
+use Joomla\CMS\Language\Text;
 
 if (JVERSION < '4.0.0')
 {
@@ -101,7 +102,7 @@ class CategoriesApiResourceCategories extends ApiResource
 		else
 		{
 			$obj->success = false;
-			$obj->message = 'System does not have categories';
+			$obj->message = Text::_('PLG_API_CATEGORIES_CATEGORIES_NOT_FOUND');
 		}
 		return $obj;
 	}

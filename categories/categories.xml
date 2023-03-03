@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension version="2.5.0" type="plugin" group="api" method="upgrade">
-	<name>Api - categories</name>
+	<name>PLG_API_CATEGORIES</name>
 	<version>1.6</version>
 	<creationDate>22 July 2015</creationDate>
 	<author>Techjoomla</author>
@@ -8,14 +8,14 @@
 	<authorUrl>www.techjoomla.com</authorUrl>
 	<copyright>Techjoomla. All rights reserved.</copyright>
 	<license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
-	<description>This plugin is for content Request</description>
+	<description>PLG_API_CATEGORIES_DESCRIPTION</description>
 	<files>
 		<filename plugin="categories">categories.php</filename>
 		<folder>categories</folder>
 	</files>
-	<languages>
-		<language tag="en-GB">en-GB.plg_api_categories.ini</language>
-		<language tag="en-GB">en-GB.plg_api_categories.sys.ini</language>
+	<languages folder="language">
+		<language tag="en-GB">en-GB/en-GB.plg_api_categories.ini</language>
+		<language tag="en-GB">en-GB/en-GB.plg_api_categories.sys.ini</language>
 	</languages>
 	<config>
 		<fields name="params">

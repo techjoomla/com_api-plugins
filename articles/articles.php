@@ -9,7 +9,7 @@
  */
 
 defined('_JEXEC') or die( 'Restricted access' );
-
+use Joomla\CMS\Factory;
 
 class plgAPIArticles extends ApiPlugin
 {
@@ -21,6 +21,10 @@ class plgAPIArticles extends ApiPlugin
 		require_once JPATH_SITE.'/plugins/api/articles/articles/helper/simpleschema.php';
 
 		ApiResource::addIncludePath(dirname(__FILE__).'/articles');
+
+		/*load language file for plugin frontend*/ 
+		$lang = Factory::getLanguage(); 
+		$lang->load('plg_api_articles', JPATH_ADMINISTRATOR,'',true);
 
 		// Set resources & access
 		$this->setResourceAccess('article', 'public', 'get');

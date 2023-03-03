@@ -13,6 +13,7 @@ defined('_JEXEC') or die( 'Restricted access' );
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\Model\ListModel;
+use Joomla\CMS\Language\Text;
 
 jimport( 'joomla.application.component.model' );
 jimport( 'joomla.database.table.user' );
@@ -154,7 +155,7 @@ class ArticlesApiResourceCategory extends ApiResource
 	
 	public function post()
 	{  
-		$this->plugin->setResponse("use post method");
+		$this->plugin->setResponse(Text::_('PLG_API_ARTICLES_UNSUPPORTED_METHOD_POST'));
 	}
 	
 }

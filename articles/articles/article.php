@@ -10,6 +10,7 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Table\Table;
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 use Joomla\CMS\Uri\Uri;
+use Joomla\CMS\Language\Text;
 
 if (JVERSION < '4.0.0')
 {
@@ -49,7 +50,7 @@ class ArticlesApiResourceArticle extends ApiResource
 	 */
 	public function delete()
 	{
-		$this->plugin->setResponse('in delete');
+		$this->plugin->setResponse(Text::_('PLG_API_ARTICLES_IN_DELETE'));
 	}
 
 	/**
@@ -189,7 +190,7 @@ class ArticlesApiResourceArticle extends ApiResource
 		else
 		{
 			$obj->success = false;
-			$obj->message = 'System does not have articles';
+			$obj->message = Text::_('PLG_API_ARTICLES_ARTICLES_NOT_FOUND');
 		}		
 		return $obj;
 	}
@@ -229,7 +230,7 @@ class ArticlesApiResourceArticle extends ApiResource
 		if (empty($app->input->get('title', '', 'STRING')))
 		{
 			$obj->success = false;
-			$obj->message = 'Title is Missing';
+			$obj->message = Text::_('PLG_API_ARTICLES_MISSING_TITLE');
 
 			return $obj;
 		}
@@ -237,7 +238,7 @@ class ArticlesApiResourceArticle extends ApiResource
 		if (empty($app->input->get('introtext', '', 'STRING')))
 		{
 			$obj->success = false;
-			$obj->message = 'Introtext is Missing';
+			$obj->message = Text::_('PLG_API_ARTICLES_MISSING_INTROTEXT');
 
 			return $obj;
 		}
@@ -245,7 +246,7 @@ class ArticlesApiResourceArticle extends ApiResource
 		if (empty($app->input->get('catid', '', 'INT')))
 		{
 			$obj->success = false;
-			$obj->message = 'Category id is Missing';
+			$obj->message = Text::_('PLG_API_ARTICLES_MISSING_CATEGORY');
 
 			return $obj;
 		}

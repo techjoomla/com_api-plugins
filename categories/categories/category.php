@@ -13,6 +13,7 @@ defined('_JEXEC') or die('Restricted access');
 use Joomla\CMS\Table\Table;
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
 if (JVERSION < '4.0.0')
 {
@@ -74,7 +75,7 @@ class CategoriesApiResourceCategory extends ApiResource
 		if (!$id)
 		{
 			// Not Found Error sets HTTP 404						
-			ApiError::raiseError(404, "Record not found", 'APINotFoundException');
+			ApiError::raiseError(404, Text::_('PLG_API_CATEGORIES_RECORD_NOT_FOUND_MESSAGE'), 'APINotFoundException');
 		}
 
 		$item = $model->getItem($id);
@@ -83,7 +84,7 @@ class CategoriesApiResourceCategory extends ApiResource
 		if (empty($item->id))
 		{
 			// Not Found Error sets HTTP 404
-			ApiError::raiseError(404, "Record not found", 'APINotFoundException');
+			ApiError::raiseError(404, Text::_('PLG_API_CATEGORIES_RECORD_NOT_FOUND_MESSAGE'), 'APINotFoundException');
 		}
 
 		return $item;

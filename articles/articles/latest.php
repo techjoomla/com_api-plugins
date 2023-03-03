@@ -18,6 +18,7 @@ use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Access\Access;
 use Joomla\CMS\Router\Route;
 use Joomla\Utilities\ArrayHelper;
+use Joomla\CMS\Language\Text;
 
 jimport( 'joomla.application.component.model' );
 jimport( 'joomla.database.table.user' );
@@ -279,6 +280,6 @@ class ArticlesApiResourceLatest extends ApiResource
 	
 	public function post()
 	{  
-		$this->plugin->setResponse("Use get method");
+		$this->plugin->setResponse(Text::_('PLG_API_ARTICLES_UNSUPPORTED_METHOD_POST'));
 	}
 }

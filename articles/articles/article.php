@@ -6,20 +6,20 @@
  * @link       http://www.techjoomla.com
  */
 defined('_JEXEC') or die( 'Restricted access' );
-
 use Joomla\CMS\Factory;
 use Joomla\CMS\Table\Table;
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
+use Joomla\CMS\Uri\Uri;
+use Joomla\CMS\Language\Text;
 
 if (JVERSION < '4.0.0')
 {
-	require_once JPATH_SITE . '/components/com_content/models/articles.php';
-	require_once JPATH_SITE . '/components/com_content/models/article.php';
+	BaseDatabaseModel::addIncludePath(JPATH_SITE . '/components/com_content/models/');			
 }
 else
 {
-	require_once JPATH_SITE . '/components/com_content/src/Model/ArticlesModel.php';
-	require_once JPATH_SITE . '/components/com_content/src/Model/ArticleModel.php';
+	BaseDatabaseModel::addIncludePath(JPATH_SITE . '/components/com_content/src/Model/');			
+	
 }
 
 /**
@@ -50,7 +50,7 @@ class ArticlesApiResourceArticle extends ApiResource
 	 */
 	public function delete()
 	{
-		$this->plugin->setResponse('in delete');
+		$this->plugin->setResponse(Text::_('PLG_API_ARTICLES_IN_DELETE'));
 	}
 
 	/**
@@ -133,12 +133,11 @@ class ArticlesApiResourceArticle extends ApiResource
 		}
 
 		$rows = $art_obj->getItems();
-
 		$num_articles = $art_obj->getTotal();
-		$data[] = new stdClass;
-
+		
 		foreach ($rows as $subKey => $subArray)
 		{
+			$data[] = new stdClass;
 			$data[$subKey]->id = $subArray->id;
 			$data[$subKey]->title = $subArray->title;
 			$data[$subKey]->alias = $subArray->alias;
@@ -157,7 +156,7 @@ class ArticlesApiResourceArticle extends ApiResource
 
 				foreach ($images as $key => $value)
 				{
-					if ($value)
+					if ($value)  
 					{
 						$images->$key = Uri::base() . $value;
 					}
@@ -176,27 +175,23 @@ class ArticlesApiResourceArticle extends ApiResource
 				$data[$subKey]->created_by = array('id' => $subArray->created_by, 'name' => $subArray->author);
 			}
 
-			$data[$subKey]->tags = $subArray->tags;
+			$data[$subKey]->tags = $subArray->tags;		
 		}
-
 		$obj = new stdclass;
 		$result = new stdClass;
 
-		if (count($data) > 0)
+		if ($num_articles > 0)
 		{
 			$result->results = $data;
 			$result->total = $num_articles;
 			$obj->success = true;
 			$obj->data = $result;
-
-			return $obj;
 		}
 		else
 		{
 			$obj->success = false;
-			$obj->message = 'System does not have articles';
-		}
-
+			$obj->message = Text::_('PLG_API_ARTICLES_ARTICLES_NOT_FOUND');
+		}		
 		return $obj;
 	}
 
@@ -229,12 +224,13 @@ class ArticlesApiResourceArticle extends ApiResource
 		$obj = new stdclass;
 
 		$app = Factory::getApplication();
+
 		$article_id = $app->input->get('id', 0, 'INT');
 
 		if (empty($app->input->get('title', '', 'STRING')))
 		{
 			$obj->success = false;
-			$obj->message = 'Title is Missing';
+			$obj->message = Text::_('PLG_API_ARTICLES_MISSING_TITLE');
 
 			return $obj;
 		}
@@ -242,7 +238,7 @@ class ArticlesApiResourceArticle extends ApiResource
 		if (empty($app->input->get('introtext', '', 'STRING')))
 		{
 			$obj->success = false;
-			$obj->message = 'Introtext is Missing';
+			$obj->message = Text::_('PLG_API_ARTICLES_MISSING_INTROTEXT');
 
 			return $obj;
 		}
@@ -250,14 +246,14 @@ class ArticlesApiResourceArticle extends ApiResource
 		if (empty($app->input->get('catid', '', 'INT')))
 		{
 			$obj->success = false;
-			$obj->message = 'Category id is Missing';
+			$obj->message = Text::_('PLG_API_ARTICLES_MISSING_CATEGORY');
 
 			return $obj;
 		}
 
 		if ($article_id)
 		{
-			$article = Table::getInstance('Content', 'Table', array());
+			$article = Table::getInstance('content');
 			$article->load($article_id);
 			$data = array(
 			'title' => $app->input->get('title', '', 'STRING'),

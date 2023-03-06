@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension version="3.0.0" type="plugin" group="api" method="upgrade">
-    <name>Api - Articles</name>
+    <name>PLG_API_ARTICLES</name>
     <version>1.0</version>
     <creationDate>Sept 2015</creationDate>
     <author>AppCarvers</author>
@@ -8,14 +8,17 @@
     <authorUrl>http://www.appcarvers.com</authorUrl>
     <copyright>Appcarvers. All rights reserved.</copyright> 
     <license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
-    <description>This plugin use for get data from joomla site.</description>
+    <description>PLG_API_ARTICLES_DESCRIPTION</description>
     
     <files>
         <filename plugin="articles">articles.php</filename>
         <filename >articles/category.php</filename>
         <folder>articles</folder> 
     </files>
-    
+    <languages folder="language">
+		<language tag="en-GB">en-GB/en-GB.plg_api_articles.ini</language>
+		<language tag="en-GB">en-GB/en-GB.plg_api_articles.sys.ini</language>
+	</languages>
     <config>
 		<fields name="params">
 			<fieldset name="basic">

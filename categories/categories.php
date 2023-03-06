@@ -10,7 +10,7 @@
 
 // No direct access.
 defined('_JEXEC') or die('Restricted access');
-
+use Joomla\CMS\Factory;
 /**
  * Category API plugin class
  *
@@ -32,5 +32,10 @@ class PlgAPICategories extends ApiPlugin
 		parent::__construct($subject, $config = array());
 
 		ApiResource::addIncludePath(dirname(__FILE__) . '/categories');
+
+		/*load language file for plugin frontend*/ 
+		$lang = Factory::getLanguage(); 
+		$lang->load('plg_api_categories', JPATH_ADMINISTRATOR,'',true);
+
 	}
 }

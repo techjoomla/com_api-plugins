@@ -12,6 +12,8 @@ defined('_JEXEC') or die('Restricted access');
 use Joomla\CMS\Factory;
 use Joomla\CMS\Filesystem\File;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Uri\Uri;
+use Joomla\CMS\HTML\HTMLHelper;
 
 //jimport( 'simpleschema.easyblog.blog.post' );
 require_once JPATH_SITE.'/plugins/api/articles/articles/blogs/blog/post.php';
